@@ -11,7 +11,10 @@ export default function onboarding() {
 			<div className="rounded-md shadow-md p-6">
 				<div className="text-center">
 					<h1 className="text-3xl font-bold text-[#51A8B1]">Logo</h1>
-					<h3 className="text-xl font-semibold py-1">Welcome!</h3>
+					<h3 className="text-xl font-semibold py-1">Welcome Back!</h3>
+				</div>
+				<div className="my-3">
+					<h3 className="text-3xl font-semibold">Enrollment form</h3>
 				</div>
 				<form action="#">
 					<div className="grid grid-cols-2 gap-10">
