@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tests",
+  "info": {
+    "singularName": "test",
+    "pluralName": "tests",
+    "displayName": "Test"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "maxLength": 50,
+      "required": true
+    },
+    "password": {
+      "type": "password",
+      "private": true,
+      "required": true,
+      "minLength": 8,
+      "maxLength": 10
+    }
+  }
+}
