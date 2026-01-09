@@ -105,10 +105,10 @@ export default function Payment() {
 
 				<div className="mt-4 flex justify-center border rounded-md w-fit">
 					<Link
-						href={"./paymentMethod"}
+						href={"./transactionSummary"}
 						className="bg-[#51A8B1] text-white px-6 py-3 text-base font-medium rounded-l-md"
 					>
-						Checkout
+						Next
 					</Link>
 					<Link
 						href={"./payment"}

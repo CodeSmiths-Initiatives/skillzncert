@@ -4,11 +4,44 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 
 export default function Login() {
 	const router = useRouter();
+	const [formData, setFormData] = useState({
+		email: "",
+		password: "",
+	});
+
+	const [loginSuccess, setLoginSuccess] = useState(false);
+
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = e.target;
+
+		setFormData((prev) => ({
+			...prev,
+			[name]: value,
+		}));
+	};
+
+	const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+
+		console.log("Login values:", formData);
+
+		const hasAppliedBefore = formData.email.includes("applied");
+
+		setLoginSuccess(true);
+
+		setTimeout(() => {
+			if (hasAppliedBefore) {
+				router.push("/dashboard");
+			} else {
+				router.push("/onboarding");
+			}
+		}, 1500);
+	};
 
 	useEffect(() => {
 		const today = new Date();
@@ -27,31 +60,44 @@ export default function Login() {
 					<h3 className="text-xl font-semibold py-1">Welcome back!</h3>
 				</div>
 
-				<form>
+				{loginSuccess && (
+					<div className="bg-green-100 text-green-700 p-3 rounded my-4 text-center">
+						Login Successful
+					</div>
+				)}
+				<form onSubmit={handleLogin}>
 					<div className="flex flex-col space-y-2">
 						<label>Email Address</label>
-						<Input type="email" placeholder="Enter your Email" />
+						<Input
+							type="email"
+							name="email"
+							placeholder="Enter your Email"
+							onChange={handleChange}
+						/>
 					</div>
 
 					<div className="flex flex-col space-y-2">
 						<label>Password</label>
-						<Input type="password" placeholder="Enter your password" />
+						<Input
+							type="password"
+							name="password"
+							placeholder="Enter your password"
+							onChange={handleChange}
+						/>
 					</div>
 
 					<p className="text-base font-medium">
 						<Link href="/forgetPassword">Forgot password?</Link>
 					</p>
 
-					<Button className="login-button w-full">
-						<Link href="/onboarding">Login</Link>
-					</Button>
+					<Button className="login-button w-full">Login</Button>
 				</form>
 
 				<div className="text-center my-5">OR</div>
 
 				<Button className="w-full bg-gray-200 text-black font-semibold border hover:bg-white py-3">
 					<FcGoogle size={24} />
-					Continue with Google
+					<span className="ml-2">Continue with Google</span>
 				</Button>
 
 				<div className="text-center pt-3">
