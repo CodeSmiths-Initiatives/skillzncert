@@ -6,3 +6,5 @@ export * from "./PaymentMethod";
 export * from "./ForgetPassword";
 export * from "./Counter"
 export * from "./TransactionSummary";
+export * from "./Otp";
+export * from "./ResetPassword";

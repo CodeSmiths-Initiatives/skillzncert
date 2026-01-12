@@ -2,10 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FcGoogle } from "react-icons/fc";
 
 export default function Login() {
 	const router = useRouter();
@@ -15,6 +15,7 @@ export default function Login() {
 	});
 
 	const [loginSuccess, setLoginSuccess] = useState(false);
+	const [showPassword, setShowPassword] = useState<boolean>(false);
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target;
@@ -71,19 +72,36 @@ export default function Login() {
 						<Input
 							type="email"
 							name="email"
+							value={formData.email}
+							className="input-field"
 							placeholder="Enter your Email"
 							onChange={handleChange}
+							maxLength={30}
+							autoComplete="email"
 						/>
 					</div>
 
-					<div className="flex flex-col space-y-2">
+					<div className="flex flex-col space-y-2 ">
 						<label>Password</label>
-						<Input
-							type="password"
-							name="password"
-							placeholder="Enter your password"
-							onChange={handleChange}
-						/>
+						<div className="relative">
+							<Input
+								type={showPassword ? "text" : "password"}
+								name="password"
+								value={formData.password}
+								placeholder="Enter your password"
+								className="input-field"
+								onChange={handleChange}
+								maxLength={15}
+								autoComplete="current-password"
+							/>
+							<button
+								type="button"
+								onClick={() => setShowPassword(!showPassword)}
+								className="absolute right-3 top-1/3  -translate-y-1/2 text-gray-500"
+							>
+								{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+							</button>
+						</div>
 					</div>
 
 					<p className="text-base font-medium">
@@ -92,13 +110,6 @@ export default function Login() {
 
 					<Button className="login-button w-full">Login</Button>
 				</form>
-
-				<div className="text-center my-5">OR</div>
-
-				<Button className="w-full bg-gray-200 text-black font-semibold border hover:bg-white py-3">
-					<FcGoogle size={24} />
-					<span className="ml-2">Continue with Google</span>
-				</Button>
 
 				<div className="text-center pt-3">
 					<p>

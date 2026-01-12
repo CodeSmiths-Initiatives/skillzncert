@@ -3,29 +3,79 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FcGoogle } from "react-icons/fc";
+
+type FormErrors = {
+	userName?: string;
+	email?: string;
+	password?: string;
+	confirmPassword?: string;
+	agree?: string;
+};
 
 export default function Register() {
 	const router = useRouter();
 	const [formData, setFormData] = useState({
-		firstName: "",
-		lastName: "",
+		userName: "",
 		email: "",
 		password: "",
 		confirmPassword: "",
 		agree: false,
 	});
+	const [errors, setErrors] = useState<FormErrors>({});
+	const [showPassword, setShowPassword] = useState<boolean>(false);
+	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target;
 		setFormData((prev) => ({ ...prev, [name]: value }));
 	};
 
+	const validate = (): boolean => {
+		const errors: FormErrors = {};
+
+		const nameRegex = /^[A-Za-z\s]+$/;
+		const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+		const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,15}$/;
+		// UserName
+		if (!formData.userName) errors.userName = "User name is required";
+		else if (!nameRegex.test(formData.userName))
+			errors.userName = "Only letters are allowed";
+
+		// Email validation
+		if (!formData.email) {
+			errors.email = "Email is required";
+		} else if (!emailRegex.test(formData.email)) {
+			errors.email = "Email address is invalid.";
+		}
+
+		//password validation
+		if (!formData.password) {
+			errors.password = "Password is required";
+		} else if (!passwordRegex.test(formData.password)) {
+			errors.password =
+				"Password must contain uppercase, lowercase, number and be 8–15 characters long";
+		}
+		if (formData.password !== formData.confirmPassword) {
+			errors.confirmPassword = "Passwords do not match.";
+		}
+		if (!formData.agree) {
+			errors.agree = "You must agree to the terms of service.";
+		}
+
+		setErrors(errors);
+		return Object.keys(errors).length === 0;
+	};
+
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
+
+		if (!validate()) {
+			return;
+		}
 
 		console.log("Sign up data:", formData);
 
@@ -50,54 +100,88 @@ export default function Register() {
 
 				<form onSubmit={handleSubmit}>
 					<div className="flex flex-col space-y-2">
-						<label>First Name</label>
+						<label>Username</label>
 						<Input
 							type="text"
-							name="firstName"
+							name="userName"
+							value={formData.userName}
 							className="input-field"
-							placeholder="Enter your First Name"
+							placeholder="Enter your userName"
 							onChange={handleChange}
+							maxLength={10}
 						/>
+						{errors.userName && (
+							<span className="text-red-500 text-sm">{errors.userName}</span>
+						)}
 					</div>
+
 					<div className="flex flex-col space-y-2">
-						<label>Last Name</label>
+						<label>Email Address</label>
 						<Input
-							type="text"
-							name="lastName"
-							className="input-field"
-							placeholder="Enter your Last Name"
-							onChange={handleChange}
-						/>
-					</div>
-					<div className="flex flex-col space-y-2">
-						<label>Email</label>
-						<Input
-							type="text"
-							name="Email"
+							type="email"
+							name="email"
+							value={formData.email}
 							className="input-field"
 							placeholder="Enter your Email"
 							onChange={handleChange}
+							maxLength={30}
+							autoComplete="email"
 						/>
+						{errors.email && (
+							<span className="text-red-500 text-sm">{errors.email}</span>
+						)}
 					</div>
 					<div className="flex flex-col space-y-2 ">
 						<label>Password</label>
-						<Input
-							type="password"
-							name="password"
-							placeholder="Enter your password"
-							className="input-field"
-							onChange={handleChange}
-						/>
+						<div className="relative">
+							<Input
+								type={showPassword ? "text" : "password"}
+								name="password"
+								value={formData.password}
+								placeholder="Enter your password"
+								className="input-field"
+								onChange={handleChange}
+								maxLength={15}
+								autoComplete="new-password"
+							/>
+							<button
+								type="button"
+								onClick={() => setShowPassword(!showPassword)}
+								className="absolute right-3 top-1/3  -translate-y-1/2 text-gray-500"
+							>
+								{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+							</button>
+						</div>
+						{errors.password && (
+							<span className="text-red-500 text-sm">{errors.password}</span>
+						)}
 					</div>
 					<div className="flex flex-col space-y-2 ">
 						<label>Confirm Password</label>
-						<Input
-							type="password"
-							name="confirmPassword"
-							placeholder="Confirm your password"
-							className="input-field"
-							onChange={handleChange}
-						/>
+						<div className="relative">
+							<Input
+								type={showConfirmPassword ? "text" : "password"}
+								name="confirmPassword"
+								value={formData.confirmPassword}
+								placeholder="Confirm your password"
+								className="input-field"
+								onChange={handleChange}
+								maxLength={15}
+								autoComplete="new-password"
+							/>
+							<button
+								type="button"
+								onClick={() => setShowConfirmPassword((p) => !p)}
+								className="absolute right-3 top-1/3 -translate-y-1/2 text-gray-500"
+							>
+								{showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+							</button>
+						</div>
+						{errors.confirmPassword && (
+							<span className="text-red-500 text-sm">
+								{errors.confirmPassword}
+							</span>
+						)}
 					</div>
 					<div className="flex items-center space-x-2 my-4">
 						<Checkbox
@@ -116,18 +200,13 @@ export default function Register() {
 							</a>{" "}
 							for using CE-EMS
 						</p>
+						{errors.agree && (
+							<span className="text-red-500 text-sm">{errors.agree}</span>
+						)}
 					</div>
 
 					<Button className="login-button">Sign up</Button>
 				</form>
-				<div className="text-center my-5">
-					<p>OR</p>
-				</div>
-
-				<Button className="w-full bg-gray-200 text-black text-base font-semibold border hover:bg-white py-3">
-					<FcGoogle size={24} />
-					<span className="ml-2">Continue with Google</span>
-				</Button>
 
 				<div className="text-center pt-3">
 					<p>
