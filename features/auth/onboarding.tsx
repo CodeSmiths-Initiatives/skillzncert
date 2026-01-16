@@ -15,6 +15,7 @@ type FormErrors = {
 	state?: string;
 	preferredLanguage?: string;
 	currentEducation?: string;
+	previousCertificate?: string;
 	universityAttending?: string;
 };
 
@@ -30,6 +31,7 @@ export default function Onboarding() {
 		state: "",
 		preferredLanguage: "",
 		currentEducation: "",
+		previousCertificate: "",
 		universityAttending: "",
 		agree: false,
 	});
@@ -115,6 +117,20 @@ export default function Onboarding() {
 			errors.currentEducation =
 				"Current educational level should contain only letters and spaces.";
 		}
+		//Previous Certificate
+		if (!formData.previousCertificate) {
+			errors.previousCertificate = "Previous Certificate is required.";
+		} else if (!nameRegex.test(formData.previousCertificate)) {
+			errors.previousCertificate =
+				"previousCertificate should contain only letters and spaces.";
+		}
+		//University Attending
+		if (!formData.universityAttending) {
+			errors.universityAttending = "University Attending is required.";
+		} else if (!nameRegex.test(formData.universityAttending)) {
+			errors.universityAttending =
+				"University Attending should contain only letters and spaces.";
+		}
 
 		setErrors(errors);
 		return Object.keys(errors).length === 0;
@@ -154,7 +170,7 @@ export default function Onboarding() {
 								maxLength={15}
 							/>
 							{errors.firstName && (
-								<span className="text-red-500 text-sm">{errors.firstName}</span>
+								<span className="error-message">{errors.firstName}</span>
 							)}
 						</div>
 						<div className="flex flex-col space-y-2">
@@ -169,7 +185,7 @@ export default function Onboarding() {
 								maxLength={15}
 							/>
 							{errors.lastName && (
-								<span className="text-red-500 text-sm">{errors.lastName}</span>
+								<span className="error-message">{errors.lastName}</span>
 							)}
 						</div>
 					</div>
@@ -186,9 +202,7 @@ export default function Onboarding() {
 								maxLength={10}
 							/>
 							{errors.phoneNumber && (
-								<span className="text-red-500 text-sm">
-									{errors.phoneNumber}
-								</span>
+								<span className="error-message">{errors.phoneNumber}</span>
 							)}
 						</div>
 						<div className="flex flex-col space-y-2 ">
@@ -203,9 +217,7 @@ export default function Onboarding() {
 								maxLength={100}
 							/>
 							{errors.contactAddress && (
-								<span className="text-red-500 text-sm">
-									{errors.contactAddress}
-								</span>
+								<span className="error-message">{errors.contactAddress}</span>
 							)}
 						</div>
 					</div>
@@ -224,7 +236,7 @@ export default function Onboarding() {
 								<option value="Oyo">Oyo</option>
 							</select>
 							{errors.state && (
-								<span className="text-red-500 text-sm">{errors.state}</span>
+								<span className="error-message">{errors.state}</span>
 							)}
 						</div>
 						<div className="flex flex-col space-y-2 ">
@@ -240,7 +252,7 @@ export default function Onboarding() {
 								<option value="Ghana">Ghana</option>
 							</select>
 							{errors.country && (
-								<span className="text-red-500 text-sm">{errors.country}</span>
+								<span className="error-message">{errors.country}</span>
 							)}
 						</div>
 					</div>
@@ -257,7 +269,7 @@ export default function Onboarding() {
 								maxLength={15}
 							/>
 							{errors.preferredLanguage && (
-								<span className="text-red-500 text-sm">
+								<span className="error-message">
 									{errors.preferredLanguage}
 								</span>
 							)}
@@ -274,9 +286,7 @@ export default function Onboarding() {
 								maxLength={15}
 							/>
 							{errors.currentEducation && (
-								<span className="text-red-500 text-sm">
-									{errors.currentEducation}
-								</span>
+								<span className="error-message">{errors.currentEducation}</span>
 							)}
 						</div>
 					</div>
@@ -291,9 +301,9 @@ export default function Onboarding() {
 								onChange={handleChange}
 								maxLength={15}
 							/>
-							{errors.currentEducation && (
-								<span className="text-red-500 text-sm">
-									{errors.currentEducation}
+							{errors.previousCertificate && (
+								<span className="error-message">
+									{errors.previousCertificate}
 								</span>
 							)}
 						</div>
@@ -309,9 +319,9 @@ export default function Onboarding() {
 								onChange={handleChange}
 								maxLength={30}
 							/>
-							{errors.currentEducation && (
-								<span className="text-red-500 text-sm">
-									{errors.currentEducation}
+							{errors.universityAttending && (
+								<span className="error-message">
+									{errors.universityAttending}
 								</span>
 							)}
 						</div>
@@ -354,7 +364,7 @@ export default function Onboarding() {
 								/>
 							)}
 							{errors.email && (
-								<span className="text-red-500 text-sm">{errors.email}</span>
+								<span className="error-message">{errors.email}</span>
 							)}
 						</div>
 					</div>
@@ -371,7 +381,7 @@ export default function Onboarding() {
 								type="file"
 								multiple
 								accept="image/png,image/jpeg,image/gif"
-								className="mx-auto w-fit mb-10"
+								className="mx-auto w-3/4 md:w-fit mb-10"
 							/>
 							<p className="text-gray-600 text-sm">
 								Image Size: Less than 50kb
@@ -394,7 +404,7 @@ export default function Onboarding() {
 								type="file"
 								multiple
 								accept="image/png,image/jpeg,image/gif"
-								className="mx-auto w-fit mb-10"
+								className="mx-auto w-3/4 md:w-fit mb-10"
 							/>
 							<p className="text-gray-600 text-sm">
 								Image Size: Less than 50kb
@@ -405,7 +415,7 @@ export default function Onboarding() {
 						</div>
 					</div>
 
-					<Button className="mt-4 bg-[#51A8B1] text-white text-base font-semibold hover:border-2 hover:border-[#51A8B1] hover:bg-white hover:text-[#51A8B1] py-2 rounded-md">
+					<Button className="mt-4 bg-[#51A8B1] text-white text-base font-semibold hover:border-2 hover:border-[#51A8B1] hover:bg-teal-600 hover:text-white py-2 rounded-md">
 						Next
 					</Button>
 				</form>

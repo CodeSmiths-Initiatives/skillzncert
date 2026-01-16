@@ -4,14 +4,41 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, FormEvent, ChangeEvent } from "react";
 
 export default function ForgetPassword() {
 	const router = useRouter();
-	const [email, setEmail] = useState("");
 
-	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+	const [email, setEmail] = useState<string>("");
+	const [error, setError] = useState<string>("");
+
+	/* =======================
+	   HANDLERS
+	======================= */
+	const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
+		setEmail(e.target.value);
+		setError(""); // clear error while typing
+	};
+
+	const validateEmail = (): boolean => {
+		if (!email) {
+			setError("Email address is required");
+			return false;
+		}
+
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(email)) {
+			setError("Please enter a valid email address");
+			return false;
+		}
+
+		return true;
+	};
+
+	const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
 		e.preventDefault();
+
+		if (!validateEmail()) return;
 
 		console.log("Reset email:", email);
 
@@ -19,6 +46,9 @@ export default function ForgetPassword() {
 		router.push("/forgetPassword/otp");
 	};
 
+	/* =======================
+	   JSX
+	======================= */
 	return (
 		<div className="w-full max-w-3xl mx-auto my-20">
 			<div className="rounded-md shadow-md p-6">
@@ -33,8 +63,11 @@ export default function ForgetPassword() {
 						<Input
 							type="email"
 							placeholder="Enter your email"
-							onChange={(e) => setEmail(e.target.value)}
+							maxLength={30}
+							value={email}
+							onChange={handleChange}
 						/>
+						{error && <p className="error-message">{error}</p>}
 					</div>
 
 					<Button type="submit" className="login-button w-full">

@@ -3,7 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Fullscreen } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -37,12 +38,12 @@ export default function Register() {
 	const validate = (): boolean => {
 		const errors: FormErrors = {};
 
-		const nameRegex = /^[A-Za-z\s]+$/;
+		const usernameRegex = /^[A-Za-z]{3,20}$/;
 		const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 		const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,15}$/;
 		// UserName
 		if (!formData.userName) errors.userName = "User name is required";
-		else if (!nameRegex.test(formData.userName))
+		else if (!usernameRegex.test(formData.userName))
 			errors.userName = "Only letters are allowed";
 
 		// Email validation
@@ -82,143 +83,165 @@ export default function Register() {
 		router.push("/login");
 	};
 
-	useEffect(() => {
-		const today = new Date();
-		const isDDay = today.getMonth() === 2 && today.getDate() === 1;
+	// useEffect(() => {
+	// 	const today = new Date();
+	// 	const isDDay = today.getMonth() === 2 && today.getDate() === 1;
 
-		if (!isDDay) {
-			router.replace("/counter");
-		}
-	}, [router]);
+	// 	if (!isDDay) {
+	// 		router.replace("/counter");
+	// 	}
+	// }, [router]);
 	return (
-		<div className="w-full max-w-3xl mx-auto my-20">
-			<div className="rounded-md shadow-md p-6">
-				<div className="text-center">
-					<h1 className="text-3xl font-bold text-[#51A8B1]">Logo</h1>
-					<h3 className="text-xl font-semibold py-1">Welcome</h3>
-				</div>
-
-				<form onSubmit={handleSubmit}>
-					<div className="flex flex-col space-y-2">
-						<label>Username</label>
-						<Input
-							type="text"
-							name="userName"
-							value={formData.userName}
-							className="input-field"
-							placeholder="Enter your userName"
-							onChange={handleChange}
-							maxLength={10}
+		<div className="w-full max-w-3xl mx-auto my-10">
+			<div className="grid md:grid-cols-2 grid-cols-1 w-full max-w-full rounded-md shadow-md">
+				<div className="p-6">
+					<div className="text-center pb-5">
+						<Image
+							src="/images/logo 1.svg"
+							alt="Logo"
+							width={50}
+							height={10}
+							className="mx-auto"
 						/>
-						{errors.userName && (
-							<span className="text-red-500 text-sm">{errors.userName}</span>
-						)}
+						<h1 className="text-3xl font-bold text-black">Welcome</h1>
+						<h3 className="text-xs font-semibold text-gray-600 py-1">
+							Empowering Students in Network & Cybersecurity
+						</h3>
 					</div>
-
-					<div className="flex flex-col space-y-2">
-						<label>Email Address</label>
-						<Input
-							type="email"
-							name="email"
-							value={formData.email}
-							className="input-field"
-							placeholder="Enter your Email"
-							onChange={handleChange}
-							maxLength={30}
-							autoComplete="email"
-						/>
-						{errors.email && (
-							<span className="text-red-500 text-sm">{errors.email}</span>
-						)}
-					</div>
-					<div className="flex flex-col space-y-2 ">
-						<label>Password</label>
-						<div className="relative">
+					<div></div>
+					<form onSubmit={handleSubmit}>
+						<div className="flex flex-col space-y-2">
+							<label>Username</label>
 							<Input
-								type={showPassword ? "text" : "password"}
-								name="password"
-								value={formData.password}
-								placeholder="Enter your password"
+								type="text"
+								name="userName"
+								value={formData.userName}
 								className="input-field"
+								placeholder="Enter your userName"
 								onChange={handleChange}
-								maxLength={15}
-								autoComplete="new-password"
+								maxLength={10}
 							/>
-							<button
-								type="button"
-								onClick={() => setShowPassword(!showPassword)}
-								className="absolute right-3 top-1/3  -translate-y-1/2 text-gray-500"
-							>
-								{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-							</button>
+							{errors.userName && (
+								<span className="error-message">{errors.userName}</span>
+							)}
 						</div>
-						{errors.password && (
-							<span className="text-red-500 text-sm">{errors.password}</span>
-						)}
-					</div>
-					<div className="flex flex-col space-y-2 ">
-						<label>Confirm Password</label>
-						<div className="relative">
-							<Input
-								type={showConfirmPassword ? "text" : "password"}
-								name="confirmPassword"
-								value={formData.confirmPassword}
-								placeholder="Confirm your password"
-								className="input-field"
-								onChange={handleChange}
-								maxLength={15}
-								autoComplete="new-password"
-							/>
-							<button
-								type="button"
-								onClick={() => setShowConfirmPassword((p) => !p)}
-								className="absolute right-3 top-1/3 -translate-y-1/2 text-gray-500"
-							>
-								{showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-							</button>
-						</div>
-						{errors.confirmPassword && (
-							<span className="text-red-500 text-sm">
-								{errors.confirmPassword}
-							</span>
-						)}
-					</div>
-					<div className="flex items-center space-x-2 my-4">
-						<Checkbox
-							onCheckedChange={(checked) =>
-								setFormData((prev) => ({
-									...prev,
-									agree: Boolean(checked),
-								}))
-							}
-						/>
 
+						<div className="flex flex-col space-y-2">
+							<label>Email Address</label>
+							<Input
+								type="email"
+								name="email"
+								value={formData.email}
+								className="input-field"
+								placeholder="Enter your Email"
+								onChange={handleChange}
+								maxLength={30}
+								autoComplete="email"
+							/>
+							{errors.email && (
+								<span className="error-message">{errors.email}</span>
+							)}
+						</div>
+						<div className="flex flex-col space-y-2 ">
+							<label>Password</label>
+							<div className="relative">
+								<Input
+									type={showPassword ? "text" : "password"}
+									name="password"
+									value={formData.password}
+									placeholder="Enter your password"
+									className="input-field"
+									onChange={handleChange}
+									maxLength={15}
+									autoComplete="new-password"
+								/>
+								<button
+									type="button"
+									onClick={() => setShowPassword(!showPassword)}
+									className="absolute right-3 top-1/3  -translate-y-1/2 text-gray-500"
+								>
+									{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+								</button>
+							</div>
+							{errors.password && (
+								<span className="error-message">{errors.password}</span>
+							)}
+						</div>
+						<div className="flex flex-col space-y-2 ">
+							<label>Confirm Password</label>
+							<div className="relative">
+								<Input
+									type={showConfirmPassword ? "text" : "password"}
+									name="confirmPassword"
+									value={formData.confirmPassword}
+									placeholder="Confirm your password"
+									className="input-field"
+									onChange={handleChange}
+									maxLength={15}
+									autoComplete="new-password"
+								/>
+								<button
+									type="button"
+									onClick={() => setShowConfirmPassword((p) => !p)}
+									className="absolute right-3 top-1/3 -translate-y-1/2 text-gray-500"
+								>
+									{showConfirmPassword ? (
+										<EyeOff size={18} />
+									) : (
+										<Eye size={18} />
+									)}
+								</button>
+							</div>
+							{errors.confirmPassword && (
+								<span className="error-message">{errors.confirmPassword}</span>
+							)}
+						</div>
+						<div className="flex items-center space-x-2 my-4">
+							<Checkbox
+								onCheckedChange={(checked) =>
+									setFormData((prev) => ({
+										...prev,
+										agree: Boolean(checked),
+									}))
+								}
+							/>
+
+							<p>
+								I agree to the{" "}
+								<a href="#" className="text-[#51A8B1]">
+									Terms of Service
+								</a>{" "}
+								{/* for using CE-EMS */}
+							</p>
+							{errors.agree && (
+								<span className="error-message">{errors.agree}</span>
+							)}
+						</div>
+
+						<Button className="login-button">Sign up</Button>
+					</form>
+
+					<div className="text-center pt-3">
 						<p>
-							I have read and agree to the{" "}
-							<a href="#" className="text-[#51A8B1]">
-								Terms of Service
-							</a>{" "}
-							for using CE-EMS
+							Already have an account?
+							<Link href="/login" className="text-teal-500">
+								Login Here
+							</Link>
 						</p>
-						{errors.agree && (
-							<span className="text-red-500 text-sm">{errors.agree}</span>
-						)}
 					</div>
-
-					<Button className="login-button">Sign up</Button>
-				</form>
-
-				<div className="text-center pt-3">
-					<p>
-						Already have an account?
-						<Link href="/login" className="text-teal-500">
-							Login Here
-						</Link>
-					</p>
+					<div className=" text-teal-500 flex items-center justify-center space-x-3 mt-6 ">
+						<p className="border-r pr-3">Terms of use</p>
+						<p>privacy policy</p>
+					</div>
 				</div>
-				<div className=" text-teal-500 flex items-center justify-center space-x-3 mt-6 ">
-					<p className="border-r pr-3">Terms of use</p>
-					<p>privacy policy</p>
+				<div className="relative h-full rounded-r-md overflow-hidden">
+					<Image
+						src="/images/form.svg"
+						alt="Register"
+						fill
+						className="object-cover"
+						priority
+					/>
 				</div>
 			</div>
 		</div>

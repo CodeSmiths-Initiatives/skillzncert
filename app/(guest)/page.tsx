@@ -1,18 +1,18 @@
-import CompleteStudent from "@/features/home/CompleteStudent";
-import EverythingYouNeed from "@/features/home/EverythingYouNeed";
-import Hero from "@/features/home/Hero";
-import ReadyToTransform from "@/features/home/ReadyToTransform";
-import WhyChooseCe from "@/features/home/WhyChooseCe";
+import AboutUs from "@/features/home/AboutUs";
+import HeroSlider from "@/features/home/HeroSlider";
+import PaymentPlan from "@/features/home/PaymentPlan";
+import ProblemStatement from "@/features/home/ProblemStatement";
+import Solution from "@/features/home/Solution";
 
 export default function Home() {
 	return (
 		<>
-			<main>
-				<Hero />
-				<EverythingYouNeed />
-				<CompleteStudent />
-				<WhyChooseCe />
-				<ReadyToTransform />
+			<main className="pt-16">
+				<HeroSlider />
+				<AboutUs />
+				<ProblemStatement />
+				<Solution />
+				<PaymentPlan />
 			</main>
 		</>
 	);
