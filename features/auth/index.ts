@@ -8,3 +8,4 @@ export * from "./Counter"
 export * from "./TransactionSummary";
 export * from "./Otp";
 export * from "./ResetPassword";
+export * from "./ApplicationLanding"

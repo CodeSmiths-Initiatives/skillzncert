@@ -251,5 +251,9 @@ body {
   @apply w-full px-4 py-2 border border-gray-300 mb-5 placeholder:text-gray-300 rounded-md focus:outline-none focus:ring-2 focus:border-transparent;
 }
 .login-button{
-  @apply w-full mt-4 bg-[#51A8B1] text-white text-base font-semibold hover:border-2 hover:border-[#51A8B1] hover:bg-white hover:text-[#51A8B1] py-2 rounded-md;
+  @apply w-full mt-4 bg-[#51A8B1] text-white text-base font-semibold hover:border-2 hover:border-[#51A8B1] hover:bg-teal-600 hover:text-white py-2 rounded-md;
+}
+
+.error-message{
+  @apply text-red-500 text-sm mt-0;
 }

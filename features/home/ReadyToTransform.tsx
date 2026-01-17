@@ -5,7 +5,7 @@ import { IoIosArrowRoundForward } from "react-icons/io";
 
 export default function ReadyToTransform() {
 	return (
-		<div className="bg-gradient-to-r from-blue-800 to-green-500 max-w-full mx-auto">
+		<div className="bg-linear-to-r from-blue-800 to-green-500 max-w-full mx-auto">
 			<div className="px-10 md:px-32 py-10 text-white text-center">
 				<h1 className="text-4xl font-semibold pb-5 md:px-82">
 					Ready To Transform Your Institution?

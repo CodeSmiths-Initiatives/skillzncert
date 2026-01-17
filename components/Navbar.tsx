@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
@@ -8,31 +9,29 @@ export default function Navbar() {
 	const [open, setOpen] = useState(false);
 
 	return (
-		<nav className="border-b">
+		<nav className="fixed top-0 left-0 w-full border-b bg-gray-50 z-50">
 			<div className="flex items-center justify-between max-w-full mx-auto p-4">
-				<div className="flex items-center space-x-3">
-					<h1 className="border rounded-md bg-[#51A8B1] text-white p-3 text-base font-bold">
-						LOGO
-					</h1>
+				<div className="flex items-center space-x-2">
+					<Image src="/images/logo 1.svg" alt="Logo" width={50} height={10} />
 					<h3 className="text-xl font-semibold">CE-EMS</h3>
 				</div>
 
 				<div className="hidden md:flex items-center space-x-10">
 					<ul className="flex space-x-5 text-gray-500 font-medium">
 						<li>
-							<Link href="/">Home</Link>
+							<Link href="/">PROGRAMMES</Link>
 						</li>
 						<li>
-							<Link href="#">About</Link>
+							<Link href="#">COURSES</Link>
 						</li>
 						<li>
-							<Link href="#">Contact</Link>
+							<Link href="#">ABOUT</Link>
 						</li>
 					</ul>
 
 					<Link
 						href="/login"
-						className="bg-[#51A8B1] hover:bg-teal-600 text-white px-4 py-2 rounded-md"
+						className="bg-[#51A8B1] hover:bg-teal-600 text-white text-base font-semibold px-4 py-2 rounded-md"
 					>
 						Login
 					</Link>
@@ -68,7 +67,7 @@ export default function Navbar() {
 						<li>
 							<Link
 								href="/login"
-								className="inline-block bg-[#51A8B1] text-white px-4 py-2 rounded-md"
+								className="inline-block bg-[#51A8B1] text-white text-base font-semibold px-4 py-2 rounded-md"
 								onClick={() => setOpen(false)}
 							>
 								Login
