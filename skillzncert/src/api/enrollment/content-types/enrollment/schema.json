@@ -1,0 +1,98 @@
+{
+  "kind": "collectionType",
+  "collectionName": "enrollments",
+  "info": {
+    "singularName": "enrollment",
+    "pluralName": "enrollments",
+    "displayName": "Enrollment"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "firstName": {
+      "type": "string",
+      "maxLength": 20,
+      "required": true,
+      "regex": "^[A-Za-z]{2,50}$"
+    },
+    "lastName": {
+      "type": "string",
+      "maxLength": 20,
+      "required": true,
+      "regex": "^[A-Za-z]{2,50}$"
+    },
+    "phoneNumber": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 10,
+      "required": true,
+      "regex": "^[0-9]{10}$"
+    },
+    "address": {
+      "type": "string"
+    },
+    "state": {
+      "type": "enumeration",
+      "enum": [
+        "Delhi",
+        "Maharashtra",
+        "Karnataka",
+        "Tamil Nadu"
+      ]
+    },
+    "country": {
+      "type": "enumeration",
+      "enum": [
+        "India",
+        "USA",
+        "Canada",
+        "UK"
+      ]
+    },
+    "preferredLanguage": {
+      "type": "string"
+    },
+    "currentEducationLevel": {
+      "type": "string"
+    },
+    "previousCertification": {
+      "type": "string"
+    },
+    "universityAttending": {
+      "type": "string"
+    },
+    "hasNetacadAccount": {
+      "type": "boolean"
+    },
+    "passport": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images",
+        "files"
+      ]
+    },
+    "schoolIdCard": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images",
+        "files"
+      ]
+    },
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "enrollment"
+    },
+    "isPaymentDone": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

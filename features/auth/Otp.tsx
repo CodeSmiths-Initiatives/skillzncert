@@ -1,108 +1,159 @@
 "use client";
 
+import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { AuthLayout } from "@/components/layout/AuthLayout";
+import { FormField } from "@/components/form/FormField";
+import { PasswordInput } from "@/components/form/PasswordInput";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useRouter } from "next/navigation";
-import { useEffect, useState, ChangeEvent, FormEvent } from "react";
+import { useToast } from "@/components/toast/ToastContext";
+import Image from "next/image";
+import { resetPasswordAction } from "@/actions/reset-password.actions";
 
-export default function VerifyOtp() {
-	const router = useRouter();
+export default function ResetPassword() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { showToast } = useToast();
+  const [isPending, startTransition] = useTransition();
 
-	const [otp, setOtp] = useState<string>("");
-	const [error, setError] = useState<string>("");
+  // Code from URL OR manual input
+  const urlCode = searchParams.get("code") || "";
 
-	const [timeLeft, setTimeLeft] = useState<number>(60);
-	const [canResend, setCanResend] = useState<boolean>(false);
+  const [form, setForm] = useState({
+    code: urlCode,
+    password: "",
+    confirmPassword: "",
+  });
 
-	useEffect(() => {
-		if (timeLeft === 0) {
-			// eslint-disable-next-line react-hooks/set-state-in-effect
-			setCanResend(true);
-			return;
-		}
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-		const timer = setInterval(() => {
-			setTimeLeft((prev) => prev - 1);
-		}, 1000);
+  /* ---------------- VALIDATION ---------------- */
+  const validate = () => {
+    const e: Record<string, string> = {};
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,15}$/;
 
-		return () => clearInterval(timer);
-	}, [timeLeft]);
+    if (!form.code) e.code = "Reset code is required";
 
-	const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
-		const value = e.target.value.replace(/\D/g, "");
-		setOtp(value);
-		setError("");
-	};
+    if (!passwordRegex.test(form.password))
+      e.password =
+        "Password must contain uppercase, lowercase, number & special character";
 
-	const validateOtp = (): boolean => {
-		if (!otp) {
-			setError("OTP is required");
-			return false;
-		}
-		if (otp.length !== 6) {
-			setError("OTP must be exactly 6 digits");
-			return false;
-		}
-		return true;
-	};
+    if (form.password !== form.confirmPassword)
+      e.confirmPassword = "Passwords do not match";
 
-	const handleVerify = (e: FormEvent<HTMLFormElement>): void => {
-		e.preventDefault();
-		if (!validateOtp()) return;
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
 
-		console.log("Entered OTP:", otp);
-		router.push("/forgetPassword/resetPassword");
-	};
+  /* ---------------- SUBMIT ---------------- */
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
 
-	const handleResendOtp = (): void => {
-		console.log("OTP resent");
+    if (!validate()) {
+      showToast({
+        type: "error",
+        title: "Invalid input",
+        description: "Please fix the highlighted fields.",
+      });
+      return;
+    }
 
-		setTimeLeft(60);
-		setCanResend(false);
-		setOtp("");
-		setError("");
-	};
+    startTransition(async () => {
+      const result = await resetPasswordAction({
+        code: form.code.trim(),
+        password: form.password,
+        passwordConfirmation: form.confirmPassword,
+      });
 
-	return (
-		<div className="w-full max-w-3xl mx-auto my-20">
-			<div className="rounded-md shadow-md p-6">
-				<div className="text-center">
-					<h1 className="text-3xl font-bold text-[#51A8B1]">Logo</h1>
-					<h2 className="text-xl font-bold">Verify OTP</h2>
-				</div>
+      if (!result.success) {
+        showToast({
+          type: "error",
+          title: "Reset failed",
+          description: result.message,
+        });
+        return;
+      }
 
-				<form onSubmit={handleVerify} className="space-y-4 mt-6">
-					<div className="flex flex-col space-y-2">
-						<label>OTP</label>
-						<Input
-							type="text"
-							placeholder="Enter OTP"
-							maxLength={6}
-							value={otp}
-							onChange={handleChange}
-						/>
-						{error && <p className="error-message">{error}</p>}
-					</div>
+      showToast({
+        type: "success",
+        title: "Password updated",
+        description: "You can now log in with your new password.",
+      });
 
-					<Button type="submit" className="login-button w-full">
-						Verify OTP
-					</Button>
-				</form>
+      router.push("/login");
+    });
+  };
 
-				{/* Resend Section */}
-				<div className="text-center mt-4">
-					{canResend ? (
-						<button
-							onClick={handleResendOtp}
-							className="text-teal-500 font-semibold"
-						>
-							Resend OTP
-						</button>
-					) : (
-						<p className="text-gray-500 text-sm">Resend OTP in {timeLeft}s</p>
-					)}
-				</div>
-			</div>
-		</div>
-	);
+  const bind = (name: string) => ({
+    value: (form as any)[name],
+    onChange: (e: any) =>
+      setForm({ ...form, [name]: e.target.value }),
+    onBlur: () =>
+      setTouched({ ...touched, [name]: true }),
+  });
+
+  return (
+    <AuthLayout imageSrc="/images/auth_image.png">
+      {/* HEADER */}
+      <div className="text-center mb-6">
+        <Image
+          src="/images/logo 1.svg"
+          alt="Logo"
+          width={50}
+          height={20}
+          className="mx-auto mb-2"
+        />
+        <h1 className="text-2xl font-bold text-black">
+          Reset Password
+        </h1>
+        <p className="text-sm text-gray-600">
+          Enter the code and choose a new password
+        </p>
+      </div>
+
+      {/* FORM */}
+      <form onSubmit={submit} className="space-y-4">
+        <FormField
+          label="Reset Code"
+          error={touched.code ? errors.code : undefined}
+        >
+          <Input
+            placeholder="Paste the code from email"
+            {...bind("code")}
+          />
+        </FormField>
+
+        <FormField
+          label="New Password"
+          error={touched.password ? errors.password : undefined}
+        >
+          <PasswordInput
+            placeholder="New password"
+            {...bind("password")}
+          />
+        </FormField>
+
+        <FormField
+          label="Confirm Password"
+          error={
+            touched.confirmPassword
+              ? errors.confirmPassword
+              : undefined
+          }
+        >
+          <PasswordInput
+            placeholder="Confirm new password"
+            {...bind("confirmPassword")}
+          />
+        </FormField>
+
+        <Button disabled={isPending} className="w-full">
+          {isPending ? "Resetting..." : "Reset Password"}
+        </Button>
+      </form>
+    </AuthLayout>
+  );
 }

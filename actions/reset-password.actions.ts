@@ -1,24 +1,19 @@
 "use server";
 
-export async function signupAction(data: {
-  username: string;
-  email: string;
+export async function resetPasswordAction(data: {
+  code: string;
   password: string;
-  agree: boolean;
+  passwordConfirmation: string;
 }) {
-  if (!data.agree) {
-    return { success: false, message: "You must accept terms" };
-  }
-
   const res = await fetch(
-    `${process.env.STRAPI_URL}/api/auth/local/register`,
+    `${process.env.STRAPI_URL}/api/auth/reset-password`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        username: data.username.toLowerCase(),
-        email: data.email,
+        code: data.code.trim(),
         password: data.password,
+        passwordConfirmation: data.passwordConfirmation,
       }),
       cache: "no-store",
     }
@@ -29,7 +24,9 @@ export async function signupAction(data: {
   if (!res.ok) {
     return {
       success: false,
-      message: json?.error?.message || "Signup failed",
+      message:
+        json?.error?.message ||
+        "Reset password failed",
     };
   }
 

@@ -1,89 +1,121 @@
 "use client";
 
+import { AuthLayout } from "@/components/layout/AuthLayout";
+import { FormField } from "@/components/form/FormField";
+import { useToast } from "@/components/toast/ToastContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, FormEvent, ChangeEvent } from "react";
+import { useState, useTransition } from "react";
+import { forgotPasswordAction } from "@/actions/forgot-password.actions";
 
-export default function ForgetPassword() {
-	const router = useRouter();
+export default function ForgotPassword() {
+  const router = useRouter();
+  const { showToast } = useToast();
+  const [isPending, startTransition] = useTransition();
 
-	const [email, setEmail] = useState<string>("");
-	const [error, setError] = useState<string>("");
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState<string | undefined>();
+  const [touched, setTouched] = useState(false);
 
-	/* =======================
-	   HANDLERS
-	======================= */
-	const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
-		setEmail(e.target.value);
-		setError(""); // clear error while typing
-	};
+  /* ---------------- VALIDATION ---------------- */
+  const validate = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-	const validateEmail = (): boolean => {
-		if (!email) {
-			setError("Email address is required");
-			return false;
-		}
+    if (!email) {
+      setError("Email address is required");
+      return false;
+    }
 
-		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-		if (!emailRegex.test(email)) {
-			setError("Please enter a valid email address");
-			return false;
-		}
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      return false;
+    }
 
-		return true;
-	};
+    setError(undefined);
+    return true;
+  };
 
-	const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
-		e.preventDefault();
+  /* ---------------- SUBMIT ---------------- */
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
 
-		if (!validateEmail()) return;
+    if (!validate()) {
+      showToast({
+        type: "error",
+        title: "Invalid email",
+        description: "Please enter a valid registered email address.",
+      });
+      return;
+    }
 
-		console.log("Reset email:", email);
+    startTransition(async () => {
+      const result = await forgotPasswordAction(email);
 
-		// Move to OTP page
-		router.push("/forgetPassword/otp");
-	};
+      if (!result.success) {
+        showToast({
+          type: "error",
+          title: "Request failed",
+          description: result.message,
+        });
+        return;
+      }
 
-	/* =======================
-	   JSX
-	======================= */
-	return (
-		<div className="w-full max-w-3xl mx-auto my-20">
-			<div className="rounded-md shadow-md p-6">
-				<div className="text-center">
-					<h1 className="text-3xl font-bold text-[#51A8B1]">Logo</h1>
-					<h2 className="text-xl font-semibold mt-2">Forgot Password</h2>
-				</div>
+      showToast({
+        type: "success",
+        title: "Check your email",
+        description: "If an account exists, a reset link has been sent.",
+      });
 
-				<form onSubmit={handleSubmit} className="space-y-4 mt-6">
-					<div className="flex flex-col space-y-2">
-						<label>Email Address</label>
-						<Input
-							type="email"
-							placeholder="Enter your email"
-							maxLength={30}
-							value={email}
-							onChange={handleChange}
-						/>
-						{error && <p className="error-message">{error}</p>}
-					</div>
+      // Optional redirect
+      router.push("/forgetPassword/otp");
+    });
+  };
 
-					<Button type="submit" className="login-button w-full">
-						Send OTP
-					</Button>
-				</form>
+  return (
+    <AuthLayout imageSrc="/images/auth_image.png">
+      {/* HEADER */}
+      <div className="text-center mb-6">
+        <Image
+          src="/images/logo 1.svg"
+          alt="Logo"
+          width={50}
+          height={20}
+          className="mx-auto mb-2"
+        />
+        <h1 className="text-2xl font-bold text-black">Forgot Password</h1>
+        <p className="text-sm text-gray-600">
+          Enter your registered email to receive an OTP
+        </p>
+      </div>
 
-				<div className="text-center pt-3">
-					<p>
-						Remember your password?{" "}
-						<Link href="/login" className="text-teal-500">
-							Login
-						</Link>
-					</p>
-				</div>
-			</div>
-		</div>
-	);
+      {/* FORM */}
+      <form onSubmit={submit} className="space-y-4">
+        <FormField label="Email Address" error={touched ? error : undefined}>
+          <Input
+            type="email"
+            placeholder="mail@website.com"
+            value={email}
+            autoComplete="email"
+            onChange={(e) => setEmail(e.target.value)}
+            onBlur={() => setTouched(true)}
+          />
+        </FormField>
+
+        <Button disabled={isPending} className="w-full">
+          {isPending ? "Sending OTP..." : "Send OTP"}
+        </Button>
+      </form>
+
+      {/* FOOTER */}
+      <p className="text-center text-sm mt-4">
+        Remember your password?{" "}
+        <Link href="/login" className="text-teal-500 font-medium">
+          Login
+        </Link>
+      </p>
+    </AuthLayout>
+  );
 }
