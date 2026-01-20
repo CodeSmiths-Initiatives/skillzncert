@@ -2,7 +2,7 @@ export * from "./Login";
 export * from "./Register";
 export * from "./onboarding";
 export * from "./Payment";
-export * from "./PaymentMethod";
+export * from "./PaymentVerify";
 export * from "./ForgetPassword";
 export * from "./Counter"
 export * from "./TransactionSummary";

@@ -4,48 +4,90 @@ import { useState } from "react";
 import Link from "next/link";
 import { GoDotFill } from "react-icons/go";
 import { motion } from "framer-motion";
+import { usePaystackPayment } from "react-paystack";
+import { PAYMENT_PLANS } from "@/lib/payment-plans";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/toast/ToastContext";
 
 type Plan = {
   id: string;
-  title: string;
-  price: string;
-  duration: string;
+  name: string;
+  amount: number;
+  currency: string;
+  description: string;
   features: string[];
-  popular?: boolean;
 };
 
-const PLANS: Plan[] = [
-  {
-    id: "monthly",
-    title: "Monthly",
-    price: "$9.99",
-    duration: "/month",
-    features: ["All features", "Basic support", "1 team member"],
-  },
-  {
-    id: "quarterly",
-    title: "Quarterly",
-    price: "$79",
-    duration: "/3 months",
-    popular: true,
-    features: [
-      "All features",
-      "Priority support",
-      "3 team members",
-      "Advanced analytics",
-    ],
-  },
-  {
-    id: "yearly",
-    title: "Yearly",
-    price: "$299",
-    duration: "/year",
-    features: ["All features", "24/7 support", "Unlimited team", "API access"],
-  },
-];
-
 export default function PaymentPage() {
-  const [selectedPlan, setSelectedPlan] = useState(PLANS[1]);
+  const [selectedPlan, setSelectedPlan] = useState<Plan>(PAYMENT_PLANS.basic);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  // Generate payment reference in format: TRAN20251901FF551
+  const generatePaymentReference = () => {
+    const now = new Date();
+    const year = now.getFullYear().toString();
+    const month = (now.getMonth() + 1).toString().padStart(2, "0");
+    const day = now.getDate().toString().padStart(2, "0");
+
+    // Generate 5 random alphanumeric characters
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let randomChars = "";
+    for (let i = 0; i < 5; i++) {
+      randomChars += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    return `TRAN${year}${day}${month}${randomChars}`;
+  };
+
+  // Paystack configuration
+  const config = {
+    reference: generatePaymentReference(),
+    email: "Test@yopmail.com",
+    amount: selectedPlan.amount, // Amount in kobo
+    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
+    currency: "NGN",
+    channels: ["card"],
+  };
+
+  // Paystack payment hook
+  const initializePayment = usePaystackPayment(config);
+
+  const handlePayment = () => {
+    setIsLoading(true);
+    console.log("🔄 Initializing Paystack payment for plan:", selectedPlan.id);
+
+    initializePayment({
+      onSuccess: (reference) => {
+        // showToast({
+        //   type: "success",
+        //   title: "Payment Successful",
+        //   description: "Your payment has been processed successfully.",
+        // });
+        console.log("✅ Payment successful:", reference);
+        setIsLoading(false);
+        // Redirect to success page with reference and plan details
+        const params = new URLSearchParams({
+          reference: reference.reference,
+          planId: selectedPlan.id,
+          planName: selectedPlan.name,
+          amount: selectedPlan.amount.toString(),
+          currency: selectedPlan.currency,
+        });
+        router.replace(`/payment/verify?${params.toString()}`);
+      },
+      onClose: () => {
+        console.log("❌ Payment cancelled by user");
+        setIsLoading(false);
+        // Redirect to success page with failed status
+        router.push(`/payment/verify?status=failed`);
+      },
+    });
+  };
+
+  const formatAmount = (amountInKobo: number) => {
+    return `₦${(amountInKobo / 100).toLocaleString()}`;
+  };
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-[#0b3c42] via-[#1b6b73] to-[#51A8B1] px-4 sm:px-6">
@@ -65,13 +107,13 @@ export default function PaymentPage() {
             Choose Your Plan
           </h1>
           <p className="text-white/80 mt-3 max-w-xl mx-auto text-sm sm:text-base">
-            Secure checkout · Cancel anytime · No hidden fees
+            Secure checkout with Paystack · Cancel anytime · No hidden fees
           </p>
         </div>
 
         {/* Plans Grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {PLANS.map((plan) => {
+          {Object.values(PAYMENT_PLANS).map((plan) => {
             const isActive = selectedPlan.id === plan.id;
 
             return (
@@ -88,25 +130,22 @@ export default function PaymentPage() {
                   }
                 `}
               >
-                {plan.popular && (
-                  <span className="absolute top-4 right-4 bg-[#51A8B1] text-white text-xs px-3 py-1 rounded-full">
-                    Popular
-                  </span>
-                )}
-
                 <h2 className="text-lg font-semibold text-gray-900">
-                  {plan.title}
+                  {plan.name}
                 </h2>
+
+                <p className="text-sm text-gray-600 mt-1 mb-4">
+                  {plan.description}
+                </p>
 
                 <div className="py-4">
                   <span className="text-3xl font-bold text-[#0b3c42]">
-                    {plan.price}
+                    {formatAmount(plan.amount)}
                   </span>
-                  <span className="text-gray-400 text-sm">{plan.duration}</span>
                 </div>
 
                 <ul className="space-y-2 text-sm text-gray-600">
-                  {plan.features.map((feature) => (
+                  {plan.features.map((feature: string) => (
                     <li key={feature} className="flex items-center gap-2">
                       <GoDotFill className="text-[#51A8B1]" />
                       {feature}
@@ -117,6 +156,9 @@ export default function PaymentPage() {
             );
           })}
         </div>
+
+        {/* Error Message */}
+        {/* Removed - react-paystack handles errors internally */}
 
         {/* Summary Card */}
         <motion.div
@@ -139,16 +181,16 @@ export default function PaymentPage() {
                 Selected Plan
               </p>
               <p className="text-lg font-semibold text-gray-900 mt-1">
-                {selectedPlan.title}
+                {selectedPlan.name}
                 <span className="ml-2 text-[#51A8B1] font-bold">
-                  {selectedPlan.price}
+                  {formatAmount(selectedPlan.amount)}
                 </span>
               </p>
             </div>
 
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              Secure checkout
+              Secure checkout with Paystack
             </div>
           </div>
 
@@ -156,30 +198,39 @@ export default function PaymentPage() {
 
           <div className="flex flex-col sm:flex-row justify-end gap-4">
             <Link
-              href="/payment"
+              href="/dashboard"
               className="text-gray-500 hover:text-gray-700 px-6 py-3 rounded-xl transition text-center"
             >
               Cancel
             </Link>
 
-            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-              <Link
-                href="/transactionSummary"
-                className="
-                  inline-flex items-center justify-center
-                  bg-[#51A8B1] hover:bg-teal-600
-                  text-white
-                  px-10 py-3
-                  rounded-xl
-                  font-semibold
-                  shadow-lg shadow-[#51A8B1]/30
-                  transition
-                  focus-visible:ring-4 focus-visible:ring-[#51A8B1]/40
-                "
-              >
-                Continue to Payment
-              </Link>
-            </motion.div>
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={handlePayment}
+              disabled={isLoading}
+              className="
+                inline-flex items-center justify-center
+                bg-[#51A8B1] hover:bg-teal-600 disabled:bg-gray-400
+                text-white
+                px-10 py-3
+                rounded-xl
+                font-semibold
+                shadow-lg shadow-[#51A8B1]/30
+                transition
+                focus-visible:ring-4 focus-visible:ring-[#51A8B1]/40
+                disabled:cursor-not-allowed
+              "
+            >
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Opening Payment...
+                </div>
+              ) : (
+                "Pay with Card"
+              )}
+            </motion.button>
           </div>
         </motion.div>
       </motion.div>

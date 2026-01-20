@@ -45,46 +45,45 @@ export default function Login() {
   /* ---------------- SUBMIT ---------------- */
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/dashboard");
-    
-    // if (!validate()) {
-    //   showToast({
-    //     type: "error",
-    //     title: "Invalid credentials",
-    //     description: "Please fix the highlighted fields.",
-    //   });
-    //   return;
-    // }
+        
+    if (!validate()) {
+      showToast({
+        type: "error",
+        title: "Invalid credentials",
+        description: "Please fix the highlighted fields.",
+      });
+      return;
+    }
 
-    // startTransition(async () => {
-    //   const result = await loginAction({
-    //     email: form.email,
-    //     password: form.password,
-    //   });
+    startTransition(async () => {
+      const result = await loginAction({
+        email: form.email,
+        password: form.password,
+      });
 
-    //   if (!result.success) {
-    //     showToast({
-    //       type: "error",
-    //       title: "Login failed",
-    //       description: result.message,
-    //     });
-    //     return;
-    //   }
+      if (!result.success) {
+        showToast({
+          type: "error",
+          title: "Login failed",
+          description: result.message,
+        });
+        return;
+      }
 
-    //   showToast({
-    //     type: "success",
-    //     title: "Welcome back",
-    //     description: "Redirecting to dashboard...",
-    //   });
+      showToast({
+        type: "success",
+        title: "Welcome back",
+        description: "Redirecting to dashboard...",
+      });
 
-    //   /**
-    //    * ✅ JWT is already stored securely in httpOnly cookie
-    //    * ❌ Do NOT store token in state or localStorage
-    //    */
+      /**
+       * ✅ JWT is already stored securely in httpOnly cookie
+       * ❌ Do NOT store token in state or localStorage
+       */
 
-	  //  //   router.push(hasAppliedBefore ? "/dashboard" : "/applicationLanding");
-    //   router.push("/applicationLanding");
-    // });
+	   //   router.push(hasAppliedBefore ? "/dashboard" : "/applicationLanding");
+      router.push("/applicationLanding");
+    });
   };
 
   /* ---------------- INPUT BINDER ---------------- */

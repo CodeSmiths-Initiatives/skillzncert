@@ -1,9 +1,7 @@
 // app/dashboard/page.tsx
 import AdminDashboard from "@/features/dashboard/AdminDashboard";
 import UserDashboard from "@/features/dashboard/UserDashboard";
-import { id } from "date-fns/locale";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
   const cookieStore = await cookies();

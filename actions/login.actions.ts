@@ -1,6 +1,5 @@
 "use server";
 
-import { id } from "date-fns/locale";
 import { cookies } from "next/headers";
 
 export async function loginAction(data: {
