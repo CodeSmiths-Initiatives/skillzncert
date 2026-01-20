@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import ApplicationLanding from "@/features/auth/ApplicationLanding";
-import { getEnrollmentStatus } from "@/lib/services/enrollment";
+import { getEnrollmentStatusAction } from "@/actions/enrollment/get-status.actions";
 
 export default async function Page() {
   const cookieStore = cookies();
@@ -19,7 +19,7 @@ export default async function Page() {
     }
   }
 
-  const enrollmentStatus = await getEnrollmentStatus(userId);
+  const enrollmentStatus = await getEnrollmentStatusAction(userId);
 
   return (
     <ApplicationLanding

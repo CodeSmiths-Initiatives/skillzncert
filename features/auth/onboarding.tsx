@@ -1,12 +1,12 @@
 "use client";
 
-import { submitEnrollmentAction } from "@/actions/enrollment.actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/toast/ToastContext";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { BiSolidImageAdd } from "react-icons/bi";
+import { submitEnrollmentAction } from "@/actions/enrollment/create-enrollment.actions";
 
 export default function Onboarding() {
   const router = useRouter();

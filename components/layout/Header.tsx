@@ -2,7 +2,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { logoutAction } from "@/actions/logout.actions";
+import { logoutAction } from "@/actions/auth/logout.actions";
 import { useRouter } from "next/navigation";
 import { Menu } from "lucide-react";
 

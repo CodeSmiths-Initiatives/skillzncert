@@ -29,8 +29,8 @@ export default function Navbar() {
 						</li>
 					</ul>
 
-					<Link
-						href="/login"
+					<Link						
+						href="/"
 						className="bg-[#51A8B1] hover:bg-teal-600 text-white text-base font-semibold px-4 py-2 rounded-md"
 					>
 						Login

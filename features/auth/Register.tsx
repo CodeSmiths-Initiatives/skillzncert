@@ -1,6 +1,6 @@
 "use client";
 
-import { signupAction } from "@/actions/signup.actions";
+import { signupAction } from "@/actions/auth/signup.actions";
 import { FormField } from "@/components/form/FormField";
 import { PasswordInput } from "@/components/form/PasswordInput";
 import { AuthLayout } from "@/components/layout/AuthLayout";

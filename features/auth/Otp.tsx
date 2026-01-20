@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/toast/ToastContext";
 import Image from "next/image";
-import { resetPasswordAction } from "@/actions/reset-password.actions";
+import { resetPasswordAction } from "@/actions/auth/reset-password.actions";
 
 export default function ResetPassword() {
   const router = useRouter();

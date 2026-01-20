@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/components/toast/ToastContext";
+import { markEnrollmentPaidAction } from "@/actions/enrollment/mark-paid.actions";
 
 // Payment verification state machine - Senior Engineer Approach
 type PaymentState = {
@@ -92,7 +93,7 @@ export default function PaymentSuccessPage() {
     dispatch({ type: 'START_PROCESSING' });
 
     // Simulate processing delay (3 seconds)
-    const timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(async () => {
       // Check if payment failed
       if (status === "failed" || !reference) {
         const errorMessage = status === "failed"
@@ -128,12 +129,18 @@ export default function PaymentSuccessPage() {
       // Dispatch success action (reducer prevents double execution)
       dispatch({ type: 'PROCESS_SUCCESS', payload: paymentData });
 
+      await markEnrollmentPaidAction({
+  documentId: enrollment.documentId,
+  isPaymentDone: true,
+});
+
       // Show toast (only once due to ref check)
       showToast({
         type: "success",
         title: "Payment Successful",
         description: "Your payment has been processed successfully.",
       });
+      
     }, 3000);
 
     // Return cleanup function

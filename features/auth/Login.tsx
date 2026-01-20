@@ -10,7 +10,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { loginAction } from "@/actions/login.actions";
+import { loginAction } from "@/actions/auth/login.actions";
 
 export default function Login() {
   const router = useRouter();

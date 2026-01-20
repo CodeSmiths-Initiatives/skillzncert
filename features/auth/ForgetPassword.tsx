@@ -9,7 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { forgotPasswordAction } from "@/actions/forgot-password.actions";
+import { forgotPasswordAction } from "@/actions/auth/forgot-password.actions";
 
 export default function ForgotPassword() {
   const router = useRouter();
