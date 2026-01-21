@@ -13,7 +13,7 @@ export default function WhyChooseCe() {
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-20 mt-10">
 				<div>
 					<Image
-						src="./Images/Save Time.svg"
+						src="static/images/Save Time.svg"
 						alt="Save time"
 						width={60}
 						height={200}
@@ -31,7 +31,7 @@ export default function WhyChooseCe() {
 				</div>
 				<div>
 					<Image
-						src="./Images/Stay complain.svg"
+						src="static/images/Stay complain.svg"
 						alt="Stay complaint"
 						width={60}
 						height={200}
@@ -49,7 +49,7 @@ export default function WhyChooseCe() {
 				</div>
 				<div>
 					<Image
-						src="./Images/Scale easily.svg"
+						src="static/images/Scale easily.svg"
 						alt="scale easily"
 						width={60}
 						height={200}

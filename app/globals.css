@@ -111,6 +111,11 @@ body {
 
   --radius: 0.625rem;
 
+  /* Light Theme - Blue & White */
+  --theme-primary: #51A8B1;
+  --theme-primary-dark: #3b8f97;
+  --theme-primary-light: #6bc4cd;
+
   --background: oklch(1 0 0);
 
   --foreground: oklch(0.145 0 0);
@@ -180,6 +185,11 @@ body {
 
   --foreground: oklch(0.985 0 0);
 
+  /* Dark Theme - Black & White */
+  --theme-primary: #ffffff;
+  --theme-primary-dark: #e5e7eb;
+  --theme-primary-light: #f9fafb;
+
   --card: oklch(0.205 0 0);
 
   --card-foreground: oklch(0.985 0 0);
@@ -234,9 +244,67 @@ body {
 
   --sidebar-accent-foreground: oklch(0.985 0 0);
 
-  --sidebar-border: oklch(1 0 0 / 10%);
+/* System Theme - Green & White */
+.theme-system {
+  --theme-primary: #10b981;
+  --theme-primary-dark: #059669;
+  --theme-primary-light: #34d399;
+  
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --muted: oklch(0.98 0.02 160);
+  --muted-foreground: oklch(0.556 0 0);
+  --border: oklch(0.94 0.02 160);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.66 0.17 160);
+}
 
-  --sidebar-ring: oklch(0.556 0 0);
+/* Theme-aware utility classes */
+.bg-theme-primary {
+  background-color: var(--theme-primary);
+}
+
+.bg-theme-primary-dark {
+  background-color: var(--theme-primary-dark);
+}
+
+.text-theme-primary {
+  color: var(--theme-primary);
+}
+
+.border-theme-primary {
+  border-color: var(--theme-primary);
+}
+
+.hover\:bg-theme-primary-dark:hover {
+  background-color: var(--theme-primary-dark);
+}
+ --border: oklch(0.94 0.02 160);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.66 0.17 160);
+}
+
+/* Light Theme Overrides */
+.theme-light {
+  --theme-primary: #51A8B1;
+  --theme-primary-dark: #3b8f97;
+  --theme-primary-light: #6bc4cd;
+}
+
+/* Dark Theme Overrides */
+.theme-dark {
+  --theme-primary: #ffffff;
+  --theme-primary-dark: #e5e7eb;
+  --theme-primary-light: #f9fafb;
+  
+  --background: oklch(0.04 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.1 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.15 0 0);
+  --border: oklch(0.25 0 0);
 }
 
 @layer base {
@@ -256,4 +324,70 @@ body {
 
 .error-message{
   @apply text-red-500 text-sm mt-0;
+}
+
+/* Smooth fade-in animation for route transitions */
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Slide up animation for modals */
+.animate-slideUp {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Print styles */
+@media print {
+  /* Hide non-printable elements */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Reset page margins */
+  @page {
+    margin: 1cm;
+  }
+
+  /* Ensure proper page breaks */
+  .print-section {
+    page-break-inside: avoid;
+  }
+
+  /* Force color printing */
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Remove shadows and transitions for print */
+  .printable-content {
+    box-shadow: none !important;
+  }
+
+  /* Ensure backgrounds print */
+  body {
+    background: white;
+  }
 }

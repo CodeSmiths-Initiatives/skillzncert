@@ -12,7 +12,7 @@ export default function Navbar() {
 		<nav className="fixed top-0 left-0 w-full border-b bg-gray-50 z-50">
 			<div className="flex items-center justify-between max-w-full mx-auto p-4">
 				<div className="flex items-center space-x-2">
-					<Image src="/images/logo 1.svg" alt="Logo" width={50} height={10} />
+					<Image src="static/images/logo 1.svg" alt="Logo" width={50} height={10} />
 					<h3 className="text-xl font-semibold">CE-EMS</h3>
 				</div>
 
@@ -30,7 +30,7 @@ export default function Navbar() {
 					</ul>
 
 					<Link						
-						href="/"
+						href="/login"
 						className="bg-[#51A8B1] hover:bg-teal-600 text-white text-base font-semibold px-4 py-2 rounded-md"
 					>
 						Login

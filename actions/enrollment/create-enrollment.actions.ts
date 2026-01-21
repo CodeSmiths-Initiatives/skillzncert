@@ -11,5 +11,7 @@ export async function submitEnrollmentAction(formData: FormData) {
     return { success: false, message: "Unauthorized" };
   }
 
+  console.log(formData);
+  
   return submitEnrollment(formData, token);
 }

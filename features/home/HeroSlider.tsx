@@ -12,28 +12,28 @@ const slides = [
 			"Technical training is often more than a development goal – it is a business requirement.",
 		description:
 			"We recognize that your learning journey is unique. Access a world-class, career-driven Networking & Cybersecurity certification training within a year.",
-		image: "/images/slide1img.svg",
+		image: "static/images/slide1img.svg",
 	},
 	{
 		id: 2,
 		title: "Globally Recognized after-Training Certificates!",
 		description:
 			"Industry professionals have long shaped the evolution of this field, prompting constant innovation and the introduction of new technologies to supersede outdated ones.",
-		image: "/images/slide2img.svg",
+		image: "static/images/slide2img.svg",
 	},
 	{
 		id: 3,
 		title: "Enjoy FREE DATA While accessing your class",
 		description:
 			"All registered students get monthly 5GB data on all the major network provider (MTN, GLO, Airtel, and 9Mobile), for ease of class attendance.",
-		image: "/images/slide3img.svg",
+		image: "static/images/slide3img.svg",
 	},
 	{
 		id: 4,
 		title: "Attract more than 50 Networking & Cybersecurity JOB-ROLES.",
 		description:
 			"This 12 Months skills-ses training attract more than 50 Networking & Cybersecurity JOB_ROLES.",
-		image: "/images/slide4img.svg",
+		image: "static/images/slide4img.svg",
 	},
 ];
 

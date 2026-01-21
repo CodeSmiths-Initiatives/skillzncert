@@ -1,66 +1,74 @@
 "use client";
 
-import { useEffect, useReducer, useCallback, useRef } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
-import Link from "next/link";
 import { useToast } from "@/components/toast/ToastContext";
 import { markEnrollmentPaidAction } from "@/actions/enrollment/mark-paid.actions";
+import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
+import { storage } from "@/lib/storage";
 
 // Payment verification state machine - Senior Engineer Approach
 type PaymentState = {
-  status: 'idle' | 'processing' | 'success' | 'failed';
+  status: "idle" | "processing" | "success" | "failed";
   data: any;
   error: string;
   hasProcessed: boolean; // Prevents double processing
 };
 
 type PaymentAction =
-  | { type: 'START_PROCESSING' }
-  | { type: 'PROCESS_SUCCESS'; payload: any }
-  | { type: 'PROCESS_FAILED'; payload: string }
-  | { type: 'RESET' };
+  | { type: "START_PROCESSING" }
+  | { type: "PROCESS_SUCCESS"; payload: any }
+  | { type: "PROCESS_FAILED"; payload: string }
+  | { type: "RESET" };
 
 const initialState: PaymentState = {
-  status: 'idle',
+  status: "idle",
   data: null,
-  error: '',
+  error: "",
   hasProcessed: false,
 };
 
-function paymentReducer(state: PaymentState, action: PaymentAction): PaymentState {
+function paymentReducer(
+  state: PaymentState,
+  action: PaymentAction,
+): PaymentState {
   switch (action.type) {
-    case 'START_PROCESSING':
-      return { ...state, status: 'processing', hasProcessed: false };
-    case 'PROCESS_SUCCESS':
+    case "START_PROCESSING":
+      return { ...state, status: "processing", hasProcessed: false };
+    case "PROCESS_SUCCESS":
       // Only process if not already processed (prevents double execution)
       if (state.hasProcessed) return state;
       return {
         ...state,
-        status: 'success',
+        status: "success",
         data: action.payload,
-        error: '',
-        hasProcessed: true
+        error: "",
+        hasProcessed: true,
       };
-    case 'PROCESS_FAILED':
+    case "PROCESS_FAILED":
       // Only process if not already processed (prevents double execution)
       if (state.hasProcessed) return state;
       return {
         ...state,
-        status: 'failed',
+        status: "failed",
         data: null,
         error: action.payload,
-        hasProcessed: true
+        hasProcessed: true,
       };
-    case 'RESET':
+    case "RESET":
       return initialState;
     default:
       return state;
   }
 }
 
-export default function PaymentSuccessPage() {
+type Props = {
+  enrollmentDocumentId: string;
+};
+
+export default function PaymentSuccessPage({ enrollmentDocumentId }: Props) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { showToast } = useToast();
@@ -79,6 +87,12 @@ export default function PaymentSuccessPage() {
   const currency = searchParams.get("currency");
 
   useEffect(() => {
+    debugger
+    const completedReference = sessionStorage.getItem("reference") || localStorage.getItem("reference");  
+
+    if (completedReference === reference) {
+      router.replace("/dashboard");
+    }
     // Prevent double processing due to React.StrictMode
     if (hasProcessedRef.current) {
       return;
@@ -87,21 +101,22 @@ export default function PaymentSuccessPage() {
     hasProcessedRef.current = true;
 
     // Reset state for new payment attempt
-    dispatch({ type: 'RESET' });
+    dispatch({ type: "RESET" });
 
     // Start processing state
-    dispatch({ type: 'START_PROCESSING' });
+    dispatch({ type: "START_PROCESSING" });
 
     // Simulate processing delay (3 seconds)
     const timeoutId = setTimeout(async () => {
       // Check if payment failed
       if (status === "failed" || !reference) {
-        const errorMessage = status === "failed"
-          ? "Payment was declined or failed"
-          : "Payment reference not found";
+        const errorMessage =
+          status === "failed"
+            ? "Payment was declined or failed"
+            : "Payment reference not found";
 
         // Dispatch failed action (reducer prevents double execution)
-        dispatch({ type: 'PROCESS_FAILED', payload: errorMessage });
+        dispatch({ type: "PROCESS_FAILED", payload: errorMessage });
 
         // Show toast (only once due to ref check)
         showToast({
@@ -119,7 +134,8 @@ export default function PaymentSuccessPage() {
         currency: currency || "NGN",
         customer: {
           email: "Test@yopmail.com",
-          customer_code: "CUS_" + Math.random().toString(36).substr(2, 9).toUpperCase(),
+          customer_code:
+            "CUS_" + Math.random().toString(36).substr(2, 9).toUpperCase(),
         },
         paidAt: new Date().toISOString(),
         plan_id: planId || "basic",
@@ -127,12 +143,12 @@ export default function PaymentSuccessPage() {
       };
 
       // Dispatch success action (reducer prevents double execution)
-      dispatch({ type: 'PROCESS_SUCCESS', payload: paymentData });
+      dispatch({ type: "PROCESS_SUCCESS", payload: paymentData });
 
       await markEnrollmentPaidAction({
-  documentId: enrollment.documentId,
-  isPaymentDone: true,
-});
+        documentId: enrollmentDocumentId,
+        isPaymentDone: true,
+      });
 
       // Show toast (only once due to ref check)
       showToast({
@@ -140,7 +156,9 @@ export default function PaymentSuccessPage() {
         title: "Payment Successful",
         description: "Your payment has been processed successfully.",
       });
-      
+
+      localStorage.setItem("reference", reference);
+      sessionStorage.setItem("reference", reference);
     }, 3000);
 
     // Return cleanup function
@@ -254,7 +272,7 @@ export default function PaymentSuccessPage() {
           <div className="space-y-3">
             {state.status === "success" && (
               <button
-               onClick={() => router.replace("/dashboard")}
+                onClick={() => router.replace("/dashboard")}
                 className="block w-full bg-[#51A8B1] hover:bg-teal-600 text-white font-semibold py-3 px-6 rounded-xl transition"
               >
                 Go to Dashboard

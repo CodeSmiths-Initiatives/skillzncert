@@ -8,7 +8,7 @@ export default function Hero() {
 	return (
 		<div
 			className="relative bg-cover bg-center h-[600px]"
-			style={{ backgroundImage: 'url("./Images/hero-img4.png")' }}
+			style={{ backgroundImage: 'url("static/images/hero-img4.png")' }}
 		>
 			<div className="absolute inset-0 bg-black/10 backdrop-blur-sm"></div>
 

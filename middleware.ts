@@ -46,11 +46,11 @@ export function middleware(req: NextRequest) {
    * 🔐 CASE 1:
    * Not logged in & trying protected page
    */
-  // if (!authToken && !isPublic) {
-  //   const loginUrl = new URL("/login", req.url);
-  //   loginUrl.searchParams.set("redirect", pathname);
-  //   return NextResponse.redirect(loginUrl);
-  // }
+  if (!authToken && !isPublic) {
+    const loginUrl = new URL("/login", req.url);
+    loginUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
 
   /**
    * 🔐 CASE 2:

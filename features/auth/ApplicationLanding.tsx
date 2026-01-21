@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Steps } from "@/components/ui/step";
 
+/* ---------- Types ---------- */
+
 type EnrollmentStatus = {
   exists: boolean;
   isPaymentDone: boolean;
@@ -16,18 +18,60 @@ type Props = {
   enrollmentStatus: EnrollmentStatus;
 };
 
+/* ---------- Component ---------- */
+
 export default function ApplicationLanding({
   userName,
   enrollmentStatus,
 }: Props) {
   const router = useRouter();
 
-  const shouldGoToPayment =
-    enrollmentStatus.exists && !enrollmentStatus.isPaymentDone;
+  /* ------------------------------------------------
+   * 🔑 DERIVED BUSINESS FLAGS (single source of truth)
+   * ------------------------------------------------ */
+  const hasEnrollment = enrollmentStatus.exists;
+  const paymentDone = enrollmentStatus.isPaymentDone;
 
+  const showOnboarding = !hasEnrollment;
+  const showPayment = hasEnrollment && !paymentDone;
+  const showDashboard = hasEnrollment && paymentDone;
+
+  /* ------------------------------------------------
+   * 🪜 STEP STATUS MAPPING (future-proof)
+   * ------------------------------------------------ */
+  const stepStatus = {
+    step1: hasEnrollment ? "done" : "pending",
+    step2: hasEnrollment ? "done" : "pending",
+    step3: hasEnrollment ? "done" : "pending",
+    step4: showPayment
+      ? "pending"
+      : showDashboard
+      ? "done"
+      : "pending",
+  } as const;
+
+  /* ------------------------------------------------
+   * 🎯 CTA CONFIG (no conditional JSX later)
+   * ------------------------------------------------ */
+  const cta = {
+    label: showPayment
+      ? "Proceed to Payment"
+      : showDashboard
+      ? "Go to Dashboard"
+      : "Start Application",
+    path: showPayment
+      ? "/payment"
+      : showDashboard
+      ? "/dashboard"
+      : "/onboarding",
+  };
+
+  /* ------------------------------------------------
+   * 🖼️ UI
+   * ------------------------------------------------ */
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#0b3c42] via-[#1b6b73] to-[#51A8B1]">
-      {/* Decorative gradient blobs */}
+      {/* Decorative blobs */}
       <div className="absolute -top-40 -left-40 w-[500px] h-[500px] bg-white/10 rounded-full blur-3xl" />
       <div className="absolute top-1/3 -right-40 w-[500px] h-[500px] bg-white/10 rounded-full blur-3xl" />
 
@@ -41,7 +85,7 @@ export default function ApplicationLanding({
           {/* Header */}
           <div className="text-center mb-10">
             <Image
-              src="/images/logo 1.svg"
+              src="static/images/logo 1.svg"
               alt="Logo"
               width={70}
               height={24}
@@ -54,14 +98,13 @@ export default function ApplicationLanding({
             </h1>
 
             <p className="mt-3 text-gray-600 max-w-xl mx-auto">
-              You’re just one step away from starting your official application.
-              Please review the process below and continue when ready.
+              Review your application progress and continue where you left off.
             </p>
           </div>
 
           {/* Content */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-            {/* Left: Description */}
+            {/* Left */}
             <div className="space-y-4 text-sm text-gray-700">
               <p className="flex items-center gap-2">
                 <span className="text-[#51A8B1] font-bold">✔</span>
@@ -88,48 +131,41 @@ export default function ApplicationLanding({
               </h3>
 
               <ul className="space-y-3 text-sm">
-                <ul className="space-y-3 text-sm">
-                  <Steps
-                    label="Personal Information"
-                    step="Step 1"
-                    status="done"
-                  />
-                  <Steps label="Education Details" step="Step 2" status="done" />
-                  <Steps label="Document Upload" step="Step 3" status="done" />
-                  <Steps
-                    label="Payment & Review"
-                    step="Final"
-                    status={shouldGoToPayment ? "pending" : "done"}
-                  />
-                </ul>
+                <Steps
+                  label="Personal Information"
+                  step="Step 1"
+                  status={stepStatus.step1}
+                />
+                <Steps
+                  label="Education Details"
+                  step="Step 2"
+                  status={stepStatus.step2}
+                />
+                <Steps
+                  label="Document Upload"
+                  step="Step 3"
+                  status={stepStatus.step3}
+                />
+                <Steps
+                  label="Payment & Review"
+                  step="Final"
+                  status={stepStatus.step4}
+                />
               </ul>
             </div>
           </div>
 
           {/* CTA */}
           <div className="mt-10 text-center">
-           <Button
-            onClick={() =>
-              router.push(shouldGoToPayment ? "/payment" : "/onboarding")
-            }
-            className="bg-[#51A8B1] text-white px-12 py-6 text-base font-semibold hover:bg-teal-600"
-          >
-            {shouldGoToPayment ? "Proceed to Payment" : "Start Application"}
-          </Button>
+            <Button
+              onClick={() => router.replace(cta.path)}
+              className="bg-[#51A8B1] text-white px-12 py-6 text-base font-semibold hover:bg-teal-600 transition"
+            >
+              {cta.label}
+            </Button>
           </div>
         </motion.div>
       </div>
     </div>
-  );
-}
-
-/* ---------- Small reusable component ---------- */
-
-function Step({ label, step }: { label: string; step: string }) {
-  return (
-    <li className="flex items-center justify-between border-b border-gray-200 pb-2">
-      <span>{label}</span>
-      <span className="text-[#51A8B1] font-medium">{step}</span>
-    </li>
   );
 }

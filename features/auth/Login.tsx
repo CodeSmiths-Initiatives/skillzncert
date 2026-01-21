@@ -18,8 +18,8 @@ export default function Login() {
   const [isPending, startTransition] = useTransition();
 
   const [form, setForm] = useState({
-    email: "nitesh@yopmail.com",
-    password: "Nitesh@123",
+    email: "Admin@yopmail.com",
+    password: "Mail_123",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -81,8 +81,14 @@ export default function Login() {
        * ❌ Do NOT store token in state or localStorage
        */
 
-	   //   router.push(hasAppliedBefore ? "/dashboard" : "/applicationLanding");
-      router.push("/applicationLanding");
+      // Conditional routing based on user ID
+      console.log(result);
+      
+      if (result.user?.id === 1) {
+        router.push("/dashboard");
+      } else {
+        router.push("/applicationLanding");
+      }
     });
   };
 
@@ -94,11 +100,11 @@ export default function Login() {
   });
 
   return (
-    <AuthLayout imageSrc="/images/auth_image.png">
+    <AuthLayout imageSrc="/static/images/auth_image.png">
       {/* HEADER */}
       <div className="text-center mb-6">
         <Image
-          src="/images/logo 1.svg"
+          src="static/images/logo 1.svg"
           alt="Logo"
           width={50}
           height={20}

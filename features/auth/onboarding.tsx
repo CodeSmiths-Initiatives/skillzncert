@@ -30,15 +30,101 @@ export default function Onboarding() {
     hasNetacadAccount: false,
   });
 
+  const [errors, setErrors] = useState({
+    firstName: "",
+    lastName: "",
+    phoneNumber: "",
+  });
+
+  // Validation functions
+  const validateName = (name: string, fieldName: string): string => {
+    if (!name.trim()) {
+      return `${fieldName} is required`;
+    }
+    if (name.includes(" ")) {
+      return `${fieldName} cannot contain spaces`;
+    }
+    if (/\d/.test(name)) {
+      return `${fieldName} cannot contain numbers`;
+    }
+    if (!/^[a-zA-Z]+$/.test(name)) {
+      return `${fieldName} can only contain letters`;
+    }
+    return "";
+  };
+
+  const validatePhoneNumber = (phone: string): string => {
+    if (!phone.trim()) {
+      return "Phone number is required";
+    }
+    // Remove any non-digit characters for validation
+    const digitsOnly = phone.replace(/\D/g, "");
+    if (digitsOnly.length !== 10) {
+      return "Phone number must be exactly 10 digits";
+    }
+    if (!/^\d+$/.test(digitsOnly)) {
+      return "Phone number can only contain digits";
+    }
+    return "";
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setForm((p) => ({ ...p, [name]: value }));
+
+    // Real-time validation
+    if (name === "firstName") {
+      setErrors((prev) => ({ ...prev, firstName: validateName(value, "First name") }));
+    } else if (name === "lastName") {
+      setErrors((prev) => ({ ...prev, lastName: validateName(value, "Last name") }));
+    } else if (name === "phoneNumber") {
+      setErrors((prev) => ({ ...prev, phoneNumber: validatePhoneNumber(value) }));
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const firstNameError = validateName(form.firstName, "First name");
+    const lastNameError = validateName(form.lastName, "Last name");
+    const phoneError = validatePhoneNumber(form.phoneNumber);
+
+    setErrors({
+      firstName: firstNameError,
+      lastName: lastNameError,
+      phoneNumber: phoneError,
+    });
+
+    // Check required fields
+    if (!form.firstName || !form.lastName || !form.phoneNumber || !form.address || !form.state || !form.country) {
+      showToast({
+        type: "error",
+        title: "Required fields missing",
+        description: "Please fill in all required fields marked with *",
+      });
+      return false;
+    }
+
+    // Check validation errors
+    if (firstNameError || lastNameError || phoneError) {
+      showToast({
+        type: "error",
+        title: "Validation failed",
+        description: "Please fix the errors in the form before submitting.",
+      });
+      return false;
+    }
+
+    return true;
   };
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate form
+    if (!validateForm()) {
+      return;
+    }
 
     if (!passport || !schoolId) {
       showToast({
@@ -49,15 +135,38 @@ export default function Onboarding() {
       return;
     }
 
-    const data = new FormData();
-    Object.entries(form).forEach(([k, v]) =>
-      data.append(`data[${k}]`, String(v))
-    );
-    data.append("files.passport", passport);
-    data.append("files.schoolIdCard", schoolId);
+    // Validate file sizes (1MB max)
+    const maxSize = 1 * 1024 * 1024; // 1MB in bytes
+    if (passport.size > maxSize) {
+      showToast({
+        type: "error",
+        title: "File too large",
+        description: "Passport image must be less than 1MB.",
+      });
+      return;
+    }
+
+    if (schoolId.size > maxSize) {
+      showToast({
+        type: "error",
+        title: "File too large",
+        description: "School ID image must be less than 1MB.",
+      });
+      return;
+    }
 
     startTransition(async () => {
-      console.log(data);
+      // Create FormData fresh inside the async function to avoid React serialization issues
+      const data = new FormData();
+      
+      // Append form data fields
+      Object.entries(form).forEach(([k, v]) =>
+        data.append(`data[${k}]`, String(v))
+      );
+      
+      // Append file uploads (must match Strapi media field names exactly)
+      data.append("files.passport", passport);
+      data.append("files.schoolIdCard", schoolId);
       
       const res = await submitEnrollmentAction(data);
 
@@ -70,7 +179,7 @@ export default function Onboarding() {
         return;
       }
 
-      router.push("/payment");
+      router.replace("/payment");
     });
   };
 
@@ -105,19 +214,68 @@ export default function Onboarding() {
 
           <form onSubmit={submit} className="space-y-8">
             <TwoCol>
-              <Input name="firstName" placeholder="First Name *" onChange={handleChange} />
-              <Input name="lastName" placeholder="Last Name *" onChange={handleChange} />
-              <Input name="phoneNumber" placeholder="Phone Number *" onChange={handleChange} />
-              <Input name="address" placeholder="Address *" onChange={handleChange} />
+              <div>
+                <Input 
+                  name="firstName" 
+                  placeholder="First Name *" 
+                  value={form.firstName}
+                  onChange={handleChange}
+                  className={errors.firstName ? "border-red-500 focus:ring-red-500" : ""}
+                />
+                {errors.firstName && (
+                  <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
+                )}
+              </div>
+              <div>
+                <Input 
+                  name="lastName" 
+                  placeholder="Last Name *" 
+                  value={form.lastName}
+                  onChange={handleChange}
+                  className={errors.lastName ? "border-red-500 focus:ring-red-500" : ""}
+                />
+                {errors.lastName && (
+                  <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
+                )}
+              </div>
+              <div>
+                <Input 
+                  name="phoneNumber" 
+                  placeholder="Phone Number (10 digits) *" 
+                  value={form.phoneNumber}
+                  onChange={handleChange}
+                  maxLength={10}
+                  className={errors.phoneNumber ? "border-red-500 focus:ring-red-500" : ""}
+                />
+                {errors.phoneNumber && (
+                  <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>
+                )}
+              </div>
+              <Input 
+                name="address" 
+                placeholder="Address *" 
+                value={form.address}
+                onChange={handleChange} 
+              />
             </TwoCol>
 
             <TwoCol>
-              <select name="state" className="input-field" onChange={handleChange}>
+              <select 
+                name="state" 
+                className="input-field" 
+                value={form.state}
+                onChange={handleChange}
+              >
                 <option value="">Select State *</option>
                 <option value="Delhi">Delhi</option>
                 <option value="Lagos">Lagos</option>
               </select>
-              <select name="country" className="input-field" onChange={handleChange}>
+              <select 
+                name="country" 
+                className="input-field" 
+                value={form.country}
+                onChange={handleChange}
+              >
                 <option value="">Select Country *</option>
                 <option value="India">India</option>
                 <option value="Nigeria">Nigeria</option>
@@ -125,10 +283,30 @@ export default function Onboarding() {
             </TwoCol>
 
             <TwoCol>
-              <Input name="preferredLanguage" placeholder="Preferred Language" onChange={handleChange} />
-              <Input name="currentEducationLevel" placeholder="Education Level" onChange={handleChange} />
-              <Input name="previousCertification" placeholder="Previous Certification" onChange={handleChange} />
-              <Input name="universityAttending" placeholder="University" onChange={handleChange} />
+              <Input 
+                name="preferredLanguage" 
+                placeholder="Preferred Language" 
+                value={form.preferredLanguage}
+                onChange={handleChange} 
+              />
+              <Input 
+                name="currentEducationLevel" 
+                placeholder="Education Level" 
+                value={form.currentEducationLevel}
+                onChange={handleChange} 
+              />
+              <Input 
+                name="previousCertification" 
+                placeholder="Previous Certification" 
+                value={form.previousCertification}
+                onChange={handleChange} 
+              />
+              <Input 
+                name="universityAttending" 
+                placeholder="University" 
+                value={form.universityAttending}
+                onChange={handleChange} 
+              />
             </TwoCol>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -179,7 +357,7 @@ function FileUpload({
           }}
         />
         <p className="text-xs text-gray-500 mt-2">
-          JPG / PNG • Max 50KB
+          JPG / PNG • Max 1MB
         </p>
       </div>
     </div>

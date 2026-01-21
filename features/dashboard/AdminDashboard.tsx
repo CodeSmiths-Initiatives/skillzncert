@@ -1,20 +1,27 @@
 // features/dashboard/AdminDashboard.tsx
+"use client";
+
+import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { DashboardContent } from "./DashboardContent";
 
 const adminSidebarItems = [
-  { label: "Overview", href: "/dashboard", iconName: "LayoutDashboard" },
-  { label: "Enrollees", href: "/dashboard/enrollees", iconName: "Users" },
-  // { label: "Analytics", href: "/dashboard/analytics", iconName: "BarChart3" },
-  // { label: "Content", href: "/dashboard/content", iconName: "FileText" },
-  // { label: "Security", href: "/dashboard/security", iconName: "Shield" },
-  { label: "Settings", href: "/dashboard/settings", iconName: "Settings" },
+  { label: "Overview", route: "overview", iconName: "LayoutDashboard" },
+  { label: "Enrollees", route: "enrollees", iconName: "Users" },
+  { label: "Settings", route: "settings", iconName: "Settings" },
 ];
 
 export default function AdminDashboard({ user }: { user: any }) {
+  const [activeRoute, setActiveRoute] = useState("overview");
+
   return (
-    <DashboardLayout sidebarItems={adminSidebarItems} user={user}>
-      <DashboardContent isAdmin={true} />
+    <DashboardLayout
+      sidebarItems={adminSidebarItems}
+      activeRoute={activeRoute}
+      onNavigate={setActiveRoute}
+      user={user}
+    >
+      <DashboardContent activeRoute={activeRoute} isAdmin={true} />
     </DashboardLayout>
   );
 }

@@ -1,14 +1,18 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { fetchEnrollmentByUser } from "@/lib/services/enrollment.service";
+import { getAuthUser } from "@/lib/auth/get-auth-user";
+import { getEnrollmentStatus } from "@/lib/services/enrollment.service";
 
-export async function getEnrollmentStatusAction(userId: number) {
-  const token = (await cookies()).get("auth_token")?.value;
+export async function getEnrollmentStatusAction() {
+  const { user, token } = await getAuthUser();
 
-  if (!token) {
-    return { exists: false, isPaymentDone: false };
+  if (!user || !token) {
+    return {
+      exists: false,
+      isPaymentDone: false,
+      documentId: null,
+    };
   }
 
-  return fetchEnrollmentByUser(userId, token);
+  return getEnrollmentStatus(user.id, token);
 }

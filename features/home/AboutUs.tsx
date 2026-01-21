@@ -63,7 +63,7 @@ export default function AboutUs() {
 							className="relative w-full h-65"
 						>
 							<Image
-								src="/images/aboutUs.svg"
+								src="static/images/aboutUs.svg"
 								alt="Cybersecurity training"
 								fill
 								className="object-cover rounded-3xl"
@@ -80,7 +80,7 @@ export default function AboutUs() {
 							className="relative w-full h-65"
 						>
 							<Image
-								src="/images/aboutUs1.svg"
+								src="static/images/aboutUs1.svg"
 								alt="Learning environment"
 								fill
 								className="object-cover rounded-3xl"
@@ -98,7 +98,7 @@ export default function AboutUs() {
 							className="absolute top-0 right-30 w-70 h-110"
 						>
 							<Image
-								src="/images/aboutUs.svg"
+								src="static/images/aboutUs.svg"
 								alt="Cybersecurity training"
 								fill
 								className="object-cover rounded-3xl"
@@ -114,7 +114,7 @@ export default function AboutUs() {
 							className="absolute top-20 right-0 w-70 h-110"
 						>
 							<Image
-								src="/images/aboutUs1.svg"
+								src="static/images/aboutUs1.svg"
 								alt="Learning environment"
 								fill
 								className="object-cover rounded-3xl"

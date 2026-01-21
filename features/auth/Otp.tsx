@@ -96,11 +96,11 @@ export default function ResetPassword() {
   });
 
   return (
-    <AuthLayout imageSrc="/images/auth_image.png">
+    <AuthLayout imageSrc="/static/auth_image.png">
       {/* HEADER */}
       <div className="text-center mb-6">
         <Image
-          src="/images/logo 1.svg"
+          src="static/images/logo 1.svg"
           alt="Logo"
           width={50}
           height={20}

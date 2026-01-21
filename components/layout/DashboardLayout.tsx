@@ -8,10 +8,18 @@ import { Header } from "./Header";
 interface DashboardLayoutProps {
   children: ReactNode;
   sidebarItems: SidebarItem[];
+  activeRoute: string;
+  onNavigate: (route: string) => void;
   user: any;
 }
 
-export function DashboardLayout({ children, sidebarItems, user }: DashboardLayoutProps) {
+export function DashboardLayout({ 
+  children, 
+  sidebarItems, 
+  activeRoute,
+  onNavigate,
+  user 
+}: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -30,7 +38,12 @@ export function DashboardLayout({ children, sidebarItems, user }: DashboardLayou
           fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 h-screen
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>
-          <Sidebar items={sidebarItems} onClose={() => setSidebarOpen(false)} />
+          <Sidebar 
+            items={sidebarItems} 
+            activeRoute={activeRoute}
+            onNavigate={onNavigate}
+            onClose={() => setSidebarOpen(false)} 
+          />
         </div>
 
         {/* Main content */}
