@@ -13,6 +13,7 @@ export default function Footer() {
 								alt="Logo"
 								width={50}
 								height={10}
+								unoptimized
 							/>
 							<h3 className="text-xl font-semibold">CE-EMS</h3>
 						</div>

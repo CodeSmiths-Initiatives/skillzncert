@@ -100,15 +100,17 @@ export default function Login() {
   });
 
   return (
-    <AuthLayout imageSrc="static/images/auth_image.png">
+    <AuthLayout imageSrc="/static/images/auth_image.png">
       {/* HEADER */}
       <div className="text-center mb-6">
         <Image
-          src="static/images/logo1.svg"
+          src="/static/images/logo1.svg"
           alt="Logo"
           width={50}
           height={20}
           className="mx-auto mb-2"
+          priority
+          unoptimized
         />
         <h1 className="text-2xl font-bold text-black">Welcome back</h1>
         <p className="text-sm text-gray-600">

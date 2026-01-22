@@ -107,6 +107,7 @@ export default function Register() {
           width={50}
           height={20}
           className="mx-auto mb-2"
+          unoptimized
         />
         <h1 className="text-3xl font-bold text-black">Welcome</h1>
         <p className="text-xs font-semibold text-gray-600">

@@ -91,6 +91,7 @@ export default function ApplicationLanding({
               height={24}
               className="mx-auto mb-4"
               priority
+              unoptimized
             />
 
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
