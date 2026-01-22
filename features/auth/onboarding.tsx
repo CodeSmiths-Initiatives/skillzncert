@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { BiSolidImageAdd } from "react-icons/bi";
 import { submitEnrollmentAction } from "@/actions/enrollment/create-enrollment.actions";
+import { validateName, validatePhoneNumber } from "@/lib/utils";
 
 export default function Onboarding() {
   const router = useRouter();
@@ -35,38 +36,6 @@ export default function Onboarding() {
     lastName: "",
     phoneNumber: "",
   });
-
-  // Validation functions
-  const validateName = (name: string, fieldName: string): string => {
-    if (!name.trim()) {
-      return `${fieldName} is required`;
-    }
-    if (name.includes(" ")) {
-      return `${fieldName} cannot contain spaces`;
-    }
-    if (/\d/.test(name)) {
-      return `${fieldName} cannot contain numbers`;
-    }
-    if (!/^[a-zA-Z]+$/.test(name)) {
-      return `${fieldName} can only contain letters`;
-    }
-    return "";
-  };
-
-  const validatePhoneNumber = (phone: string): string => {
-    if (!phone.trim()) {
-      return "Phone number is required";
-    }
-    // Remove any non-digit characters for validation
-    const digitsOnly = phone.replace(/\D/g, "");
-    if (digitsOnly.length !== 10) {
-      return "Phone number must be exactly 10 digits";
-    }
-    if (!/^\d+$/.test(digitsOnly)) {
-      return "Phone number can only contain digits";
-    }
-    return "";
-  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>

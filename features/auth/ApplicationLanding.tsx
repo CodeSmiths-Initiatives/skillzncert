@@ -85,7 +85,7 @@ export default function ApplicationLanding({
           {/* Header */}
           <div className="text-center mb-10">
             <Image
-              src="static/images/logo 1.svg"
+              src="/static/images/logo1.svg"
               alt="Logo"
               width={70}
               height={24}

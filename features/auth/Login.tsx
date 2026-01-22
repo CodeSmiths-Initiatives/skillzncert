@@ -45,7 +45,7 @@ export default function Login() {
   /* ---------------- SUBMIT ---------------- */
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-        
+
     if (!validate()) {
       showToast({
         type: "error",
@@ -83,7 +83,7 @@ export default function Login() {
 
       // Conditional routing based on user ID
       console.log(result);
-      
+
       if (result.user?.id === 1) {
         router.push("/dashboard");
       } else {
@@ -104,7 +104,7 @@ export default function Login() {
       {/* HEADER */}
       <div className="text-center mb-6">
         <Image
-          src="static/images/logo 1.svg"
+          src="/static/images/logo1.svg"
           alt="Logo"
           width={50}
           height={20}

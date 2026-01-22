@@ -100,7 +100,7 @@ export default function ResetPassword() {
       {/* HEADER */}
       <div className="text-center mb-6">
         <Image
-          src="static/images/logo 1.svg"
+          src="/static/images/logo1.svg"
           alt="Logo"
           width={50}
           height={20}

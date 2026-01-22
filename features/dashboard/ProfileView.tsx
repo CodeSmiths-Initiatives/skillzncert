@@ -5,6 +5,7 @@ import { EnrollmentData } from "@/lib/services/enrollment.service";
 import { updateEnrollmentAction } from "@/actions/enrollment/update-enrollment.actions";
 import { useToast } from "@/components/toast/ToastContext";
 import { Button } from "@/components/ui/button";
+import { validateName, validatePhoneNumber } from "@/lib/utils";
 import {
   ProfileSection,
   ProfileField,
@@ -63,6 +64,12 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
     hasNetacadAccount: enrollment.hasNetacadAccount,
   });
 
+  const [errors, setErrors] = useState({
+    firstName: "",
+    lastName: "",
+    phoneNumber: "",
+  });
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -72,6 +79,15 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
       [name]:
         type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
+
+    // Real-time validation
+    if (name === "firstName") {
+      setErrors((prev) => ({ ...prev, firstName: validateName(value, "First name") }));
+    } else if (name === "lastName") {
+      setErrors((prev) => ({ ...prev, lastName: validateName(value, "Last name") }));
+    } else if (name === "phoneNumber") {
+      setErrors((prev) => ({ ...prev, phoneNumber: validatePhoneNumber(value) }));
+    }
   };
 
   const handleCancel = () => {
@@ -88,12 +104,46 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
       universityAttending: enrollment.universityAttending,
       hasNetacadAccount: enrollment.hasNetacadAccount,
     });
+    setErrors({
+      firstName: "",
+      lastName: "",
+      phoneNumber: "",
+    });
     setPassport(null);
     setSchoolId(null);
     setIsEditing(false);
   };
 
+  const validateForm = (): boolean => {
+    const firstNameError = validateName(formData.firstName, "First name");
+    const lastNameError = validateName(formData.lastName, "Last name");
+    const phoneError = validatePhoneNumber(formData.phoneNumber);
+
+    setErrors({
+      firstName: firstNameError,
+      lastName: lastNameError,
+      phoneNumber: phoneError,
+    });
+
+    // Check validation errors
+    if (firstNameError || lastNameError || phoneError) {
+      showToast({
+        type: "error",
+        title: "Validation failed",
+        description: "Please fix the errors in the form before saving.",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSave = () => {
+    // Validate form
+    if (!validateForm()) {
+      return;
+    }
+
     // Validate file sizes (1MB max)
     const maxSize = 1 * 1024 * 1024; // 1MB in bytes
     
@@ -207,6 +257,7 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
             isEditing={isEditing}
             name="firstName"
             onChange={handleChange}
+            error={isEditing ? errors.firstName : undefined}
           />
           <ProfileField
             label="Last Name"
@@ -214,6 +265,7 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
             isEditing={isEditing}
             name="lastName"
             onChange={handleChange}
+            error={isEditing ? errors.lastName : undefined}
           />
           <ProfileField
             label="Phone Number"
@@ -222,6 +274,7 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
             name="phoneNumber"
             onChange={handleChange}
             type="tel"
+            error={isEditing ? errors.phoneNumber : undefined}
           />
           <ProfileField
             label="Preferred Language"

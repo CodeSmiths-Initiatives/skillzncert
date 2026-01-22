@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/components/toast/ToastContext";
 import { markEnrollmentPaidAction } from "@/actions/enrollment/mark-paid.actions";
+import { createPaymentAction } from "@/actions/payment/create-payment.actions";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { storage } from "@/lib/storage";
 
@@ -66,9 +67,11 @@ function paymentReducer(
 
 type Props = {
   enrollmentDocumentId: string;
+  userId: number;
+  userEmail: string;
 };
 
-export default function PaymentSuccessPage({ enrollmentDocumentId }: Props) {
+export default function PaymentSuccessPage({ enrollmentDocumentId, userId, userEmail }: Props) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { showToast } = useToast();
@@ -131,12 +134,10 @@ export default function PaymentSuccessPage({ enrollmentDocumentId }: Props) {
       const paymentData = {
         reference: reference,
         amount: amount ? parseInt(amount) : 500000,
-        currency: currency || "NGN",
-        customer: {
-          email: "Test@yopmail.com",
-          customer_code:
-            "CUS_" + Math.random().toString(36).substr(2, 9).toUpperCase(),
-        },
+        currency: "NGN",
+        email: userEmail,
+        customer_code:
+          "CUS_" + Math.random().toString(36).substr(2, 9).toUpperCase(),
         paidAt: new Date().toISOString(),
         plan_id: planId || "basic",
         plan_name: planName || "Basic Plan",
@@ -145,10 +146,28 @@ export default function PaymentSuccessPage({ enrollmentDocumentId }: Props) {
       // Dispatch success action (reducer prevents double execution)
       dispatch({ type: "PROCESS_SUCCESS", payload: paymentData });
 
+      // Mark enrollment as paid
       await markEnrollmentPaidAction({
         documentId: enrollmentDocumentId,
         isPaymentDone: true,
       });
+
+      // Create payment record in database
+      const currentDate = new Date();
+      const paymentResult = await createPaymentAction({
+        userDocumentId: userId.toString(),
+        enrollmentDocumentId: enrollmentDocumentId,
+        paymentMode: "Online",
+        month: currentDate.toLocaleString('en-US', { month: 'long' }),
+        year: currentDate.getFullYear(),
+        amount: amount ? parseInt(amount) / 100 : 5000, // Convert from kobo to naira
+        emailAddress: userEmail,
+        paymentDate: currentDate.toISOString(),
+      });
+
+      if (!paymentResult.success) {
+        console.error("Failed to create payment record:", paymentResult.message);
+      }
 
       // Show toast (only once due to ref check)
       showToast({

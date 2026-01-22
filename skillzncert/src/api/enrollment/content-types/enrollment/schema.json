@@ -93,6 +93,12 @@
     "isPaymentDone": {
       "type": "boolean",
       "default": false
+    },
+    "payments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::payment.payment",
+      "mappedBy": "enrollment"
     }
   }
 }

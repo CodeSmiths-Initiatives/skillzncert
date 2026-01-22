@@ -21,7 +21,7 @@ export default function AdminDashboard({ user }: { user: any }) {
       onNavigate={setActiveRoute}
       user={user}
     >
-      <DashboardContent activeRoute={activeRoute} isAdmin={true} />
+      <DashboardContent activeRoute={activeRoute} isAdmin={true} userId={user.id} />
     </DashboardLayout>
   );
 }

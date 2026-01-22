@@ -10,9 +10,10 @@ import { SettingsSection } from "./SettingsSection";
 interface DashboardContentProps {
   activeRoute: string;
   isAdmin: boolean;
+  userId: number;
 }
 
-export function DashboardContent({ activeRoute, isAdmin }: DashboardContentProps) {
+export function DashboardContent({ activeRoute, isAdmin, userId }: DashboardContentProps) {
   // Route to the appropriate section
   const renderContent = () => {
     switch (activeRoute) {
@@ -23,7 +24,7 @@ export function DashboardContent({ activeRoute, isAdmin }: DashboardContentProps
         return <ProfileSection />;
       
       case "payments":
-        return <PaymentsSection />;
+        return <PaymentsSection userId={userId} />;
       
       case "enrollees":
         return <EnrolleesSection />;
