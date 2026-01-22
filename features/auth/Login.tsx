@@ -109,8 +109,6 @@ export default function Login() {
           width={50}
           height={20}
           className="mx-auto mb-2"
-          priority
-          unoptimized
         />
         <h1 className="text-2xl font-bold text-black">Welcome back</h1>
         <p className="text-sm text-gray-600">
