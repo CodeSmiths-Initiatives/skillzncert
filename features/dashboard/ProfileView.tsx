@@ -198,37 +198,44 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
   return (
     <div className="space-y-6">
       {/* Header with Edit Button */}
-      <div className="flex items-center justify-between bg-blue-500 text-white rounded-xl p-6 shadow-lg">
-        <div>
-          <h1 className="text-3xl font-bold mb-1">My Profile</h1>
-          <p className="text-white/90">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-blue-500 text-white rounded-xl p-4 md:p-6 shadow-lg">
+        <div className="flex-1">
+          <h1 className="text-2xl md:text-3xl font-bold mb-1">My Profile</h1>
+          <p className="text-white/90 text-sm md:text-base">
             View and manage your enrollment information
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2 md:gap-3 flex-shrink-0">
           {!isEditing ? (
             <Button
               onClick={() => setIsEditing(true)}
-              className="bg-white text-blue-500 hover:bg-gray-100 font-semibold"
+              className="bg-white text-blue-500 hover:bg-gray-100 font-semibold text-sm md:text-base px-3 md:px-4 py-2 whitespace-nowrap"
+              suppressHydrationWarning
             >
-              <FiEdit2 className="mr-2" /> Edit Profile
+              <FiEdit2 className="md:mr-2" size={16} /> 
+              <span className="hidden sm:inline">Edit Profile</span>
+              <span className="sm:hidden">Edit</span>
             </Button>
           ) : (
             <>
               <Button
                 onClick={handleCancel}
                 disabled={isPending}
-                className="bg-white/20 hover:bg-white/30 text-white font-semibold"
+                className="bg-white/20 hover:bg-white/30 text-white font-semibold text-sm md:text-base px-3 md:px-4 py-2 whitespace-nowrap"
+                suppressHydrationWarning
               >
-                <FiX className="mr-2" /> Cancel
+                <FiX className="md:mr-2" size={16} /> 
+                <span className="hidden sm:inline">Cancel</span>
               </Button>
               <Button
                 onClick={handleSave}
                 disabled={isPending}
-                className="bg-white text-[#51A8B1] hover:bg-gray-100 font-semibold"
+                className="bg-white text-[#51A8B1] hover:bg-gray-100 font-semibold text-sm md:text-base px-3 md:px-4 py-2 whitespace-nowrap"
+                suppressHydrationWarning
               >
-                <FiSave className="mr-2" />{" "}
-                {isPending ? "Saving..." : "Save Changes"}
+                <FiSave className="md:mr-2" size={16} />{" "}
+                <span className="hidden sm:inline">{isPending ? "Saving..." : "Save Changes"}</span>
+                <span className="sm:hidden">{isPending ? "..." : "Save"}</span>
               </Button>
             </>
           )}

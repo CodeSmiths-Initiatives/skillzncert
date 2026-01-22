@@ -10,10 +10,13 @@ import {
   Download,
   ExternalLink,
   Loader2,
+  FileText,
+  Printer,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { getUserPayments } from "@/actions/payment/get-user-payments.actions";
 import type { PaymentData } from "@/lib/services/payment.service";
+import { InvoiceModal } from "./InvoiceModal";
 
 interface PaymentsSectionProps {
   userId: number;
@@ -22,6 +25,8 @@ interface PaymentsSectionProps {
 export function PaymentsSection({ userId }: PaymentsSectionProps) {
   const [payments, setPayments] = useState<PaymentData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPayment, setSelectedPayment] = useState<PaymentData | null>(null);
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const hasFetched = useRef(false);
 
   useEffect(() => {
@@ -59,6 +64,19 @@ export function PaymentsSection({ userId }: PaymentsSectionProps) {
 
   const getTotalPaid = () => {
     return payments.reduce((sum, payment) => sum + payment.amount, 0);
+  };
+
+  const handleViewInvoice = (payment: PaymentData) => {
+    setSelectedPayment(payment);
+    setIsInvoiceModalOpen(true);
+  };
+
+  const handlePrintInvoice = (payment: PaymentData) => {
+    setSelectedPayment(payment);
+    setIsInvoiceModalOpen(true);
+    setTimeout(() => {
+      window.print();
+    }, 500);
   };
 
   if (loading) {
@@ -117,33 +135,62 @@ export function PaymentsSection({ userId }: PaymentsSectionProps) {
             <p className="text-sm text-gray-500 mt-2">Your payments will appear here once you make them</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid gap-4">
             {payments.map((payment) => (
               <div
                 key={payment.id}
-                className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
+                className="group relative overflow-hidden rounded-xl border border-gray-200 bg-gradient-to-br from-white to-blue-50/30 p-4 md:p-6 shadow-sm hover:shadow-md transition-all duration-300 hover:border-blue-300"
               >
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-full bg-green-100">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
+                {/* Background decoration */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-blue-500/10 transition-colors"></div>
+                
+                <div className="relative flex flex-col md:flex-row items-start md:items-center gap-4">
+                  {/* Left section - Payment info */}
+                  <div className="flex items-start md:items-center gap-3 md:gap-4 flex-1 w-full">
+                    <div className="p-3 md:p-4 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg group-hover:scale-110 transition-transform shrink-0">
+                      <CheckCircle className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <h3 className="text-base md:text-lg font-bold text-gray-900">
+                          {payment.month} {payment.year} Payment
+                        </h3>
+                        <span className="px-2 md:px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200 whitespace-nowrap">
+                          ✓ PAID
+                        </span>
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs md:text-sm text-gray-600">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3 md:h-3.5 md:w-3.5 shrink-0" />
+                          <span className="truncate">{formatDate(payment.paymentDate)}</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <CreditCard className="h-3 w-3 md:h-3.5 md:w-3.5 shrink-0" />
+                          <span className="truncate">{payment.paymentMode}</span>
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">
-                      {payment.month} {payment.year} Payment
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {formatDate(payment.paymentDate)}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      Mode: {payment.paymentMode}
-                    </p>
+
+                  {/* Right section - Amount and actions */}
+                  <div className="flex items-center justify-between md:justify-end gap-3 md:gap-6 w-full md:w-auto">
+                    <div className="text-left md:text-right">
+                      <p className="text-xs md:text-sm text-gray-600 mb-1 font-medium">Amount Paid</p>
+                      <p className="text-xl md:text-3xl font-bold text-gray-900">{formatAmount(payment.amount)}</p>
+                    </div>
+
+                    {/* Invoice button */}
+                    <Button
+                      onClick={() => handleViewInvoice(payment)}
+                      variant="outline"
+                      size="sm"
+                      className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-300 font-semibold shadow-sm whitespace-nowrap shrink-0"
+                      suppressHydrationWarning
+                    >
+                      <FileText className="h-4 w-4 md:mr-2" />
+                      <span className="hidden md:inline">View Invoice</span>
+                    </Button>
                   </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <p className="text-xl font-bold text-gray-900">{formatAmount(payment.amount)}</p>
-                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
-                    Paid
-                  </span>
                 </div>
               </div>
             ))}
@@ -189,6 +236,13 @@ export function PaymentsSection({ userId }: PaymentsSectionProps) {
           </div>
         </div>
       </Card>
+
+      {/* Invoice Modal */}
+      <InvoiceModal
+        isOpen={isInvoiceModalOpen}
+        onClose={() => setIsInvoiceModalOpen(false)}
+        payment={selectedPayment}
+      />
     </div>
   );
 }

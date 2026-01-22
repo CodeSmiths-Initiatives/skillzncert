@@ -9,6 +9,7 @@ const userSidebarItems = [
   { label: "Overview", route: "overview", iconName: "LayoutDashboard" },
   { label: "Profile", route: "profile", iconName: "User" },
   { label: "Payments", route: "payments", iconName: "CreditCard" },
+  { label: "Schedule", route: "schedule", iconName: "Calendar" },
 ];
 
 export default function UserDashboard({ user }: { user: any }) {
@@ -21,7 +22,13 @@ export default function UserDashboard({ user }: { user: any }) {
       onNavigate={setActiveRoute}
       user={user}
     >
-      <DashboardContent activeRoute={activeRoute} isAdmin={false} userId={user.id} />
+      <DashboardContent 
+        activeRoute={activeRoute} 
+        isAdmin={false} 
+        userId={user.id}
+        username={user.username}
+        email={user.email}
+      />
     </DashboardLayout>
   );
 }

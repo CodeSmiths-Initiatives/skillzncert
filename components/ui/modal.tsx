@@ -11,6 +11,8 @@ interface ModalProps {
   title?: string;
   size?: "sm" | "md" | "lg" | "xl" | "full";
   showCloseButton?: boolean;
+  headerClassName?: string;
+  titleClassName?: string;
 }
 
 export function Modal({
@@ -20,6 +22,8 @@ export function Modal({
   title,
   size = "lg",
   showCloseButton = true,
+  headerClassName = "",
+  titleClassName = "",
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
@@ -93,11 +97,11 @@ export function Modal({
       >
         {/* Header */}
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div className={`flex items-center justify-between px-6 py-4 border-b rounded-t-2xl ${headerClassName || "border-gray-200"}`}>
             {title && (
               <h2
                 id="modal-title"
-                className="text-2xl font-bold text-gray-900"
+                className={titleClassName || "text-2xl font-bold text-gray-900"}
               >
                 {title}
               </h2>
@@ -105,10 +109,11 @@ export function Modal({
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className={`p-2 rounded-lg transition-colors ${headerClassName ? "hover:bg-white/10" : "hover:bg-gray-100"}`}
                 aria-label="Close modal"
+                suppressHydrationWarning
               >
-                <X className="h-5 w-5 text-gray-500" />
+                <X className={`h-5 w-5 ${headerClassName ? "text-white" : "text-gray-500"}`} />
               </button>
             )}
           </div>

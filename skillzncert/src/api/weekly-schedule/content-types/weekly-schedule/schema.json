@@ -1,0 +1,19 @@
+{
+  "kind": "collectionType",
+  "collectionName": "weekly_schedules",
+  "info": {
+    "singularName": "weekly-schedule",
+    "pluralName": "weekly-schedules",
+    "displayName": "Weekly Schedule"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "scheduleData": {
+      "type": "text",
+      "required": true
+    }
+  }
+}
