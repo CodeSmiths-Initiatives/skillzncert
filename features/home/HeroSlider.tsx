@@ -118,7 +118,7 @@ export default function HeroSlider() {
 									/>
 								) : (
 									<Image
-										src={slides[current].image}
+										src={slides[current].image!}
 										alt="slide image"
 										fill
 										className="object-cover"

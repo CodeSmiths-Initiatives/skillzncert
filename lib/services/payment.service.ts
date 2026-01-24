@@ -9,6 +9,7 @@ export interface PaymentData {
   amount: number;
   emailAddress: string;
   paymentDate: string;
+  reference?: string;
   createdAt: string;
   updatedAt: string;
   enrollment?: {
@@ -28,6 +29,7 @@ export interface CreatePaymentInput {
   amount: number;
   emailAddress: string;
   paymentDate: string;
+  reference?: string;
 }
 
 export async function createPayment(
@@ -92,6 +94,7 @@ export async function fetchPaymentsByEnrollment(
     amount: payment.amount || 0,
     emailAddress: payment.emailAddress || "",
     paymentDate: payment.paymentDate || "",
+    reference: payment.reference || "",
     createdAt: payment.createdAt,
     updatedAt: payment.updatedAt,
     enrollment: payment.enrollment ? {
@@ -134,6 +137,7 @@ export async function fetchAllPayments(token: string): Promise<PaymentData[]> {
     amount: payment.amount || 0,
     emailAddress: payment.emailAddress || "",
     paymentDate: payment.paymentDate || "",
+    reference: payment.reference || "",
     createdAt: payment.createdAt,
     updatedAt: payment.updatedAt,
     enrollment: payment.enrollment ? {
@@ -179,6 +183,7 @@ export async function fetchPaymentsByUser(
     amount: payment.amount || 0,
     emailAddress: payment.emailAddress || "",
     paymentDate: payment.paymentDate || "",
+    reference: payment.reference || "",
     createdAt: payment.createdAt,
     updatedAt: payment.updatedAt,
     enrollment: payment.enrollment ? {

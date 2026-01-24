@@ -149,9 +149,9 @@ export function PrintableEnrolleeView({ enrollee }: PrintableEnrolleeViewProps) 
         
         <div className="bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl p-6 space-y-4">
           <div className="print-row flex justify-between py-3 border-b border-gray-200">
-            <span className="text-gray-600 font-medium">Current Education Level</span>
+            <span className="text-gray-600 font-medium">Year of Study</span>
             <span className="text-gray-900 font-semibold">
-              {enrollee.currentEducationLevel || "N/A"}
+              {enrollee.yearOfStudy || "N/A"}
             </span>
           </div>
         </div>

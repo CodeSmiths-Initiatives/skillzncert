@@ -37,9 +37,7 @@
       "type": "enumeration",
       "enum": [
         "Delhi",
-        "Maharashtra",
-        "Karnataka",
-        "Tamil Nadu"
+        "Lagos"
       ]
     },
     "country": {
@@ -48,7 +46,8 @@
         "India",
         "USA",
         "Canada",
-        "UK"
+        "UK",
+        "Nigeria"
       ]
     },
     "preferredLanguage": {
@@ -99,6 +98,27 @@
       "relation": "oneToMany",
       "target": "api::payment.payment",
       "mappedBy": "enrollment"
+    },
+    "preferredNetwork": {
+      "type": "enumeration",
+      "enum": [
+        "Mtn",
+        "Glo",
+        "Airtel",
+        "mobile9"
+      ]
+    },
+    "yearOfStudy": {
+      "type": "integer"
+    },
+    "numberForData": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 10,
+      "required": true
+    },
+    "netacadId": {
+      "type": "string"
     }
   }
 }

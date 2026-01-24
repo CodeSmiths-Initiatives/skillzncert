@@ -16,7 +16,6 @@ export default function Onboarding() {
 	const [passport, setPassport] = useState<File | null>(null);
 	const [schoolId, setSchoolId] = useState<File | null>(null);
 	const [hasNetAcad, setHasNetAcad] = useState<boolean | null>(null);
-	// const [hasNetAcad, setHasNetAcad] = useState(false);
 
 	const [form, setForm] = useState({
 		firstName: "",
@@ -26,19 +25,21 @@ export default function Onboarding() {
 		state: "",
 		country: "",
 		preferredLanguage: "",
-		YearOfStudy: "",
+		yearOfStudy: "",
 		previousCertification: "",
 		universityAttending: "",
 		hasNetacadAccount: false,
 		netacadId: "",
-		PreferredNetwork: "",
-		NumberforData: "",
+		preferredNetwork: "",
+		numberForData: "",
 	});
 
 	const [errors, setErrors] = useState({
 		firstName: "",
 		lastName: "",
 		phoneNumber: "",
+		numberForData: "",
+		yearOfStudy: "",
 	});
 
 	// Validation functions
@@ -73,6 +74,21 @@ export default function Onboarding() {
 		return "";
 	};
 
+	const validateYearOfStudy = (year: string): string => {
+		if (!year.trim()) {
+			return "";
+		}
+		const digitsOnly = year.replace(/\D/g, "");
+		if (digitsOnly.length !== 4) {
+			return "Year must be exactly 4 digits";
+		}
+		const yearNum = parseInt(digitsOnly);
+		if (yearNum < 1900 || yearNum > 2100) {
+			return "Please enter a valid year";
+		}
+		return "";
+	};
+
 	const handleChange = (
 		e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
 	) => {
@@ -95,6 +111,16 @@ export default function Onboarding() {
 				...prev,
 				phoneNumber: validatePhoneNumber(value),
 			}));
+		} else if (name === "numberForData") {
+			setErrors((prev) => ({
+				...prev,
+				numberForData: validatePhoneNumber(value),
+			}));
+		} else if (name === "yearOfStudy") {
+			setErrors((prev) => ({
+				...prev,
+				yearOfStudy: validateYearOfStudy(value),
+			}));
 		}
 	};
 
@@ -102,11 +128,15 @@ export default function Onboarding() {
 		const firstNameError = validateName(form.firstName, "First name");
 		const lastNameError = validateName(form.lastName, "Last name");
 		const phoneError = validatePhoneNumber(form.phoneNumber);
+		const numberForDataError = validatePhoneNumber(form.numberForData);
+		const yearError = validateYearOfStudy(form.yearOfStudy);
 
 		setErrors({
 			firstName: firstNameError,
 			lastName: lastNameError,
 			phoneNumber: phoneError,
+			numberForData: numberForDataError,
+			yearOfStudy: yearError,
 		});
 
 		// Check required fields
@@ -114,9 +144,9 @@ export default function Onboarding() {
 			!form.firstName ||
 			!form.lastName ||
 			!form.phoneNumber ||
-			!form.address
-			// !form.state ||
-			// !form.country
+			!form.address ||
+			!form.preferredNetwork ||
+			!form.numberForData
 		) {
 			showToast({
 				type: "error",
@@ -127,7 +157,7 @@ export default function Onboarding() {
 		}
 
 		// Check validation errors
-		if (firstNameError || lastNameError || phoneError) {
+		if (firstNameError || lastNameError || phoneError || numberForDataError || yearError) {
 			showToast({
 				type: "error",
 				title: "Validation failed",
@@ -200,6 +230,12 @@ export default function Onboarding() {
 				return;
 			}
 
+			showToast({
+				type: "success",
+				title: "Enrollment submitted",
+				description: "Your enrollment has been successfully saved.",
+			});
+
 			router.replace("/payment");
 		});
 	};
@@ -207,14 +243,13 @@ export default function Onboarding() {
 	return (
 		<div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-[#f5fbfc]">
 			{/* LEFT BRAND PANEL */}
-			<div className="hidden lg:flex flex-col justify-center px-16 bg-gradient-to-br from-[#51A8B1] to-[#3b8f97] text-white">
-				<h1 className="text-4xl font-bold mb-4">Enrollment Application</h1>
-				<p className="text-lg text-white/90 max-w-md">
-					Complete your enrollment to begin your certification journey. This
-					process takes only a few minutes.
+			<div className="hidden lg:flex flex-col justify-center px-12 bg-gradient-to-br from-[#51A8B1] to-[#3b8f97] text-white">
+				<h1 className="text-3xl font-bold mb-3">Enrollment Application</h1>
+				<p className="text-base text-white/90 max-w-md">
+					Complete your enrollment to begin your certification journey.
 				</p>
 
-				<div className="mt-10 space-y-4 text-sm text-white/80">
+				<div className="mt-8 space-y-3 text-sm text-white/80">
 					<p>✔ Secure & confidential</p>
 					<p>✔ Reviewed by our team</p>
 					<p>✔ One-time submission</p>
@@ -222,16 +257,16 @@ export default function Onboarding() {
 			</div>
 
 			{/* RIGHT FORM PANEL */}
-			<div className="flex items-center justify-center px-6 py-12">
-				<div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8 md:p-10">
+			<div className="flex items-center justify-center px-6 py-8">
+				<div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8">
 					<h2 className="text-2xl font-bold text-gray-900 mb-1">
 						Personal & Academic Details
 					</h2>
-					<p className="text-sm text-gray-500 mb-8">
+					<p className="text-sm text-gray-500 mb-6">
 						Fields marked * are required
 					</p>
 
-					<form onSubmit={submit} className="space-y-8">
+					<form onSubmit={submit} className="space-y-5">
 						<TwoCol>
 							<div>
 								<Input
@@ -263,6 +298,9 @@ export default function Onboarding() {
 									<p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
 								)}
 							</div>
+						</TwoCol>
+
+						<TwoCol>
 							<div>
 								<Input
 									name="phoneNumber"
@@ -289,6 +327,7 @@ export default function Onboarding() {
 								onChange={handleChange}
 							/>
 						</TwoCol>
+
 						<TwoCol>
 							<select
 								name="state"
@@ -311,6 +350,7 @@ export default function Onboarding() {
 								<option value="Nigeria">Nigeria</option>
 							</select>
 						</TwoCol>
+
 						<TwoCol>
 							<Input
 								name="preferredLanguage"
@@ -318,60 +358,87 @@ export default function Onboarding() {
 								value={form.preferredLanguage}
 								onChange={handleChange}
 							/>
+						<div>
 							<Input
-								name="YearOfStudy"
-								placeholder="Year of Study"
-								value={form.YearOfStudy}
+								type="number"
+								name="yearOfStudy"
+								placeholder="Year of Study (e.g., 2024)"
+								value={form.yearOfStudy}
 								onChange={handleChange}
+								min="1900"
+								max="2100"
+								className={
+									errors.yearOfStudy ? "border-red-500 focus:ring-red-500" : ""
+								}
 							/>
-							<Input
-								name="previousCertification"
-								placeholder="Previous Certification"
-								value={form.previousCertification}
-								onChange={handleChange}
-							/>
-							<Input
-								name="universityAttending"
+							{errors.yearOfStudy && (
+								<p className="text-red-500 text-xs mt-1">{errors.yearOfStudy}</p>
+							)}
+						</div>
+					</TwoCol>
+
+					<TwoCol>
+						<Input
+							name="previousCertification"
+							placeholder="Previous Certification"
+							value={form.previousCertification}
+							onChange={handleChange}
+						/>
+						<Input
+							name="universityAttending"
 								placeholder="University"
 								value={form.universityAttending}
 								onChange={handleChange}
 							/>
 						</TwoCol>
+
 						<TwoCol>
 							<select
-								name="PreferredNetwork"
+								name="preferredNetwork"
 								className="input-field"
-								value={form.PreferredNetwork}
+								value={form.preferredNetwork}
 								onChange={handleChange}
 							>
 								<option value="">Select Network *</option>
 								<option value="Mtn">Mtn</option>
 								<option value="Glo">Glo</option>
 								<option value="Airtel">Airtel</option>
-								<option value="9mobile">9mobile</option>
+								<option value="mobile9">9mobile</option>
 							</select>
+						<div>
 							<Input
-								name="NumberforData"
-								placeholder="Preferred Number for FREE DATA *"
-								value={form.NumberforData}
+								name="numberForData"
+								placeholder="Number for FREE DATA *"
+								value={form.numberForData}
 								onChange={handleChange}
+								maxLength={10}
+								className={
+									errors.numberForData
+										? "border-red-500 focus:ring-red-500"
+										: ""
+								}
 							/>
-						</TwoCol>
-
-						<div className="gap-10">
+							{errors.numberForData && (
+								<p className="text-red-500 text-xs mt-1">
+									{errors.numberForData}
+								</p>
+							)}
+						</div>
+					</TwoCol>
+						<div className="space-y-3">
 							<div className="flex flex-col space-y-2">
-								<label className="font-medium">
+								<label className="font-medium text-sm">
 									Do you have a NetAcad account?
 								</label>
-								<div className="flex items-center space-x-5 mt-1">
+								<div className="flex items-center space-x-5">
 									<label className="flex items-center space-x-2 cursor-pointer">
 										<input
 											type="radio"
 											name="netacad"
-											checked={hasNetAcad === true}
+											checked={form.hasNetacadAccount === true}
 											onChange={() => {
 												setHasNetAcad(true);
-												setForm((f) => ({ ...f, hasNetacadAccount: true }));
+												setForm((f) => ({ ...f, hasNetacadAccount: true, netacadId: "" }));
 											}}
 										/>
 										<span>Yes</span>
@@ -380,20 +447,20 @@ export default function Onboarding() {
 										<input
 											type="radio"
 											name="netacad"
-											checked={hasNetAcad === false}
+											checked={form.hasNetacadAccount === false}
 											onChange={() => {
 												setHasNetAcad(false);
-												setForm((f) => ({ ...f, hasNetacadAccount: false }));
+												setForm((f) => ({ ...f, hasNetacadAccount: false, netacadId: "" }));
 											}}
 										/>
 										<span>No</span>
 									</label>
 								</div>
-								{hasNetAcad && (
+								{form.hasNetacadAccount && (
 									<Input
 										name="netacadId"
 										placeholder="Enter your NetAcad email or ID"
-										className="mt-1"
+										className="mt-2"
 										value={form.netacadId || ""}
 										onChange={handleChange}
 									/>
@@ -401,19 +468,14 @@ export default function Onboarding() {
 							</div>
 						</div>
 
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 							<FileUpload label="Passport *" onSelect={setPassport} />
 							<FileUpload label="School ID Card *" onSelect={setSchoolId} />
 						</div>
-						{/* <Checkbox
-							checked={hasNetAcad}
-							onCheckedChange={(checked) => setHasNetAcad(Boolean(checked))}
-						/>
 
-						{hasNetAcad && <Input placeholder="Enter NetAcad ID" />} */}
 						<Button
 							disabled={isPending}
-							className="w-full bg-[#51A8B1] py-6 text-base font-semibold hover:bg-teal-600"
+							className="w-full bg-[#51A8B1] py-5 text-base font-semibold hover:bg-teal-600"
 						>
 							{isPending ? "Submitting..." : "Continue to Payment"}
 						</Button>
@@ -428,7 +490,7 @@ export default function Onboarding() {
 
 function TwoCol({ children }: { children: React.ReactNode }) {
 	return (
-		<div className="grid grid-cols-1 md:grid-cols-2 gap-6">{children}</div>
+		<div className="grid grid-cols-1 md:grid-cols-2 gap-5">{children}</div>
 	);
 }
 
@@ -442,8 +504,8 @@ function FileUpload({
 	return (
 		<div>
 			<label className="text-sm font-medium">{label}</label>
-			<div className="border-2 border-dashed rounded-xl p-6 text-center mt-2 hover:border-[#51A8B1] transition">
-				<BiSolidImageAdd className="text-5xl text-gray-300 mx-auto mb-3" />
+			<div className="border-2 border-dashed rounded-xl p-5 text-center mt-2 hover:border-[#51A8B1] transition">
+				<BiSolidImageAdd className="text-4xl text-gray-300 mx-auto mb-2" />
 				<Input
 					type="file"
 					accept="image/png,image/jpeg"
@@ -451,7 +513,7 @@ function FileUpload({
 						if (e.target.files?.[0]) onSelect(e.target.files[0]);
 					}}
 				/>
-				<p className="text-xs text-gray-500 mt-2">JPG / PNG • Max 1MB</p>
+				<p className="text-xs text-gray-500 mt-2">JPG/PNG • Max 1MB</p>
 			</div>
 		</div>
 	);

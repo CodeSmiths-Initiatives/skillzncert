@@ -8,8 +8,7 @@ import { DashboardContent } from "./DashboardContent";
 const userSidebarItems = [
   { label: "Overview", route: "overview", iconName: "LayoutDashboard" },
   { label: "Profile", route: "profile", iconName: "User" },
-  { label: "Payments", route: "payments", iconName: "CreditCard" },
-  { label: "Schedule", route: "schedule", iconName: "Calendar" },
+  { label: "Payments", route: "payments", iconName: "CreditCard" }
 ];
 
 export default function UserDashboard({ user }: { user: any }) {

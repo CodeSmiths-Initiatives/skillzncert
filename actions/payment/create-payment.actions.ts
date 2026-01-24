@@ -46,6 +46,11 @@ export async function createPaymentAction(paymentData: CreatePaymentInput) {
       return { success: false, message: "Payment date is required" };
     }
 
+    // Validate reference if provided
+    if (paymentData.reference && paymentData.reference.trim().length === 0) {
+      return { success: false, message: "Payment reference cannot be empty" };
+    }
+
     const result = await createPayment(paymentData, token);
 
     return {

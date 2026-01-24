@@ -14,10 +14,13 @@ export interface EnrollmentData {
   state: string;
   country: string;
   preferredLanguage: string;
-  currentEducationLevel: string;
+  yearOfStudy: string;
   previousCertification: string;
   universityAttending: string;
   hasNetacadAccount: boolean;
+  netacadId?: string;
+  preferredNetwork: string;
+  numberForData: string;
   passport?: {
     url: string;
     name: string;
@@ -43,7 +46,7 @@ export interface EnrolleeData {
   updatedAt: string;
   state: string;
   country: string;
-  currentEducationLevel: string;
+  yearOfStudy: string;
   passport?: {
     url: string;
     name: string;
@@ -59,9 +62,28 @@ export interface EnrolleeData {
   };
 }
 
+interface EnrollmentCreateData {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  address: string;
+  state: string;
+  country: string;
+  preferredLanguage: string;
+  yearOfStudy: string;
+  previousCertification: string;
+  universityAttending: string;
+  hasNetacadAccount: boolean;
+  netacadId: string;
+  preferredNetwork: string;
+  numberForData: string;
+  passport: number;
+  schoolIdCard: number;
+}
+
 export async function fetchEnrollmentByUser(
   userId: number,
-  token: string
+  token: string,
 ): Promise<EnrollmentStatus> {
   const res = await fetch(
     `${process.env.STRAPI_URL}/api/enrollments?filters[user][id][$eq]=${userId}`,
@@ -70,7 +92,7 @@ export async function fetchEnrollmentByUser(
         Authorization: `Bearer ${token}`,
       },
       cache: "no-store",
-    }
+    },
   );
 
   if (!res.ok) {
@@ -91,8 +113,7 @@ export async function fetchEnrollmentByUser(
   };
 }
 
-export async function submitEnrollment(formData: FormData, token: string) { 
-
+export async function submitEnrollment(formData: FormData, token: string) {
   if (!token) {
     return { success: false, message: "Unauthorized" };
   }
@@ -108,10 +129,10 @@ export async function submitEnrollment(formData: FormData, token: string) {
 
     // Upload passport
     const passportFormData = new FormData();
-    passportFormData.append('files', passportFile, passportFile.name);
-    
+    passportFormData.append("files", passportFile, passportFile.name);
+
     const passportRes = await fetch(`${process.env.STRAPI_URL}/api/upload`, {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -127,10 +148,10 @@ export async function submitEnrollment(formData: FormData, token: string) {
 
     // Upload school ID card
     const schoolIdFormData = new FormData();
-    schoolIdFormData.append('files', schoolIdFile, schoolIdFile.name);
-    
+    schoolIdFormData.append("files", schoolIdFile, schoolIdFile.name);
+
     const schoolIdRes = await fetch(`${process.env.STRAPI_URL}/api/upload`, {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -145,7 +166,7 @@ export async function submitEnrollment(formData: FormData, token: string) {
     const schoolIdCardId = schoolIdUploaded[0]?.id;
 
     // Step 2: Create enrollment entry with file IDs
-    const enrollmentData = {
+    const enrollmentData: EnrollmentCreateData = {
       firstName: formData.get("data[firstName]") as string,
       lastName: formData.get("data[lastName]") as string,
       phoneNumber: formData.get("data[phoneNumber]") as string,
@@ -153,14 +174,20 @@ export async function submitEnrollment(formData: FormData, token: string) {
       state: formData.get("data[state]") as string,
       country: formData.get("data[country]") as string,
       preferredLanguage: formData.get("data[preferredLanguage]") as string,
-      currentEducationLevel: formData.get("data[currentEducationLevel]") as string,
-      previousCertification: formData.get("data[previousCertification]") as string,
+      yearOfStudy: formData.get("data[yearOfStudy]") as string,
+      previousCertification: formData.get(
+        "data[previousCertification]",
+      ) as string,
       universityAttending: formData.get("data[universityAttending]") as string,
       hasNetacadAccount: formData.get("data[hasNetacadAccount]") === "true",
-      passport: passportId,           // Single media field - use file ID
-      schoolIdCard: schoolIdCardId,   // Single media field - use file ID
+      netacadId: formData.get("data[netacadId]") as string,
+      preferredNetwork: formData.get("data[preferredNetwork]") as string,
+      numberForData: formData.get("data[numberForData]") as string,
+      passport: passportId,
+      schoolIdCard: schoolIdCardId,
     };
 
+    // Submit enrollment
     const res = await fetch(`${process.env.STRAPI_URL}/api/enrollments`, {
       method: "POST",
       headers: {
@@ -193,7 +220,7 @@ export async function submitEnrollment(formData: FormData, token: string) {
 export async function updateEnrollmentPayment(
   documentId: string,
   isPaymentDone: boolean,
-  token: string
+  token: string,
 ) {
   const res = await fetch(
     `${process.env.STRAPI_URL}/api/enrollments/${documentId}`,
@@ -209,30 +236,25 @@ export async function updateEnrollmentPayment(
         },
       }),
       cache: "no-store",
-    }
+    },
   );
 
   const json = await res.json();
 
   if (!res.ok) {
-    throw new Error(
-      json?.error?.message || "Failed to update payment status"
-    );
+    throw new Error(json?.error?.message || "Failed to update payment status");
   }
 
   return json;
 }
 
-export async function getEnrollmentStatus(
-  userId: number,
-  token: string
-) {
+export async function getEnrollmentStatus(userId: number, token: string) {
   const res = await fetch(
     `${process.env.STRAPI_URL}/api/enrollments?filters[user][id][$eq]=${userId}`,
     {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
-    }
+    },
   );
 
   if (!res.ok) {
@@ -259,14 +281,14 @@ export async function getEnrollmentStatus(
 
 export async function getEnrollmentData(
   userId: number,
-  token: string
+  token: string,
 ): Promise<EnrollmentData | null> {
   const res = await fetch(
     `${process.env.STRAPI_URL}/api/enrollments?filters[user][id][$eq]=${userId}&populate=*`,
     {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
-    }
+    },
   );
 
   if (!res.ok) {
@@ -290,10 +312,13 @@ export async function getEnrollmentData(
     state: enrollment.state || "",
     country: enrollment.country || "",
     preferredLanguage: enrollment.preferredLanguage || "",
-    currentEducationLevel: enrollment.currentEducationLevel || "",
+    yearOfStudy: enrollment.yearOfStudy || "",
     previousCertification: enrollment.previousCertification || "",
     universityAttending: enrollment.universityAttending || "",
     hasNetacadAccount: enrollment.hasNetacadAccount || false,
+    netacadId: enrollment.netacadId || "",
+    preferredNetwork: enrollment.preferredNetwork || "",
+    numberForData: enrollment.numberForData || "",
     passport: enrollment.passport
       ? {
           url: `${process.env.STRAPI_URL}${enrollment.passport.url}`,
@@ -315,20 +340,29 @@ export async function getEnrollmentData(
 export async function updateEnrollmentData(
   documentId: string,
   formData: FormData,
-  token: string
+  token: string,
 ) {
   try {
     const updateData: any = {};
 
-
     // Extract text fields from FormData
     const textFields = [
-      'firstName', 'lastName', 'phoneNumber', 'address', 
-      'state', 'country', 'preferredLanguage', 'currentEducationLevel',
-      'previousCertification', 'universityAttending'
+      "firstName",
+      "lastName",
+      "phoneNumber",
+      "address",
+      "state",
+      "country",
+      "preferredLanguage",
+      "yearOfStudy",
+      "previousCertification",
+      "universityAttending",
+      "netacadId",
+      "preferredNetwork",
+      "numberForData",
     ];
 
-    textFields.forEach(field => {
+    textFields.forEach((field) => {
       const value = formData.get(`data[${field}]`);
       if (value !== null) {
         updateData[field] = value as string;
@@ -336,9 +370,9 @@ export async function updateEnrollmentData(
     });
 
     // Handle hasNetacadAccount
-    const hasNetacadAccount = formData.get('data[hasNetacadAccount]');
+    const hasNetacadAccount = formData.get("data[hasNetacadAccount]");
     if (hasNetacadAccount !== null) {
-      updateData.hasNetacadAccount = hasNetacadAccount === 'true';
+      updateData.hasNetacadAccount = hasNetacadAccount === "true";
     }
 
     // Step 1: Upload new files if provided
@@ -352,10 +386,10 @@ export async function updateEnrollmentData(
     if (passportFile && passportFile instanceof File && passportFile.size > 0) {
       console.log("Uploading passport...");
       const passportFormData = new FormData();
-      passportFormData.append('files', passportFile, passportFile.name);
-      
+      passportFormData.append("files", passportFile, passportFile.name);
+
       const passportRes = await fetch(`${process.env.STRAPI_URL}/api/upload`, {
-        method: 'POST',
+        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -375,10 +409,10 @@ export async function updateEnrollmentData(
     if (schoolIdFile && schoolIdFile instanceof File && schoolIdFile.size > 0) {
       console.log("Uploading school ID...");
       const schoolIdFormData = new FormData();
-      schoolIdFormData.append('files', schoolIdFile, schoolIdFile.name);
-      
+      schoolIdFormData.append("files", schoolIdFile, schoolIdFile.name);
+
       const schoolIdRes = await fetch(`${process.env.STRAPI_URL}/api/upload`, {
-        method: 'POST',
+        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -405,7 +439,7 @@ export async function updateEnrollmentData(
         },
         body: JSON.stringify({ data: updateData }),
         cache: "no-store",
-      }
+      },
     );
 
     const json = await res.json();
@@ -428,7 +462,9 @@ export async function updateEnrollmentData(
   }
 }
 
-export async function fetchAllEnrollments(token: string): Promise<EnrolleeData[]> {
+export async function fetchAllEnrollments(
+  token: string,
+): Promise<EnrolleeData[]> {
   const res = await fetch(
     `${process.env.STRAPI_URL}/api/enrollments?populate=*&sort=createdAt:desc`,
     {
@@ -436,7 +472,7 @@ export async function fetchAllEnrollments(token: string): Promise<EnrolleeData[]
         Authorization: `Bearer ${token}`,
       },
       cache: "no-store",
-    }
+    },
   );
 
   if (!res.ok) {
@@ -460,7 +496,7 @@ export async function fetchAllEnrollments(token: string): Promise<EnrolleeData[]
     updatedAt: enrollment.updatedAt,
     state: enrollment.state || "",
     country: enrollment.country || "",
-    currentEducationLevel: enrollment.currentEducationLevel || "",
+    yearOfStudy: enrollment.yearOfStudy || "",
     passport: enrollment.passport
       ? {
           url: `${process.env.STRAPI_URL}${enrollment.passport.url}`,
@@ -473,10 +509,12 @@ export async function fetchAllEnrollments(token: string): Promise<EnrolleeData[]
           name: enrollment.schoolIdCard.name,
         }
       : undefined,
-    user: enrollment.user ? {
-      id: enrollment.user.id,
-      username: enrollment.user.username,
-      email: enrollment.user.email,
-    } : undefined,
+    user: enrollment.user
+      ? {
+          id: enrollment.user.id,
+          username: enrollment.user.username,
+          email: enrollment.user.email,
+        }
+      : undefined,
   }));
 }

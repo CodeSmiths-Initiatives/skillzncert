@@ -180,7 +180,7 @@ export function EnrolleesSection() {
                 <th className="text-left py-4 px-4 font-semibold text-gray-700">Contact</th>
                 <th className="text-left py-4 px-4 font-semibold text-gray-700">Location</th>
                 <th className="text-left py-4 px-4 font-semibold text-gray-700">Enrolled Date</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Education Level</th>
+                <th className="text-left py-4 px-4 font-semibold text-gray-700">Education Year</th>
                 <th className="text-left py-4 px-4 font-semibold text-gray-700">Payment Status</th>
                 <th className="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
               </tr>
@@ -227,7 +227,7 @@ export function EnrolleesSection() {
                   </td>
                   <td className="py-4 px-4">
                     <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                      {enrollee.currentEducationLevel || "N/A"}
+                      {enrollee.yearOfStudy || "N/A"}
                     </span>
                   </td>
                   <td className="py-4 px-4">

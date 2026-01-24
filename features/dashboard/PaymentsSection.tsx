@@ -168,6 +168,12 @@ export function PaymentsSection({ userId }: PaymentsSectionProps) {
                           <CreditCard className="h-3 w-3 md:h-3.5 md:w-3.5 shrink-0" />
                           <span className="truncate">{payment.paymentMode}</span>
                         </span>
+                        {payment.reference && (
+                          <span className="flex items-center gap-1">
+                            <span className="text-gray-400">#</span>
+                            <span className="font-mono text-xs truncate">{payment.reference}</span>
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

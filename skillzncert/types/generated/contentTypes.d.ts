@@ -575,7 +575,9 @@ export interface ApiEnrollmentEnrollment extends Struct.CollectionTypeSchema {
   };
   attributes: {
     address: Schema.Attribute.String;
-    country: Schema.Attribute.Enumeration<['India', 'USA', 'Canada', 'UK']>;
+    country: Schema.Attribute.Enumeration<
+      ['India', 'USA', 'Canada', 'UK', 'Nigeria']
+    >;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -598,6 +600,13 @@ export interface ApiEnrollmentEnrollment extends Struct.CollectionTypeSchema {
       'api::enrollment.enrollment'
     > &
       Schema.Attribute.Private;
+    netacadId: Schema.Attribute.String;
+    numberForData: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 10;
+        minLength: 10;
+      }>;
     passport: Schema.Attribute.Media<'images' | 'files'> &
       Schema.Attribute.Required;
     payments: Schema.Attribute.Relation<'oneToMany', 'api::payment.payment'>;
@@ -608,13 +617,14 @@ export interface ApiEnrollmentEnrollment extends Struct.CollectionTypeSchema {
         minLength: 10;
       }>;
     preferredLanguage: Schema.Attribute.String;
+    preferredNetwork: Schema.Attribute.Enumeration<
+      ['Mtn', 'Glo', 'Airtel', 'mobile9']
+    >;
     previousCertification: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     schoolIdCard: Schema.Attribute.Media<'images' | 'files'> &
       Schema.Attribute.Required;
-    state: Schema.Attribute.Enumeration<
-      ['Delhi', 'Maharashtra', 'Karnataka', 'Tamil Nadu']
-    >;
+    state: Schema.Attribute.Enumeration<['Delhi', 'Lagos']>;
     universityAttending: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -623,6 +633,7 @@ export interface ApiEnrollmentEnrollment extends Struct.CollectionTypeSchema {
       'oneToOne',
       'plugin::users-permissions.user'
     >;
+    yearOfStudy: Schema.Attribute.Integer;
   };
 }
 
@@ -689,6 +700,7 @@ export interface ApiPaymentPayment extends Struct.CollectionTypeSchema {
     paymentDate: Schema.Attribute.Date & Schema.Attribute.Required;
     paymentMode: Schema.Attribute.String & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
+    reference: Schema.Attribute.Text;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

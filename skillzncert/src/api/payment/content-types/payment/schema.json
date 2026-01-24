@@ -48,6 +48,9 @@
     "userDocumentId": {
       "type": "string",
       "required": true
+    },
+    "reference": {
+      "type": "text"
     }
   }
 }

@@ -42,6 +42,13 @@ const COUNTRIES = [
   { value: "UK", label: "UK" },
 ];
 
+const NETWORKS = [
+  { value: "Mtn", label: "Mtn" },
+  { value: "Glo", label: "Glo" },
+  { value: "Airtel", label: "Airtel" },
+  { value: "mobile9", label: "9mobile" },
+];
+
 export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -58,10 +65,13 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
     state: enrollment.state,
     country: enrollment.country,
     preferredLanguage: enrollment.preferredLanguage,
-    currentEducationLevel: enrollment.currentEducationLevel,
+    yearOfStudy: enrollment.yearOfStudy,
     previousCertification: enrollment.previousCertification,
     universityAttending: enrollment.universityAttending,
     hasNetacadAccount: enrollment.hasNetacadAccount,
+    netacadId: enrollment.netacadId || "",
+    preferredNetwork: enrollment.preferredNetwork,
+    numberForData: enrollment.numberForData,
   });
 
   const [errors, setErrors] = useState({
@@ -99,10 +109,13 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
       state: enrollment.state,
       country: enrollment.country,
       preferredLanguage: enrollment.preferredLanguage,
-      currentEducationLevel: enrollment.currentEducationLevel,
+      yearOfStudy: enrollment.yearOfStudy,
       previousCertification: enrollment.previousCertification,
       universityAttending: enrollment.universityAttending,
       hasNetacadAccount: enrollment.hasNetacadAccount,
+      netacadId: enrollment.netacadId || "",
+      preferredNetwork: enrollment.preferredNetwork,
+      numberForData: enrollment.numberForData,
     });
     setErrors({
       firstName: "",
@@ -284,6 +297,14 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
             error={isEditing ? errors.phoneNumber : undefined}
           />
           <ProfileField
+            label="Number for FREE DATA"
+            value={formData.numberForData}
+            isEditing={isEditing}
+            name="numberForData"
+            onChange={handleChange}
+            type="tel"
+          />
+          <ProfileField
             label="Preferred Language"
             value={formData.preferredLanguage}
             isEditing={isEditing}
@@ -331,11 +352,12 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
       >
         <TwoColumnGrid>
           <ProfileField
-            label="Current Education Level"
-            value={formData.currentEducationLevel}
+            label="Year of Study"
+            value={formData.yearOfStudy}
             isEditing={isEditing}
-            name="currentEducationLevel"
+            name="yearOfStudy"
             onChange={handleChange}
+            type="number"
           />
           <ProfileField
             label="University Attending"
@@ -350,6 +372,14 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
             isEditing={isEditing}
             name="previousCertification"
             onChange={handleChange}
+          />
+          <ProfileField
+            label="Preferred Network"
+            value={formData.preferredNetwork}
+            isEditing={isEditing}
+            name="preferredNetwork"
+            onChange={handleChange}
+            options={NETWORKS}
           />
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-500">
@@ -374,6 +404,15 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
               </p>
             )}
           </div>
+          {formData.hasNetacadAccount && (
+            <ProfileField
+              label="NetAcad ID/Email"
+              value={formData.netacadId}
+              isEditing={isEditing}
+              name="netacadId"
+              onChange={handleChange}
+            />
+          )}
         </TwoColumnGrid>
       </ProfileSection>
 

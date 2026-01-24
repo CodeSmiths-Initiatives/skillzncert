@@ -216,6 +216,12 @@ export function PrintableInvoiceView({ payment }: PrintableInvoiceViewProps) {
             <p className="text-gray-500 text-xs md:text-sm font-medium uppercase tracking-wide">Payment ID</p>
             <p className="font-bold text-gray-900 text-base md:text-lg">#PAY-{payment.id}</p>
           </div>
+          {payment.reference && (
+            <div className="space-y-1 md:space-y-2">
+              <p className="text-gray-500 text-xs md:text-sm font-medium uppercase tracking-wide">Payment Reference</p>
+              <p className="font-bold text-gray-900 text-base md:text-lg font-mono">{payment.reference}</p>
+            </div>
+          )}
         </div>
       </div>
 

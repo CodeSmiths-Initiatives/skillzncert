@@ -163,6 +163,7 @@ export default function PaymentSuccessPage({ enrollmentDocumentId, userId, userE
         amount: amount ? parseInt(amount) / 100 : 5000, // Convert from kobo to naira
         emailAddress: userEmail,
         paymentDate: currentDate.toISOString(),
+        reference: reference, // Add payment reference
       });
 
       if (!paymentResult.success) {
