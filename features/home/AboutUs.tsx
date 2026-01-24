@@ -20,12 +20,13 @@ const imageVariant: Variants = {
 export default function AboutUs() {
 	return (
 		<section className="w-full bg-gray-50 px-10 md:px-20 py-5 md:py-16">
+			<div className="mb-10">
+				<h1 className="text-3xl md:text-4xl font-semibold mb-6 text-center">
+					ARE YOU READY TO BECOME AN EXPERT?
+				</h1>
+			</div>
 			<div className="grid md:grid-cols-2 gap-12 items-center max-w-7xl mx-auto">
 				<div>
-					<h1 className="text-3xl md:text-4xl font-semibold mb-6">
-						ARE YOU READY TO BECOME AN EXPERT?
-					</h1>
-
 					<p className="text-base font-medium leading-7 text-gray-700 mb-4">
 						Skillz’n’Cert, a Sec-Concepts Networks project, through its Cisco
 						Networking Academy status, partners with private and public

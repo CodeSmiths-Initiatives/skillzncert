@@ -20,11 +20,13 @@ const imageVariant: Variants = {
 export default function Solution() {
 	return (
 		<section className="w-full bg-gray-50 px-10 md:px-20 md:py-16 py-5 ">
+			<div className="mb-10">
+				<h1 className="text-3xl md:text-4xl font-semibold mb-6 text-center">
+					OUR SOLUTION
+				</h1>
+			</div>
 			<div className="grid md:grid-cols-2 grid-cols-1 items-center">
 				<div>
-					<h1 className="text-3xl md:text-4xl font-semibold mb-6">
-						OUR SOLUTION
-					</h1>
 					<p className="text-base font-medium leading-7 text-gray-700 mb-4">
 						Skillz’n’cert, a Sec-Concepts Networks project, through its Cisco
 						Networking Academy status, partners with private institutions to

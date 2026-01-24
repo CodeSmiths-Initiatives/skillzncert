@@ -12,28 +12,39 @@ export default function Navbar() {
 		<nav className="fixed top-0 left-0 w-full border-b bg-gray-50 z-50">
 			<div className="flex items-center justify-between max-w-full mx-auto p-4">
 				<div className="flex items-center space-x-2">
-					<Image src="static/images/logo 1.svg" alt="Logo" width={50} height={10} />
-					<h3 className="text-xl font-semibold">CE-EMS</h3>
+					<Image
+						src="static/images/sec logo.svg"
+						alt="Logo"
+						width={50}
+						height={10}
+					/>
+					<Image
+						src="static/images/skillsncert.svg"
+						alt="Logo"
+						width={150}
+						height={30}
+					/>
+					{/* <h3 className="text-xl font-semibold">CE-EMS</h3> */}
 				</div>
 
 				<div className="hidden md:flex items-center space-x-10">
 					<ul className="flex space-x-5 text-gray-500 font-medium">
-						<li>
+						{/* <li>
 							<Link href="/">PROGRAMMES</Link>
+						</li> */}
+						<li>
+							<Link href="#Courses">COURSES</Link>
 						</li>
 						<li>
-							<Link href="#">COURSES</Link>
-						</li>
-						<li>
-							<Link href="#">ABOUT</Link>
+							<Link href="#About">ABOUT</Link>
 						</li>
 					</ul>
 
-					<Link						
-						href="/login"
+					<Link
+						href="/register"
 						className="bg-[#51A8B1] hover:bg-teal-600 text-white text-base font-semibold px-4 py-2 rounded-md"
 					>
-						Login
+						Register
 					</Link>
 				</div>
 
