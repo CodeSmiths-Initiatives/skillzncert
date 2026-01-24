@@ -5,6 +5,7 @@ import { EnrollmentData } from "@/lib/services/enrollment.service";
 import { updateEnrollmentAction } from "@/actions/enrollment/update-enrollment.actions";
 import { useToast } from "@/components/toast/ToastContext";
 import { Button } from "@/components/ui/button";
+import { validateName, validatePhoneNumber } from "@/lib/utils";
 import {
   ProfileSection,
   ProfileField,
@@ -63,6 +64,12 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
     hasNetacadAccount: enrollment.hasNetacadAccount,
   });
 
+  const [errors, setErrors] = useState({
+    firstName: "",
+    lastName: "",
+    phoneNumber: "",
+  });
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -72,6 +79,15 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
       [name]:
         type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
+
+    // Real-time validation
+    if (name === "firstName") {
+      setErrors((prev) => ({ ...prev, firstName: validateName(value, "First name") }));
+    } else if (name === "lastName") {
+      setErrors((prev) => ({ ...prev, lastName: validateName(value, "Last name") }));
+    } else if (name === "phoneNumber") {
+      setErrors((prev) => ({ ...prev, phoneNumber: validatePhoneNumber(value) }));
+    }
   };
 
   const handleCancel = () => {
@@ -88,12 +104,46 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
       universityAttending: enrollment.universityAttending,
       hasNetacadAccount: enrollment.hasNetacadAccount,
     });
+    setErrors({
+      firstName: "",
+      lastName: "",
+      phoneNumber: "",
+    });
     setPassport(null);
     setSchoolId(null);
     setIsEditing(false);
   };
 
+  const validateForm = (): boolean => {
+    const firstNameError = validateName(formData.firstName, "First name");
+    const lastNameError = validateName(formData.lastName, "Last name");
+    const phoneError = validatePhoneNumber(formData.phoneNumber);
+
+    setErrors({
+      firstName: firstNameError,
+      lastName: lastNameError,
+      phoneNumber: phoneError,
+    });
+
+    // Check validation errors
+    if (firstNameError || lastNameError || phoneError) {
+      showToast({
+        type: "error",
+        title: "Validation failed",
+        description: "Please fix the errors in the form before saving.",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSave = () => {
+    // Validate form
+    if (!validateForm()) {
+      return;
+    }
+
     // Validate file sizes (1MB max)
     const maxSize = 1 * 1024 * 1024; // 1MB in bytes
     
@@ -148,37 +198,44 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
   return (
     <div className="space-y-6">
       {/* Header with Edit Button */}
-      <div className="flex items-center justify-between bg-blue-500 text-white rounded-xl p-6 shadow-lg">
-        <div>
-          <h1 className="text-3xl font-bold mb-1">My Profile</h1>
-          <p className="text-white/90">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-blue-500 text-white rounded-xl p-4 md:p-6 shadow-lg">
+        <div className="flex-1">
+          <h1 className="text-2xl md:text-3xl font-bold mb-1">My Profile</h1>
+          <p className="text-white/90 text-sm md:text-base">
             View and manage your enrollment information
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2 md:gap-3 flex-shrink-0">
           {!isEditing ? (
             <Button
               onClick={() => setIsEditing(true)}
-              className="bg-white text-blue-500 hover:bg-gray-100 font-semibold"
+              className="bg-white text-blue-500 hover:bg-gray-100 font-semibold text-sm md:text-base px-3 md:px-4 py-2 whitespace-nowrap"
+              suppressHydrationWarning
             >
-              <FiEdit2 className="mr-2" /> Edit Profile
+              <FiEdit2 className="md:mr-2" size={16} /> 
+              <span className="hidden sm:inline">Edit Profile</span>
+              <span className="sm:hidden">Edit</span>
             </Button>
           ) : (
             <>
               <Button
                 onClick={handleCancel}
                 disabled={isPending}
-                className="bg-white/20 hover:bg-white/30 text-white font-semibold"
+                className="bg-white/20 hover:bg-white/30 text-white font-semibold text-sm md:text-base px-3 md:px-4 py-2 whitespace-nowrap"
+                suppressHydrationWarning
               >
-                <FiX className="mr-2" /> Cancel
+                <FiX className="md:mr-2" size={16} /> 
+                <span className="hidden sm:inline">Cancel</span>
               </Button>
               <Button
                 onClick={handleSave}
                 disabled={isPending}
-                className="bg-white text-[#51A8B1] hover:bg-gray-100 font-semibold"
+                className="bg-white text-[#51A8B1] hover:bg-gray-100 font-semibold text-sm md:text-base px-3 md:px-4 py-2 whitespace-nowrap"
+                suppressHydrationWarning
               >
-                <FiSave className="mr-2" />{" "}
-                {isPending ? "Saving..." : "Save Changes"}
+                <FiSave className="md:mr-2" size={16} />{" "}
+                <span className="hidden sm:inline">{isPending ? "Saving..." : "Save Changes"}</span>
+                <span className="sm:hidden">{isPending ? "..." : "Save"}</span>
               </Button>
             </>
           )}
@@ -207,6 +264,7 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
             isEditing={isEditing}
             name="firstName"
             onChange={handleChange}
+            error={isEditing ? errors.firstName : undefined}
           />
           <ProfileField
             label="Last Name"
@@ -214,6 +272,7 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
             isEditing={isEditing}
             name="lastName"
             onChange={handleChange}
+            error={isEditing ? errors.lastName : undefined}
           />
           <ProfileField
             label="Phone Number"
@@ -222,6 +281,7 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
             name="phoneNumber"
             onChange={handleChange}
             type="tel"
+            error={isEditing ? errors.phoneNumber : undefined}
           />
           <ProfileField
             label="Preferred Language"

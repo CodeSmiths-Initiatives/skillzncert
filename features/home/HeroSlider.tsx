@@ -85,8 +85,7 @@ export default function HeroSlider() {
 									{slides[current].description}
 								</p>
 
-								<button
-									className="mt-6 inline-flex items-center justify-center rounded-lg bg-[#58AEB3] px-8 py-4 text-sm font-semibold text-white transition
+								<button								suppressHydrationWarning									className="mt-6 inline-flex items-center justify-center rounded-lg bg-[#58AEB3] px-8 py-4 text-sm font-semibold text-white transition
 									hover:-translate-y-px hover:shadow-lg
 									focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#58AEB3]/40"
 								>
@@ -135,6 +134,7 @@ export default function HeroSlider() {
 					<div className="flex gap-3">
 						{slides.map((_, index) => (
 							<button
+								suppressHydrationWarning
 								key={index}
 								onClick={() => setCurrent(index)}
 								className={clsx(

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -9,9 +10,45 @@ import {
   BookOpen,
   CheckCircle,
   Clock,
+  Calendar,
 } from "lucide-react";
+import { getScheduleAction } from "@/actions/schedule/schedule.actions";
+import type { DayOfWeek, DaySchedule } from "@/lib/types/schedule.types";
+import { DAY_LABELS } from "@/lib/types/schedule.types";
+import { formatTimeSlot } from "@/lib/utils/schedule.utils";
 
 export function OverviewSection({ isAdmin }: { isAdmin: boolean }) {
+  const [schedule, setSchedule] = useState<DaySchedule[]>([]);
+  const [isLoadingSchedule, setIsLoadingSchedule] = useState(true);
+  const [viewMode, setViewMode] = useState<'weekly' | 'monthly'>('weekly');
+  const [currentDay, setCurrentDay] = useState<DayOfWeek | null>(null);
+  const [currentDate, setCurrentDate] = useState<Date | null>(null);
+
+  // Set current day after mounting to avoid hydration mismatch
+  useEffect(() => {
+    const today = new Date();
+    setCurrentDate(today);
+    setCurrentDay(today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase() as DayOfWeek);
+  }, []);
+
+  // Fetch the weekly schedule
+  useEffect(() => {
+    const loadSchedule = async () => {
+      try {
+        const result = await getScheduleAction();
+        if (result.success && result.data?.schedule) {
+          setSchedule(result.data.schedule);
+        }
+      } catch (error) {
+        console.error("Failed to load schedule:", error);
+      } finally {
+        setIsLoadingSchedule(false);
+      }
+    };
+
+    loadSchedule();
+  }, []);
+
   const stats = isAdmin
     ? [
         { title: "Total Enrollees", value: "1,234", icon: Users, change: "+12%" },
@@ -53,8 +90,315 @@ export function OverviewSection({ isAdmin }: { isAdmin: boolean }) {
       </div>
 
       {/* Main Content Area */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 min-h-[calc(100vh-280px)]">
-        {/* Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-[6fr_4fr] gap-4 sm:gap-6 max-h-[calc(100vh-280px)]">       
+
+        {/* Progress Overview - 70% width */}
+        <Card className="bg-gradient-to-br from-blue-50 to-sky-50 border-0 hover:shadow-xl hover:shadow-blue-200/50 transition-all duration-300 group border-t-4 border-t-blue-500 flex flex-col">
+          <CardHeader className="border-b border-blue-100/50 flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-slate-800 group-hover:text-slate-900 flex items-center">
+                <div className="p-1.5 bg-blue-100 rounded-md mr-2 group-hover:bg-blue-200 transition-colors">
+                  <Calendar className="h-4 w-4 text-blue-600" />
+                </div>
+                Weekly Schedule
+              </CardTitle>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setViewMode('weekly')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                    viewMode === 'weekly'
+                      ? 'bg-blue-500 text-white shadow-md'
+                      : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                  }`}
+                >
+                  Week
+                </button>
+                <button
+                  onClick={() => setViewMode('monthly')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                    viewMode === 'monthly'
+                      ? 'bg-blue-500 text-white shadow-md'
+                      : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                  }`}
+                >
+                  Month
+                </button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4 overflow-y-auto max-h-[calc(100vh-400px)] scrollbar-blue">
+            {isLoadingSchedule ? (
+              <div className="py-8 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                <p className="text-sm text-slate-500">Loading schedule...</p>
+              </div>
+            ) : schedule.length === 0 ? (
+              <div className="py-8 text-center">
+                <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+                <p className="text-sm text-slate-500">No schedule available yet.</p>
+                <p className="text-xs text-slate-400 mt-1">
+                  Admin can set up the schedule in Settings.
+                </p>
+              </div>
+            ) : viewMode === 'weekly' ? (
+              <>
+                {/* Weekly View - Class Days */}
+                {schedule.filter((day) => !day.isHoliday).length > 0 && (
+                  <div className="space-y-3 mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1 bg-blue-100 rounded-md">
+                        <Clock className="h-3 w-3 text-blue-600" />
+                      </div>
+                      <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                        Class Schedule
+                      </h4>
+                    </div>
+                    {schedule
+                      .filter((day) => !day.isHoliday)
+                      .map((daySchedule) => {
+                        const isToday = daySchedule.day === currentDay;
+                        return (
+                          <div
+                            key={daySchedule.day}
+                            className={`flex items-center justify-between p-3 rounded-lg border transition-all duration-200 ${
+                              isToday
+                                ? 'bg-gradient-to-r from-blue-200 via-sky-200 to-cyan-200 border-blue-400 shadow-lg ring-2 ring-blue-300 ring-offset-2'
+                                : 'bg-white-100 border-blue-200 hover:border-blue-300 hover:shadow-md'
+                            }`}
+                          >
+                            <div className="flex items-center space-x-3">
+                              {isToday ? (
+                                <div className="relative">
+                                  <div className="w-3 h-3 bg-blue-600 rounded-full shadow-md"></div>
+                                  <div className="absolute inset-0 w-3 h-3 bg-blue-600 rounded-full animate-ping"></div>
+                                </div>
+                              ) : (
+                                <div className="w-3 h-3 bg-blue-500 rounded-full shadow-sm"></div>
+                              )}
+                              <div>
+                                <span className={`${isToday ? 'font-bold text-blue-900' : 'font-semibold text-slate-700'}`}>
+                                  {DAY_LABELS[daySchedule.day]}
+                                </span>
+                                {isToday && (
+                                  <span className="ml-2 px-2 py-0.5 bg-gradient-to-r from-blue-500 to-sky-500 text-white text-xs font-bold rounded-full">
+                                    Today
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <span className={`text-sm ${isToday ? 'font-bold text-blue-800' : 'font-semibold text-blue-700'}`}>
+                                {daySchedule.startTime && daySchedule.endTime
+                                  ? `${formatTimeSlot(daySchedule.startTime)} - ${formatTimeSlot(daySchedule.endTime)}`
+                                  : "Not set"}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+
+                {/* Holidays Section */}
+                {schedule.filter((day) => day.isHoliday).length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1 bg-rose-100 rounded-md">
+                        <Clock className="h-3 w-3 text-rose-600" />
+                      </div>
+                      <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                        Holidays
+                      </h4>
+                    </div>
+                    {schedule
+                      .filter((day) => day.isHoliday)
+                      .map((daySchedule) => {
+                        const isToday = daySchedule.day === currentDay;
+                        return (
+                          <div
+                            key={daySchedule.day}
+                            className={`group relative overflow-hidden p-3 rounded-lg border-2 transition-all duration-200 ${
+                              isToday
+                                ? 'bg-gradient-to-r from-rose-100 via-pink-100 to-orange-100 border-rose-400 shadow-xl ring-2 ring-rose-300 ring-offset-2'
+                                : 'bg-gradient-to-r from-rose-50 via-pink-50 to-orange-50 border-rose-200 hover:border-rose-300 hover:shadow-lg hover:scale-[1.02]'
+                            }`}
+                          >
+                            <div className="relative flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="relative">
+                                  {isToday ? (
+                                    <>
+                                      <div className="w-3 h-3 bg-gradient-to-r from-rose-600 to-pink-600 rounded-full shadow-md"></div>
+                                      <div className="absolute inset-0 w-3 h-3 bg-gradient-to-r from-rose-600 to-pink-600 rounded-full animate-ping"></div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <div className="w-3 h-3 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full animate-pulse shadow-md"></div>
+                                      <div className="absolute inset-0 w-3 h-3 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full animate-ping opacity-30"></div>
+                                    </>
+                                  )}
+                                </div>
+                                <div>
+                                  <span className={`${isToday ? 'font-bold text-rose-900' : 'font-semibold text-slate-700'}`}>
+                                    {DAY_LABELS[daySchedule.day]}
+                                  </span>
+                                  {isToday && (
+                                    <span className="ml-2 px-2 py-0.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs font-bold rounded-full">
+                                      Today
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <span className={`px-2 py-1 bg-gradient-to-r from-rose-100 to-pink-100 rounded-full text-xs ${
+                                isToday ? 'font-bold text-rose-800' : 'font-bold text-rose-700'
+                              }`}>
+                                Holiday
+                              </span>
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 text-3xl opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
+                              🌴
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+
+                {/* No schedule message */}
+                {schedule.filter((day) => !day.isHoliday).length === 0 &&
+                  schedule.filter((day) => day.isHoliday).length === 0 && (
+                    <div className="py-8 text-center">
+                      <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+                      <p className="text-sm text-slate-500">No schedule available yet.</p>
+                    </div>
+                  )}
+              </>
+            ) : (
+              // Monthly Calendar View
+              <div className="space-y-1">
+                <div className="text-center mb-1">
+                  <h3 className="text-sm font-bold text-blue-900" suppressHydrationWarning>
+                    {currentDate?.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  </h3>
+                </div>
+                
+                {/* Calendar Grid */}
+                <div className="grid grid-cols-7 gap-1.5">
+                  {/* Day Headers */}
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                    <div key={day} className="text-center text-xs font-bold text-blue-700 py-1">
+                      {day}
+                    </div>
+                  ))}
+                  
+                  {/* Calendar Days */}
+                  {(() => {
+                    if (!currentDate) return null;
+                    
+                    const today = currentDate;
+                    const year = today.getFullYear();
+                    const month = today.getMonth();
+                    const firstDay = new Date(year, month, 1).getDay();
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                    const days = [];
+                    
+                    // Empty cells before first day
+                    for (let i = 0; i < firstDay; i++) {
+                      days.push(
+                        <div key={`empty-${i}`} className="aspect-square p-1 rounded bg-slate-50/50"></div>
+                      );
+                    }
+                    
+                    // Days of the month
+                    for (let day = 1; day <= daysInMonth; day++) {
+                      const date = new Date(year, month, day);
+                      const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase() as DayOfWeek;
+                      const daySchedule = schedule.find(s => s.day === dayName);
+                      const isToday = day === today.getDate();
+                      const isHoliday = daySchedule?.isHoliday;
+                      const hasClass = daySchedule && !daySchedule.isHoliday;
+                      
+                      days.push(
+                        <div
+                          key={day}
+                          className={`group/day relative aspect-square p-1 rounded border transition-all duration-200 flex flex-col items-center justify-center cursor-pointer ${
+                            isToday
+                              ? 'bg-gradient-to-br from-blue-200 via-sky-200 to-cyan-200 border-blue-400 shadow-md ring-1 ring-blue-300 hover:ring-blue-400'
+                              : isHoliday
+                              ? 'bg-gradient-to-br from-rose-50 to-pink-50 border-rose-200 hover:border-rose-300 hover:shadow-sm'
+                              : hasClass
+                              ? 'bg-gradient-to-br from-blue-50 to-sky-50 border-blue-200 hover:border-blue-300 hover:shadow-sm'
+                              : 'bg-slate-50/50 border-slate-200'
+                          }`}
+                        >
+                          <span className={`text-xl ${isToday ? 'font-bold text-blue-900' : 'font-medium text-slate-700'}`}>
+                            {day}
+                          </span>
+                          {hasClass && (
+                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-0.5"></div>
+                          )}
+                          {isHoliday && (
+                            <div className="text-[15px] mt-0.5">🌴</div>
+                          )}
+                          
+                          {/* Hover Tooltip */}
+                          {(hasClass || isHoliday) && (
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 opacity-0 group-hover/day:opacity-100 pointer-events-none transition-opacity duration-200 z-10">
+                              <div className={`px-2.5 py-1.5 rounded-lg shadow-lg border whitespace-nowrap ${
+                                isHoliday 
+                                  ? 'bg-gradient-to-br from-rose-100 to-pink-100 border-rose-300'
+                                  : 'bg-gradient-to-br from-blue-100 to-sky-100 border-blue-300'
+                              }`}>
+                                <div className="text-xs font-bold mb-1 text-slate-800">
+                                  {DAY_LABELS[dayName]}
+                                </div>
+                                {isHoliday ? (
+                                  <div className="text-xs font-semibold text-rose-700">
+                                    Holiday 🌴
+                                  </div>
+                                ) : (
+                                  <div className="text-xs font-semibold text-blue-700">
+                                    {daySchedule.startTime && daySchedule.endTime
+                                      ? `${formatTimeSlot(daySchedule.startTime)} - ${formatTimeSlot(daySchedule.endTime)}`
+                                      : "Time not set"}
+                                  </div>
+                                )}
+                              </div>
+                              {/* Arrow */}
+                              <div className={`absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent ${
+                                isHoliday ? 'border-t-rose-300' : 'border-t-blue-300'
+                              }`}></div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+                    
+                    return days;
+                  })()}
+                </div>
+                
+                {/* Legend */}
+                <div className="flex flex-wrap gap-2 justify-center pt-1 border-t border-blue-100">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-200 rounded"></div>
+                    <span className="text-[10px] text-slate-600">Class</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-200 rounded"></div>
+                    <span className="text-[10px] text-slate-600">Holiday</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-gradient-to-br from-blue-200 to-sky-200 border-2 border-blue-400 rounded"></div>
+                    <span className="text-[10px] text-slate-600">Today</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Activity - 30% width */}
         <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border-0 hover:shadow-xl hover:shadow-emerald-200/50 transition-all duration-300 group border-t-4 border-t-emerald-500 flex flex-col">
           <CardHeader className="border-b border-emerald-100/50 flex-shrink-0">
             <CardTitle className="text-slate-800 group-hover:text-slate-900 flex items-center">
@@ -64,7 +408,7 @@ export function OverviewSection({ isAdmin }: { isAdmin: boolean }) {
               Recent Activity
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4 overflow-y-auto flex-1">
+          <CardContent className="space-y-4 overflow-y-auto max-h-[calc(100vh-400px)] scrollbar-emerald">
             <div className="flex items-center space-x-4">
               <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
               <div className="flex-1">
@@ -139,45 +483,128 @@ export function OverviewSection({ isAdmin }: { isAdmin: boolean }) {
               >
                 Achievement
               </Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Progress Overview */}
-        <Card className="bg-gradient-to-br from-violet-50 to-purple-50 border-0 hover:shadow-xl hover:shadow-violet-200/50 transition-all duration-300 group border-t-4 border-t-violet-500 flex flex-col">
-          <CardHeader className="border-b border-violet-100/50 flex-shrink-0">
-            <CardTitle className="text-slate-800 group-hover:text-slate-900 flex items-center">
-              <div className="p-1.5 bg-violet-100 rounded-md mr-2 group-hover:bg-violet-200 transition-colors">
-                <Clock className="h-4 w-4 text-violet-600" />
+            </div>           
+           
+            <div className="flex items-center space-x-4">
+              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-800">
+                  Joined Study Group
+                </p>
+                <p className="text-xs text-slate-500">5 days ago</p>
               </div>
-              Weekly Schedule
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 overflow-y-auto flex-1">
-            {[
-              { day: "Monday", time: "10:00 AM - 3:00 PM", course: "React Fundamentals" },
-              { day: "Tuesday", time: "10:00 AM - 5:00 PM", course: "Advanced JavaScript" },
-              { day: "Wednesday", time: "2:00 PM - 6:00 PM", course: "TypeScript Essentials" },
-              { day: "Thursday", time: "10:00 AM - 4:00 PM", course: "Next.js Advanced" },
-              { day: "Friday", time: "1:00 PM - 5:00 PM", course: "Project Workshop" },
-              { day: "Saturday", time: "11:00 AM - 2:00 PM", course: "Office Hours" },
-            ].map((schedule, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 bg-white/50 rounded-lg border border-violet-100"
+              <Badge
+                variant="outline"
+                className="border-purple-200 text-purple-700 hover:bg-purple-50"
               >
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-violet-500 rounded-full"></div>
-                  <span className="font-medium text-slate-700">{schedule.day}</span>
-                </div>
-                <div className="text-right">
-                  <span className="text-sm font-semibold text-violet-700">
-                    {schedule.time}
-                  </span>
-                  <p className="text-xs text-slate-500">{schedule.course}</p>
-                </div>
+                Active
+              </Badge>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-800">
+                  Certificate Earned
+                </p>
+                <p className="text-xs text-slate-500">1 week ago</p>
               </div>
-            ))}
+              <Badge
+                variant="default"
+                className="bg-orange-100 text-orange-700 hover:bg-orange-200"
+              >
+                Achievement
+              </Badge>
+            </div>
+             <div className="flex items-center space-x-4">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-800">
+                  Submitted Assignment #3
+                </p>
+                <p className="text-xs text-slate-500">3 days ago</p>
+              </div>
+              <Badge
+                variant="default"
+                className="bg-green-100 text-green-700 hover:bg-green-200"
+              >
+                Graded
+              </Badge>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-800">
+                  Joined Study Group
+                </p>
+                <p className="text-xs text-slate-500">5 days ago</p>
+              </div>
+              <Badge
+                variant="outline"
+                className="border-purple-200 text-purple-700 hover:bg-purple-50"
+              >
+                Active
+              </Badge>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-800">
+                  Certificate Earned
+                </p>
+                <p className="text-xs text-slate-500">1 week ago</p>
+              </div>
+              <Badge
+                variant="default"
+                className="bg-orange-100 text-orange-700 hover:bg-orange-200"
+              >
+                Achievement
+              </Badge>
+            </div>
+             <div className="flex items-center space-x-4">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-800">
+                  Submitted Assignment #3
+                </p>
+                <p className="text-xs text-slate-500">3 days ago</p>
+              </div>
+              <Badge
+                variant="default"
+                className="bg-green-100 text-green-700 hover:bg-green-200"
+              >
+                Graded
+              </Badge>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-800">
+                  Joined Study Group
+                </p>
+                <p className="text-xs text-slate-500">5 days ago</p>
+              </div>
+              <Badge
+                variant="outline"
+                className="border-purple-200 text-purple-700 hover:bg-purple-50"
+              >
+                Active
+              </Badge>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-800">
+                  Certificate Earned
+                </p>
+                <p className="text-xs text-slate-500">1 week ago</p>
+              </div>
+              <Badge
+                variant="default"
+                className="bg-orange-100 text-orange-700 hover:bg-orange-200"
+              >
+                Achievement
+              </Badge>
+            </div>
           </CardContent>
         </Card>
       </div>

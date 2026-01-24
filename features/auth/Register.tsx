@@ -113,6 +113,22 @@ export default function Register() {
 					Empowering Students in Network & Cybersecurity
 				</p>
 			</div>
+  return (
+    <AuthLayout imageSrc="/static/images/auth_image.png">
+      <div className="text-center mb-6">
+        <Image
+          src="/static/images/logo1.svg"
+          alt="Logo"
+          width={50}
+          height={20}
+          className="mx-auto mb-2"
+          unoptimized
+        />
+        <h1 className="text-3xl font-bold text-black">Welcome</h1>
+        <p className="text-xs font-semibold text-gray-600">
+          Empowering Students in Network & Cybersecurity
+        </p>
+      </div>
 
 			<form onSubmit={submit} className="space-y-4">
 				<FormField

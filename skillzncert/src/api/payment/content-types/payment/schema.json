@@ -1,0 +1,53 @@
+{
+  "kind": "collectionType",
+  "collectionName": "payments",
+  "info": {
+    "singularName": "payment",
+    "pluralName": "payments",
+    "displayName": "payment "
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "enrollmentDocumentId": {
+      "type": "string",
+      "required": true
+    },
+    "paymentMode": {
+      "type": "string",
+      "required": true
+    },
+    "month": {
+      "type": "string",
+      "required": true
+    },
+    "year": {
+      "type": "integer",
+      "required": true
+    },
+    "amount": {
+      "type": "decimal",
+      "required": true
+    },
+    "emailAddress": {
+      "type": "email",
+      "required": true
+    },
+    "paymentDate": {
+      "type": "date",
+      "required": true
+    },
+    "enrollment": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::enrollment.enrollment",
+      "inversedBy": "payments"
+    },
+    "userDocumentId": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

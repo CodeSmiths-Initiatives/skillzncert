@@ -37,6 +37,7 @@ interface ProfileFieldProps {
   ) => void;
   type?: string;
   options?: { value: string; label: string }[];
+  error?: string;
 }
 
 export function ProfileField({
@@ -47,6 +48,7 @@ export function ProfileField({
   onChange,
   type = "text",
   options,
+  error,
 }: ProfileFieldProps) {
   if (isEditing) {
     if (options) {
@@ -57,7 +59,11 @@ export function ProfileField({
             name={name}
             value={String(value)}
             onChange={onChange}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#51A8B1] focus:border-transparent transition-all"
+            className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+              error
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-200 focus:ring-[#51A8B1] focus:border-transparent"
+            }`}
           >
             <option value="">Select {label}</option>
             {options.map((opt) => (
@@ -66,6 +72,7 @@ export function ProfileField({
               </option>
             ))}
           </select>
+          {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
         </div>
       );
     }
@@ -78,9 +85,14 @@ export function ProfileField({
           name={name}
           value={String(value)}
           onChange={onChange}
-          className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#51A8B1] focus:border-transparent transition-all"
+          className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+            error
+              ? "border-red-500 focus:ring-red-500"
+              : "border-gray-200 focus:ring-[#51A8B1] focus:border-transparent"
+          }`}
           placeholder={label}
         />
+        {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
       </div>
     );
   }

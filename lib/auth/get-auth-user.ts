@@ -4,6 +4,7 @@ export type AuthUser = {
   id: number;
   documentId: string;
   username: string;
+  email: string;
 };
 
 export async function getAuthUser(): Promise<{
@@ -27,6 +28,7 @@ export async function getAuthUser(): Promise<{
         id: parsed.id,
         documentId: parsed.documentId,
         username: parsed.username,
+        email: parsed.email || "",
       },
     };
   } catch {

@@ -8,6 +8,7 @@ import { DashboardContent } from "./DashboardContent";
 const adminSidebarItems = [
   { label: "Overview", route: "overview", iconName: "LayoutDashboard" },
   { label: "Enrollees", route: "enrollees", iconName: "Users" },
+  { label: "Schedule", route: "schedule", iconName: "Calendar" },
   { label: "Settings", route: "settings", iconName: "Settings" },
 ];
 
@@ -21,7 +22,13 @@ export default function AdminDashboard({ user }: { user: any }) {
       onNavigate={setActiveRoute}
       user={user}
     >
-      <DashboardContent activeRoute={activeRoute} isAdmin={true} />
+      <DashboardContent 
+        activeRoute={activeRoute} 
+        isAdmin={true} 
+        userId={user.id}
+        username={user.username}
+        email={user.email}
+      />
     </DashboardLayout>
   );
 }

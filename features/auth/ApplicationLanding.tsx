@@ -85,12 +85,13 @@ export default function ApplicationLanding({
           {/* Header */}
           <div className="text-center mb-10">
             <Image
-              src="static/images/logo 1.svg"
+              src="/static/images/logo1.svg"
               alt="Logo"
               width={70}
               height={24}
               className="mx-auto mb-4"
               priority
+              unoptimized
             />
 
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">

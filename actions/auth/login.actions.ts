@@ -41,6 +41,7 @@ export async function loginAction(data: {
         documentId: user.documentId,
         username: user.username,
         id: user.id,
+        email: user.email,
       }),
       httpOnly: true,
       sameSite: "lax",
