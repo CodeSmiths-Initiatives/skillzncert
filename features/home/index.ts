@@ -8,3 +8,4 @@ export * from "./AboutUs";
 export * from "./ProblemStatement";
 export * from "./Solution"; 
 export * from "./PaymentPlan"
+export * from "./Faq"

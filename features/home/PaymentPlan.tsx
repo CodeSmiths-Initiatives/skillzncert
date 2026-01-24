@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import { title } from "process";
 
 const containerVariants = {
 	hidden: {},
@@ -32,7 +33,7 @@ export default function PaymentPlan() {
 					PAYMENT PLAN
 				</h1>
 
-				<p className="text-base md:text-xl font-medium text-gray-700 text-center max-w-3xl mx-auto mb-16 leading-7">
+				<p className="text-sm md:text-base font-light text-gray-700 text-center max-w-3xl mx-auto mb-16 leading-7">
 					The training fee for the CCNA and CyberOps programs is ₦1,000,000.00.
 					Skillz’n’Cert students are required to make payment based on the plan
 					selected below.
@@ -49,40 +50,46 @@ export default function PaymentPlan() {
 						{
 							bg: "bg-[#efbf00]",
 							price: "₦500,000.00",
+							title: "Gold Plan",
 							content: (
 								<>
-									<p>50% on Discount Training Fee.</p>
-									<p>
-										Starter Package (T-shirt, Bluetooth Headphones, Pen and
-										Jotter)
-									</p>
-									<p>15 validity on the 58% discount exam voucher.</p>
-									<p>1 year after training support.</p>
-									<p>Exit package</p>
+									<ul className="list-disc list-inside space-y-2 text-sm font-medium leading-7 text-gray-700 max-w-xl mb-8">
+										<li>50% on Discount Training Fee.</li>
+										<li>Starter Package</li>
+										<li>15 validity on the 58% discount exam voucher.</li>
+										<li>1 year after training support.</li>
+										<li>Exit package</li>
+									</ul>
 								</>
 							),
 						},
 						{
 							bg: "bg-gray-300",
 							price: "₦550,000.00",
+							title: "Silver plan",
 							content: (
 								<>
-									<p>45% on Discount Training Fee.</p>
-									<p>15 validity on the 58% discount exam voucher.</p>
-									<p>1 year after training support.</p>
-									<p>Exit package</p>
+									<ul className="list-disc list-inside space-y-2 text-sm font-medium leading-7 text-gray-700 max-w-xl mb-8">
+										<li>45% on Discount Training Fee.</li>
+										<li>15 validity on the 58% discount exam voucher.</li>
+										<li>1 year after training support.</li>
+										<li>Exit package</li>
+									</ul>
 								</>
 							),
 						},
 						{
 							bg: "bg-[#cc8845]",
 							price: "₦600,000.00",
+							title: "Bronze Plan",
 							content: (
 								<>
-									<p>40% on Discount Training Fee.</p>
-									<p>15 validity on the 58% discount exam voucher.</p>
-									<p>1 year after training support.</p>
-									<p>Exit package</p>
+									<ul className="list-disc list-inside space-y-2 text-sm font-medium leading-7 text-gray-700 max-w-xl mb-8">
+										<li>40% on Discount Training Fee.</li>
+										<li>15 validity on the 58% discount exam voucher.</li>
+										<li>1 year after training support.</li>
+										<li>Exit package</li>
+									</ul>
 								</>
 							),
 						},
@@ -101,7 +108,7 @@ export default function PaymentPlan() {
 						>
 							<div className="text-center mb-6">
 								<h2 className="text-3xl font-semibold text-white mb-2">
-									Gold Plan
+									{card.title}
 								</h2>
 								<p className="text-xl font-bold text-black">{card.price}</p>
 							</div>
@@ -111,7 +118,9 @@ export default function PaymentPlan() {
 							</div>
 
 							<p className="text-center text-sm font-semibold mt-10">
-								T&amp;C Applies
+								<a href="/register" className="">
+									Register Now
+								</a>
 							</p>
 						</motion.div>
 					))}

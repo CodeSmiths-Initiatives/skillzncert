@@ -3,27 +3,40 @@ import React from "react";
 
 export default function Footer() {
 	return (
-		<footer className="bg-[#1F2937] text-white py-6">
+		<footer className="bg-gray-50 text-white py-6">
 			<div className="max-w-full mx-auto">
 				<div className="grid grid-cols-1 md:grid-cols-4 mx-10 my-10 gap-10 text-[#9CA3AF]">
 					<div>
 						<div className="flex items-center space-x-2 mb-5 text-white">
-							<Image
-								src="/static/images/logo1.svg"
+							{/* <Image
+								src="static/images/logo 1.svg"
 								alt="Logo"
 								width={50}
 								height={10}
 								unoptimized
 							/>
-							<h3 className="text-xl font-semibold">CE-EMS</h3>
+							<h3 className="text-xl font-semibold">CE-EMS</h3> */}
+
+							<Image
+								src="static/images/sec logo.svg"
+								alt="Logo"
+								width={60}
+								height={10}
+							/>
+							<Image
+								src="static/images/skillsncert.svg"
+								alt="Logo"
+								width={150}
+								height={50}
+							/>
 						</div>
-						<p className="text-sm font-medium pr-20">
+						<p className="text-sm text-gray-800 font-medium pr-20">
 							Complete education management solution for modern institutions
 						</p>
 					</div>
 					<div>
-						<ul className="flex flex-col space-y-2 text-sm font-medium">
-							<li className="text-white text-base font-medium">
+						<ul className="flex flex-col space-y-2 text-sm font-medium text-gray-700">
+							<li className="text-black text-xl font-semibold">
 								<a href="#" />
 								Products
 							</li>
@@ -42,8 +55,8 @@ export default function Footer() {
 						</ul>
 					</div>
 					<div>
-						<ul className="flex flex-col space-y-2 text-sm font-medium">
-							<li className="text-white text-base font-medium">
+						<ul className="flex flex-col space-y-2 text-sm font-medium text-gray-700">
+							<li className="text-black text-xl font-semibold">
 								<a href="#" />
 								Company
 							</li>
@@ -66,8 +79,8 @@ export default function Footer() {
 						</ul>
 					</div>
 					<div>
-						<ul className="flex flex-col space-y-2 text-sm font-medium">
-							<li className="text-white text-base font-medium">
+						<ul className="flex flex-col space-y-2 text-sm font-medium text-gray-700">
+							<li className="text-black text-xl font-semibold">
 								<a href="#" />
 								Legal
 							</li>
@@ -86,8 +99,8 @@ export default function Footer() {
 						</ul>
 					</div>
 				</div>
-				<p className="text-center text-sm font-medium text-gray-400 border-t border-gray-700 mt-10 py-7">
-					&copy; 2024 CE-EMS. All rights reserved.
+				<p className="text-center text-base font-medium text-gray-700 border-t border-gray-700 mt-10 py-7">
+					&copy; 2026 - 2031 Cloutedge Tech horizon. All rights reserved.
 				</p>
 			</div>
 		</footer>

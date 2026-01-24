@@ -13,159 +13,159 @@ import { useState, useTransition } from "react";
 import { loginAction } from "@/actions/auth/login.actions";
 
 export default function Login() {
-  const router = useRouter();
-  const { showToast } = useToast();
-  const [isPending, startTransition] = useTransition();
+	const router = useRouter();
+	const { showToast } = useToast();
+	const [isPending, startTransition] = useTransition();
 
-  const [form, setForm] = useState({
-    email: "Admin@yopmail.com",
-    password: "Mail_123",
-  });
+	const [form, setForm] = useState({
+		email: "Admin@yopmail.com",
+		password: "Mail_123",
+	});
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
+	const [errors, setErrors] = useState<Record<string, string>>({});
+	const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  /* ---------------- VALIDATION ---------------- */
-  const validate = () => {
-    const e: Record<string, string> = {};
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	/* ---------------- VALIDATION ---------------- */
+	const validate = () => {
+		const e: Record<string, string> = {};
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!emailRegex.test(form.email)) {
-      e.email = "Enter a valid email address";
-    }
+		if (!emailRegex.test(form.email)) {
+			e.email = "Enter a valid email address";
+		}
 
-    if (!form.password) {
-      e.password = "Password is required";
-    }
+		if (!form.password) {
+			e.password = "Password is required";
+		}
 
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
+		setErrors(e);
+		return Object.keys(e).length === 0;
+	};
 
-  /* ---------------- SUBMIT ---------------- */
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
+	/* ---------------- SUBMIT ---------------- */
+	const submit = (e: React.FormEvent) => {
+		e.preventDefault();
 
-    if (!validate()) {
-      showToast({
-        type: "error",
-        title: "Invalid credentials",
-        description: "Please fix the highlighted fields.",
-      });
-      return;
-    }
+		if (!validate()) {
+			showToast({
+				type: "error",
+				title: "Invalid credentials",
+				description: "Please fix the highlighted fields.",
+			});
+			return;
+		}
 
-    startTransition(async () => {
-      const result = await loginAction({
-        email: form.email,
-        password: form.password,
-      });
+		startTransition(async () => {
+			const result = await loginAction({
+				email: form.email,
+				password: form.password,
+			});
 
-      if (!result.success) {
-        showToast({
-          type: "error",
-          title: "Login failed",
-          description: result.message,
-        });
-        return;
-      }
+			if (!result.success) {
+				showToast({
+					type: "error",
+					title: "Login failed",
+					description: result.message,
+				});
+				return;
+			}
 
-      showToast({
-        type: "success",
-        title: "Welcome back",
-        description: "Redirecting to dashboard...",
-      });
+			showToast({
+				type: "success",
+				title: "Welcome back",
+				description: "Redirecting to dashboard...",
+			});
 
-      /**
-       * ✅ JWT is already stored securely in httpOnly cookie
-       * ❌ Do NOT store token in state or localStorage
-       */
+			/**
+			 * ✅ JWT is already stored securely in httpOnly cookie
+			 * ❌ Do NOT store token in state or localStorage
+			 */
 
-      // Conditional routing based on user ID
-      console.log(result);
+			// Conditional routing based on user ID
+			console.log(result);
 
-      if (result.user?.id === 1) {
-        router.push("/dashboard");
-      } else {
-        router.push("/applicationLanding");
-      }
-    });
-  };
+			if (result.user?.id === 1) {
+				router.push("/dashboard");
+			} else {
+				router.push("/applicationLanding");
+			}
+		});
+	};
 
-  /* ---------------- INPUT BINDER ---------------- */
-  const bind = (name: keyof typeof form) => ({
-    value: form[name],
-    onChange: (e: any) => setForm({ ...form, [name]: e.target.value }),
-    onBlur: () => setTouched({ ...touched, [name]: true }),
-  });
+	/* ---------------- INPUT BINDER ---------------- */
+	const bind = (name: keyof typeof form) => ({
+		value: form[name],
+		onChange: (e: any) => setForm({ ...form, [name]: e.target.value }),
+		onBlur: () => setTouched({ ...touched, [name]: true }),
+	});
 
-  return (
-    <AuthLayout imageSrc="/static/images/auth_image.png">
-      {/* HEADER */}
-      <div className="text-center mb-6">
-        <Image
-          src="/static/images/logo1.svg"
-          alt="Logo"
-          width={50}
-          height={20}
-          className="mx-auto mb-2"
-        />
-        <h1 className="text-2xl font-bold text-black">Welcome back</h1>
-        <p className="text-sm text-gray-600">
-          See your growth and get consulting support
-        </p>
-      </div>
+	return (
+		<AuthLayout imageSrc="/static/images/auth_image.png">
+			{/* HEADER */}
+			<div className="text-center mb-6">
+				<Image
+					src="static/images/logo 1.svg"
+					alt="Logo"
+					width={50}
+					height={20}
+					className="mx-auto mb-2"
+				/>
+				<h1 className="text-2xl font-bold text-black">Welcome back</h1>
+				<p className="text-sm text-gray-600">
+					See your growth and get consulting support
+				</p>
+			</div>
 
-      {/* FORM */}
-      <form onSubmit={submit} className="space-y-4">
-        <FormField
-          label="Email Address"
-          error={touched.email ? errors.email : undefined}
-        >
-          <Input
-            type="email"
-            placeholder="mail@website.com"
-            autoComplete="email"
-            {...bind("email")}
-          />
-        </FormField>
+			{/* FORM */}
+			<form onSubmit={submit} className="space-y-4">
+				<FormField
+					label="Email Address"
+					error={touched.email ? errors.email : undefined}
+				>
+					<Input
+						type="email"
+						placeholder="mail@website.com"
+						autoComplete="email"
+						{...bind("email")}
+					/>
+				</FormField>
 
-        <FormField
-          label="Password"
-          error={touched.password ? errors.password : undefined}
-        >
-          <PasswordInput
-            {...bind("password")}
-            placeholder="Enter your password"
-          />
-        </FormField>
+				<FormField
+					label="Password"
+					error={touched.password ? errors.password : undefined}
+				>
+					<PasswordInput
+						{...bind("password")}
+						placeholder="Enter your password"
+					/>
+				</FormField>
 
-        <div className="text-right">
-          <Link
-            href="/forgetPassword"
-            className="text-sm font-medium text-teal-500"
-          >
-            Forgot password?
-          </Link>
-        </div>
+				<div className="text-right">
+					<Link
+						href="/forgetPassword"
+						className="text-sm font-medium text-teal-500"
+					>
+						Forgot password?
+					</Link>
+				</div>
 
-        <Button disabled={isPending} className="w-full">
-          {isPending ? "Logging in..." : "Login"}
-        </Button>
-      </form>
+				<Button disabled={isPending} className="w-full">
+					{isPending ? "Logging in..." : "Login"}
+				</Button>
+			</form>
 
-      {/* FOOTER */}
-      <p className="text-center text-sm mt-4">
-        New here?{" "}
-        <Link href="/register" className="text-teal-500 font-medium">
-          Create an account
-        </Link>
-      </p>
+			{/* FOOTER */}
+			<p className="text-center text-sm mt-4">
+				New here?{" "}
+				<Link href="/register" className="text-teal-500 font-medium">
+					Create an account
+				</Link>
+			</p>
 
-      <div className="text-teal-500 flex justify-center gap-4 mt-6 text-sm">
-        <p className="border-r pr-3">Terms of use</p>
-        <p>Privacy policy</p>
-      </div>
-    </AuthLayout>
-  );
+			<div className="text-teal-500 flex justify-center gap-4 mt-6 text-sm">
+				<p className="border-r pr-3">Terms of use</p>
+				<p>Privacy policy</p>
+			</div>
+		</AuthLayout>
+	);
 }
