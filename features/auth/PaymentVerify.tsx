@@ -281,7 +281,7 @@ export default function PaymentSuccessPage({ enrollmentDocumentId, userId, userE
                 <div className="flex justify-between">
                   <span className="text-gray-600">Customer:</span>
                   <span className="text-gray-900">
-                    {state.data.customer?.email}
+                    {state.data.email}
                   </span>
                 </div>
               </div>

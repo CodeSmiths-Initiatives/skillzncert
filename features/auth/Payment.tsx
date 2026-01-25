@@ -18,7 +18,11 @@ type Plan = {
   features: string[];
 };
 
-export default function PaymentPage() {
+type Props = {
+  userEmail: string;
+};
+
+export default function PaymentPage({ userEmail }: Props) {
   const [selectedPlan, setSelectedPlan] = useState<Plan>(PAYMENT_PLANS.basic);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -43,10 +47,11 @@ export default function PaymentPage() {
   // Paystack configuration
   const config = {
     reference: generatePaymentReference(),
-    email: "Test@yopmail.com",
+    email: userEmail,
     amount: selectedPlan.amount, // Amount in kobo
     publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
     currency: "NGN",
+    subaccount : "ACCT_xtlrfkipcz3pp2p",
     channels: ["card"],
   };
 

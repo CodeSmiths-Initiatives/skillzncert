@@ -1,16 +1,18 @@
-"use client";
+import { getAuthUser } from "@/lib/auth/get-auth-user";
+import Payment from "@/features/auth/Payment";
+import { Suspense } from "react";
+import { redirect } from "next/navigation";
 
-import dynamic from 'next/dynamic';
-import React from "react";
+export default async function page() {
+  const { user } = await getAuthUser();
 
-const Payment = dynamic(() => import("@/features/auth/Payment"), {
-  ssr: false,
-});
+  if (!user) {
+    redirect("/login");
+  }
 
-export default function page() {
-	return (
-		<div>
-			<Payment />
-		</div>
-	);
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Payment userEmail={user.email} />
+    </Suspense>
+  );
 }
