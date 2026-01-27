@@ -15,7 +15,8 @@ import { useState, useTransition } from "react";
 
 export default function Register() {
 	const router = useRouter();
-	const { showToast } = useToast();
+	const { showToast } = useToast();	
+
 	const [isPending, startTransition] = useTransition();
 
 	const [form, setForm] = useState({
