@@ -1,5 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
+
 
 @custom-variant dark (&:is(.dark *));
 
@@ -243,7 +245,12 @@ body {
   --sidebar-accent: oklch(0.269 0 0);
 
   --sidebar-accent-foreground: oklch(0.985 0 0);
-
+}
+@theme {
+  --font-montserrat: "Montserrat", sans-serif; 
+}
+*{
+  font-family: var(--font-montserrat);}
 /* System Theme - Green & White */
 .theme-system {
   --theme-primary: #10b981;
@@ -281,10 +288,7 @@ body {
 .hover\:bg-theme-primary-dark:hover {
   background-color: var(--theme-primary-dark);
 }
- --border: oklch(0.94 0.02 160);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.66 0.17 160);
-}
+
 
 /* Light Theme Overrides */
 .theme-light {

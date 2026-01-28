@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { PAYMENT_PLANS } from "@/lib/payment-plans";
+import { Button } from "@/components/ui/button";
 
 const containerVariants = {
 	hidden: {},
@@ -75,9 +76,11 @@ export default function PaymentPlan() {
 							</div>
 
 							<p className="text-center text-sm font-semibold mt-10">
-								<a href="/register" className="">
-									Register Now
-								</a>
+								<Button>
+									<a href="/register" className="">
+										Register Now
+									</a>
+								</Button>
 							</p>
 						</motion.div>
 					))}
