@@ -13,13 +13,20 @@ import {
   Calendar,
 } from "lucide-react";
 import { getScheduleAction } from "@/actions/schedule/schedule.actions";
+import { getDashboardMetricsAction } from "@/actions/dashboard/get-metrics.actions";
+import { StatCard } from "@/components/dashboard/stat-card";
 import type { DayOfWeek, DaySchedule } from "@/lib/types/schedule.types";
 import { DAY_LABELS } from "@/lib/types/schedule.types";
 import { formatTimeSlot } from "@/lib/utils/schedule.utils";
+import type { DashboardTopMetrics } from "@/lib/services/dashboard.service";
+import { formatCurrency } from "@/lib/services/dashboard.service";
 
 export function OverviewSection({ isAdmin }: { isAdmin: boolean }) {
   const [schedule, setSchedule] = useState<DaySchedule[]>([]);
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(true);
+  const [metrics, setMetrics] = useState<DashboardTopMetrics | null>(null);
+  const [isLoadingMetrics, setIsLoadingMetrics] = useState(true);
+  const [metricsError, setMetricsError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'weekly' | 'monthly'>('weekly');
   const [currentDay, setCurrentDay] = useState<DayOfWeek | null>(null);
   const [currentDate, setCurrentDate] = useState<Date | null>(null);
@@ -30,6 +37,31 @@ export function OverviewSection({ isAdmin }: { isAdmin: boolean }) {
     setCurrentDate(today);
     setCurrentDay(today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase() as DayOfWeek);
   }, []);
+
+  // Fetch dashboard metrics for admin
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const loadMetrics = async () => {
+      try {
+        setIsLoadingMetrics(true);
+        setMetricsError(null);
+        const result = await getDashboardMetricsAction();
+        if (result.success && result.data) {
+          setMetrics(result.data);
+        } else {
+          setMetricsError(result.error || "Failed to load metrics");
+        }
+      } catch (error) {
+        console.error("Error loading metrics:", error);
+        setMetricsError("Error loading metrics");
+      } finally {
+        setIsLoadingMetrics(false);
+      }
+    };
+
+    loadMetrics();
+  }, [isAdmin]);
 
   // Fetch the weekly schedule
   useEffect(() => {
@@ -49,43 +81,91 @@ export function OverviewSection({ isAdmin }: { isAdmin: boolean }) {
     loadSchedule();
   }, []);
 
-  const stats = isAdmin
-    ? [
-        { title: "Total Enrollees", value: "1,234", icon: Users, change: "+12%" },
-        { title: "Revenue", value: "$45,678", icon: DollarSign, change: "+8%" },
-        { title: "Completed", value: "89", icon: BookOpen, change: "+5%" },
-        { title: "In Progress", value: "76", icon: TrendingUp, change: "+3%" },
-      ]
-    : [
-        { title: "Attendance", value: "90%", icon: BookOpen, change: null },
-        { title: "Completed", value: "3", icon: CheckCircle, change: null },
-        { title: "On Leave", value: "2", icon: Clock, change: null },
-        { title: "Plan", value: "Monthly", icon: TrendingUp, change: null },
+  // Build stats array based on admin/user role
+  const buildStats = () => {
+    if (isAdmin && metrics) {
+      return [
+        {
+          title: "Total Enrollees",
+          value: metrics.totalEnrollees.value.toLocaleString(),
+          icon: Users,
+          change: metrics.totalEnrollees.change,
+          trend: metrics.totalEnrollees.trend,
+        },
+        {
+          title: "Revenue",
+          value: formatCurrency(metrics.totalRevenue.value, metrics.totalRevenue.currency),
+          icon: DollarSign,
+          change: metrics.totalRevenue.change,
+          trend: metrics.totalRevenue.trend,
+        },
+        {
+          title: "Completed",
+          value: `${metrics.completedPayments.value} (${metrics.completedPayments.percentage.toFixed(1)}%)`,
+          icon: BookOpen,
+          change: metrics.completedPayments.change,
+          trend: metrics.completedPayments.trend,
+        },
+        {
+          title: "In Progress",
+          value: `${metrics.inProgress.value} (${metrics.inProgress.percentage.toFixed(1)}%)`,
+          icon: TrendingUp,
+          change: metrics.inProgress.change,
+          trend: metrics.inProgress.trend,
+        },
       ];
+    }
+
+    // User stats (static for now)
+    return [
+      {
+        title: "Attendance",
+        value: "90%",
+        icon: BookOpen,
+        change: null,
+        trend: "stable" as const,
+      },
+      {
+        title: "Completed",
+        value: "3",
+        icon: CheckCircle,
+        change: null,
+        trend: "stable" as const,
+      },
+      {
+        title: "On Leave",
+        value: "2",
+        icon: Clock,
+        change: null,
+        trend: "stable" as const,
+      },
+      {
+        title: "Plan",
+        value: "Monthly",
+        icon: TrendingUp,
+        change: null,
+        trend: "stable" as const,
+      },
+    ];
+  };
+
+  const stats = buildStats();
 
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {stats.map((stat, index) => (
-          <Card
+          <StatCard
             key={index}
-            className="hover:shadow-xl hover:shadow-blue-200/50 transition-all duration-300 border-0 bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 group border-t-4 border-t-blue-500"
-          >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600 group-hover:text-slate-700">
-                {stat.title}
-              </CardTitle>
-              <div className="p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
-                <stat.icon className="h-4 w-4 text-blue-600" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-slate-900 mb-1">
-                {stat.value}
-              </div>
-            </CardContent>
-          </Card>
+            title={stat.title}
+            value={stat.value}
+            icon={stat.icon}
+            change={typeof stat.change === "number" ? stat.change : 0}
+            trend={stat.trend}
+            isLoading={isAdmin && isLoadingMetrics}
+            error={isAdmin && metricsError ? metricsError : undefined}
+          />
         ))}
       </div>
 

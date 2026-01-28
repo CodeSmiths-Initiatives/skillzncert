@@ -88,6 +88,7 @@ export default function PaymentSuccessPage({ enrollmentDocumentId, userId, userE
   const planName = searchParams.get("planName");
   const amount = searchParams.get("amount");
   const currency = searchParams.get("currency");
+  const planDiscount = searchParams.get("planDiscount");
 
   useEffect(() => {
     debugger
@@ -174,6 +175,10 @@ export default function PaymentSuccessPage({ enrollmentDocumentId, userId, userE
         emailAddress: userEmail,
         paymentDate: currentDate.toISOString(),
         reference: reference, // Add payment reference
+        planId: planId || "gold",
+        planName: planName || "Gold Plan",
+        planAmount: amount ? parseInt(amount) / 100 : 5000,
+        planDiscount: planDiscount ? parseInt(planDiscount) : 50,
       });
 
       if (!paymentResult.success) {

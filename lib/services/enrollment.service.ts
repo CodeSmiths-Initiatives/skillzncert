@@ -31,6 +31,10 @@ export interface EnrollmentData {
   };
   isPaymentDone: boolean;
   batchName?: string;
+  selectedPlan?: string;
+  planName?: string;
+  planAmount?: number;
+  planDiscount?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -44,6 +48,10 @@ export interface EnrolleeData {
   email?: string;
   isPaymentDone: boolean;
   batchName?: string;
+  selectedPlan?: string;
+  planName?: string;
+  planAmount?: number;
+  planDiscount?: number;
   createdAt: string;
   updatedAt: string;
   state: string;
@@ -343,6 +351,10 @@ export async function getEnrollmentData(
       : undefined,
     isPaymentDone: enrollment.isPaymentDone || false,
     batchName: enrollment.batchName || undefined,
+    selectedPlan: enrollment.selectedPlan || undefined,
+    planName: enrollment.planName || undefined,
+    planAmount: enrollment.planAmount || undefined,
+    planDiscount: enrollment.planDiscount || undefined,
     createdAt: enrollment.createdAt,
     updatedAt: enrollment.updatedAt,
   };
@@ -504,6 +516,10 @@ export async function fetchAllEnrollments(
     email: enrollment.user?.email || "",
     isPaymentDone: enrollment.isPaymentDone || false,
     batchName: enrollment.batchName || undefined,
+    selectedPlan: enrollment.selectedPlan || undefined,
+    planName: enrollment.planName || undefined,
+    planAmount: enrollment.planAmount || undefined,
+    planDiscount: enrollment.planDiscount || undefined,
     createdAt: enrollment.createdAt,
     updatedAt: enrollment.updatedAt,
     state: enrollment.state || "",

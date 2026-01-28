@@ -123,6 +123,23 @@
     "batchName": {
       "type": "string",
       "required": false
+    },
+    "selectedPlan": {
+      "type": "enumeration",
+      "enum": ["gold", "silver", "bronze"],
+      "required": false
+    },
+    "planName": {
+      "type": "string",
+      "required": false
+    },
+    "planAmount": {
+      "type": "decimal",
+      "required": false
+    },
+    "planDiscount": {
+      "type": "integer",
+      "required": false
     }
   }
 }

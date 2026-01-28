@@ -617,6 +617,9 @@ export interface ApiEnrollmentEnrollment extends Struct.CollectionTypeSchema {
         maxLength: 10;
         minLength: 10;
       }>;
+    planAmount: Schema.Attribute.Decimal;
+    planDiscount: Schema.Attribute.Integer;
+    planName: Schema.Attribute.String;
     preferredLanguage: Schema.Attribute.String;
     preferredNetwork: Schema.Attribute.Enumeration<
       ['Mtn', 'Glo', 'Airtel', 'mobile9']
@@ -625,6 +628,7 @@ export interface ApiEnrollmentEnrollment extends Struct.CollectionTypeSchema {
     publishedAt: Schema.Attribute.DateTime;
     schoolIdCard: Schema.Attribute.Media<'images' | 'files'> &
       Schema.Attribute.Required;
+    selectedPlan: Schema.Attribute.Enumeration<['gold', 'silver', 'bronze']>;
     state: Schema.Attribute.Enumeration<['Delhi', 'Lagos']>;
     universityAttending: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
@@ -700,6 +704,10 @@ export interface ApiPaymentPayment extends Struct.CollectionTypeSchema {
     month: Schema.Attribute.String & Schema.Attribute.Required;
     paymentDate: Schema.Attribute.Date & Schema.Attribute.Required;
     paymentMode: Schema.Attribute.String & Schema.Attribute.Required;
+    planAmount: Schema.Attribute.Decimal;
+    planDiscount: Schema.Attribute.Integer;
+    planId: Schema.Attribute.Enumeration<['gold', 'silver', 'bronze']>;
+    planName: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     reference: Schema.Attribute.Text;
     updatedAt: Schema.Attribute.DateTime;

@@ -1,12 +1,15 @@
 
 // Payment Plans Configuration
 export const PAYMENT_PLANS: Record<string, any> = {
-  basic: {
-    id: 'basic',
+  gold: {
+    id: 'gold',
     name: 'Gold Plan',
-    amount: 500000, // ₦500,000 in kobo
+    amount: 50000000, // ₦500,000 in kobo
     currency: 'NGN',
-    description: 'Perfect for individuals starting their learning journey',
+    price: '₦500,000.00',
+    bg: 'bg-[#efbf00]',
+    discount: 50,
+    description: 'Premium training package with maximum discounts',
     features: [
       '50% on Discount Training Fee.',
       'Starter Package',
@@ -15,12 +18,15 @@ export const PAYMENT_PLANS: Record<string, any> = {
       'Exit package'
     ]
   },
-  pro: {
-    id: 'pro',
+  silver: {
+    id: 'silver',
     name: 'Silver Plan',
-    amount: 550000, // ₦550,000 in kobo
+    amount: 55000000, // ₦550,000 in kobo
     currency: 'NGN',
-    description: 'Ideal for professionals looking to advance their skills',
+    price: '₦550,000.00',
+    bg: 'bg-gray-300',
+    discount: 45,
+    description: 'Enhanced training package with substantial discounts',
     features: [
       '45% on Discount Training Fee.',
       '15 validity on the 58% discount exam voucher.',
@@ -28,12 +34,15 @@ export const PAYMENT_PLANS: Record<string, any> = {
       'Exit package'
     ]
   },
-  enterprise: {
-    id: 'enterprise',
+  bronze: {
+    id: 'bronze',
     name: 'Bronze Plan',
-    amount: 600000, // ₦60,000 in kobo
+    amount: 60000000, // ₦600,000 in kobo
     currency: 'NGN',
-    description: 'Complete solution for organizations and teams',
+    price: '₦600,000.00',
+    bg: 'bg-[#cc8845]',
+    discount: 40,
+    description: 'Comprehensive training package with competitive discounts',
     features: [
       '40% on Discount Training Fee.',
       '15 validity on the 58% discount exam voucher.',

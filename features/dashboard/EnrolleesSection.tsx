@@ -441,8 +441,7 @@ export function EnrolleesSection() {
                     )}
                   </td>
                   <td className="py-4 px-4">
-                    <p className="text-sm text-gray-600 flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
+                    <p className="text-gray-700">
                       {new Date(enrollee.createdAt).toLocaleDateString()}
                     </p>
                   </td>

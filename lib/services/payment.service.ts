@@ -10,6 +10,10 @@ export interface PaymentData {
   emailAddress: string;
   paymentDate: string;
   reference?: string;
+  planId?: string;
+  planName?: string;
+  planAmount?: number;
+  planDiscount?: number;
   createdAt: string;
   updatedAt: string;
   enrollment?: {
@@ -30,6 +34,10 @@ export interface CreatePaymentInput {
   emailAddress: string;
   paymentDate: string;
   reference?: string;
+  planId?: string;
+  planName?: string;
+  planAmount?: number;
+  planDiscount?: number;
 }
 
 export async function createPayment(
@@ -95,6 +103,10 @@ export async function fetchPaymentsByEnrollment(
     emailAddress: payment.emailAddress || "",
     paymentDate: payment.paymentDate || "",
     reference: payment.reference || "",
+    planId: payment.planId || "",
+    planName: payment.planName || "",
+    planAmount: payment.planAmount || 0,
+    planDiscount: payment.planDiscount || 0,
     createdAt: payment.createdAt,
     updatedAt: payment.updatedAt,
     enrollment: payment.enrollment ? {
@@ -138,6 +150,10 @@ export async function fetchAllPayments(token: string): Promise<PaymentData[]> {
     emailAddress: payment.emailAddress || "",
     paymentDate: payment.paymentDate || "",
     reference: payment.reference || "",
+    planId: payment.planId || "",
+    planName: payment.planName || "",
+    planAmount: payment.planAmount || 0,
+    planDiscount: payment.planDiscount || 0,
     createdAt: payment.createdAt,
     updatedAt: payment.updatedAt,
     enrollment: payment.enrollment ? {
@@ -184,6 +200,10 @@ export async function fetchPaymentsByUser(
     emailAddress: payment.emailAddress || "",
     paymentDate: payment.paymentDate || "",
     reference: payment.reference || "",
+    planId: payment.planId || "",
+    planName: payment.planName || "",
+    planAmount: payment.planAmount || 0,
+    planDiscount: payment.planDiscount || 0,
     createdAt: payment.createdAt,
     updatedAt: payment.updatedAt,
     enrollment: payment.enrollment ? {
