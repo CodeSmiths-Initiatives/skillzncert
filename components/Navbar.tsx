@@ -77,11 +77,11 @@ export default function Navbar() {
 						</li>
 						<li>
 							<Link
-								href="/login"
+								href="/register"
 								className="inline-block bg-[#51A8B1] text-white text-base font-semibold px-4 py-2 rounded-md"
 								onClick={() => setOpen(false)}
 							>
-								Login
+								Register
 							</Link>
 						</li>
 					</ul>

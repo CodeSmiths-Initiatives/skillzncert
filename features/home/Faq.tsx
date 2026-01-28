@@ -15,7 +15,7 @@ const faqs = [
 	{
 		question: "Who can participate?",
 		answer:
-			"The program is open to undergraduate students in any Nigerian university or polytechnic, especially those studying IT-related courses.",
+			"The program is open to undergraduate students in any Nigerian higher institution of learning, especially those studying IT-related courses.",
 	},
 	{
 		question: "How do I register?",

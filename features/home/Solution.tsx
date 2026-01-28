@@ -67,7 +67,7 @@ export default function Solution() {
 							className="relative w-full h-65"
 						>
 							<Image
-								src="static/aboutUs.svg"
+								src="/static/images/Background.jpg"
 								alt="Cybersecurity training"
 								fill
 								className="object-cover rounded-3xl"
@@ -84,7 +84,7 @@ export default function Solution() {
 							className="relative w-full h-65"
 						>
 							<Image
-								src="static/images/aboutUs1.svg"
+								src="/static/images/Our Solutions.jpg"
 								alt="Learning environment"
 								fill
 								className="object-cover rounded-3xl"
@@ -102,7 +102,7 @@ export default function Solution() {
 							className="absolute top-0 right-30 w-70 h-110"
 						>
 							<Image
-								src="static/images/aboutUs.svg"
+								src="/static/images/Background.jpg"
 								alt="Cybersecurity training"
 								fill
 								className="object-cover rounded-3xl"
@@ -118,7 +118,7 @@ export default function Solution() {
 							className="absolute top-20 right-0 w-70 h-110"
 						>
 							<Image
-								src="static/images/aboutUs1.svg"
+								src="/static/images/Our Solutions.jpg"
 								alt="Learning environment"
 								fill
 								className="object-cover rounded-3xl"

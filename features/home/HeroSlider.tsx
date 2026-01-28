@@ -85,7 +85,9 @@ export default function HeroSlider() {
 									{slides[current].description}
 								</p>
 
-								<button								suppressHydrationWarning									className="mt-6 inline-flex items-center justify-center rounded-lg bg-[#58AEB3] px-8 py-4 text-sm font-semibold text-white transition
+								<button
+									suppressHydrationWarning
+									className="mt-6 inline-flex items-center justify-center rounded-lg bg-[#58AEB3] px-8 py-4 text-sm font-semibold text-white transition
 									hover:-translate-y-px hover:shadow-lg
 									focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#58AEB3]/40"
 								>
@@ -141,7 +143,7 @@ export default function HeroSlider() {
 									"h-3 w-3 rounded-full transition",
 									current === index
 										? "bg-[#58AEB3]"
-										: "bg-gray-300 hover:bg-gray-400"
+										: "bg-gray-300 hover:bg-gray-400",
 								)}
 								aria-label={`Go to slide ${index + 1}`}
 							/>
