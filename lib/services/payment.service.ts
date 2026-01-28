@@ -82,12 +82,17 @@ export async function fetchPaymentsByEnrollment(
     }
   );
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("Strapi API Error:", res.status, errorText);
-    throw new Error(`Failed to fetch payments: ${res.status}`);
-  }
 
+   if (!res.ok) {
+     const errorText = await res.text();
+     console.warn("Strapi API Error:", res.status, errorText);
+     // Return empty array instead of throwing error for 403 and other fetch failures
+     if (res.status === 403) {
+       console.warn("Access denied fetching payments - returning empty list");
+       return [];
+     }
+     return [];
+   }
   const json = await res.json();
   const payments = json?.data || [];
 
@@ -129,12 +134,17 @@ export async function fetchAllPayments(token: string): Promise<PaymentData[]> {
     }
   );
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("Strapi API Error:", res.status, errorText);
-    throw new Error(`Failed to fetch payments: ${res.status}`);
-  }
 
+   if (!res.ok) {
+     const errorText = await res.text();
+     console.warn("Strapi API Error:", res.status, errorText);
+     // Return empty array instead of throwing error for 403 and other fetch failures
+     if (res.status === 403) {
+       console.warn("Access denied fetching all payments - returning empty list");
+       return [];
+     }
+     return [];
+   }
   const json = await res.json();
   const payments = json?.data || [];
 
@@ -179,12 +189,17 @@ export async function fetchPaymentsByUser(
     }
   );
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("Strapi API Error:", res.status, errorText);
-    throw new Error(`Failed to fetch user payments: ${res.status}`);
-  }
 
+   if (!res.ok) {
+     const errorText = await res.text();
+     console.warn("Strapi API Error:", res.status, errorText);
+     // Return empty array instead of throwing error for 403 and other fetch failures
+     if (res.status === 403) {
+       console.warn("Access denied fetching user payments - returning empty list");
+       return [];
+     }
+     return [];
+   }
   const json = await res.json();
   const payments = json?.data || [];
 

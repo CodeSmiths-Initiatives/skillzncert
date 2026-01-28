@@ -184,10 +184,17 @@ export function calculateMonthlyChanges(
 /**
  * Main function to fetch and calculate all dashboard metrics
  * Designed for server-side rendering or server actions
+ * 
+ * Returns unified response format:
+ * - Success: { success: true, data: DashboardTopMetrics }
+ * - Error: { success: false, error: string }
  */
 export async function fetchDashboardMetrics(
   token: string
-): Promise<{ success: boolean; data?: DashboardTopMetrics; error?: string }> {
+): Promise<
+  | { success: true; data: DashboardTopMetrics }
+  | { success: false; error: string }
+> {
   try {
     // Fetch data in parallel for performance
     const [payments, enrollees] = await Promise.all([

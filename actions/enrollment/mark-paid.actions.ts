@@ -69,12 +69,19 @@ export async function markEnrollmentPaidAction(data: {
     }
 
     // Update enrollment with payment status and batch
-    await updateEnrollmentPayment(
+    const result = await updateEnrollmentPayment(
       data.documentId,
       data.isPaymentDone,
       token,
       batchName
     );
+
+    if (!result.success) {
+      return {
+        success: false,
+        message: result.message || "Failed to update payment status",
+      };
+    }
 
     return {
       success: true,

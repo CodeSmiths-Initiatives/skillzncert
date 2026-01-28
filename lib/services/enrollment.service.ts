@@ -95,32 +95,38 @@ export async function fetchEnrollmentByUser(
   userId: number,
   token: string,
 ): Promise<EnrollmentStatus> {
-  const res = await fetch(
-    `${process.env.STRAPI_URL}/api/enrollments?filters[user][id][$eq]=${userId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
+  try {
+    const res = await fetch(
+      `${process.env.STRAPI_URL}/api/enrollments?filters[user][id][$eq]=${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
       },
-      cache: "no-store",
-    },
-  );
+    );
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch enrollment");
-  }
+    if (!res.ok) {
+      console.warn(`Fetch enrollment failed: ${res.status}`);
+      return { exists: false, isPaymentDone: false };
+    }
 
-  const json = await res.json();
-  const enrollment = json?.data?.[0];
+    const json = await res.json();
+    const enrollment = json?.data?.[0];
 
-  if (!enrollment) {
+    if (!enrollment) {
+      return { exists: false, isPaymentDone: false };
+    }
+
+    return {
+      exists: true,
+      isPaymentDone: enrollment.isPaymentDone,
+      documentId: enrollment.documentId,
+    };
+  } catch (error) {
+    console.error("Error fetching enrollment:", error);
     return { exists: false, isPaymentDone: false };
   }
-
-  return {
-    exists: true,
-    isPaymentDone: enrollment.isPaymentDone,
-    documentId: enrollment.documentId,
-  };
 }
 
 export async function submitEnrollment(formData: FormData, token: string) {
@@ -233,92 +239,120 @@ export async function updateEnrollmentPayment(
   token: string,
   batchName?: string,
 ) {
-  const updateData: any = {
-    isPaymentDone,
-  };
+  try {
+    const updateData: any = {
+      isPaymentDone,
+    };
 
-  // Add batch name if provided
-  if (batchName) {
-    updateData.batchName = batchName;
-  }
+    // Add batch name if provided
+    if (batchName) {
+      updateData.batchName = batchName;
+    }
 
-  const res = await fetch(
-    `${process.env.STRAPI_URL}/api/enrollments/${documentId}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+    const res = await fetch(
+      `${process.env.STRAPI_URL}/api/enrollments/${documentId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          data: updateData,
+        }),
+        cache: "no-store",
       },
-      body: JSON.stringify({
-        data: updateData,
-      }),
-      cache: "no-store",
-    },
-  );
+    );
 
-  const json = await res.json();
+    const json = await res.json();
 
-  if (!res.ok) {
-    throw new Error(json?.error?.message || "Failed to update payment status");
+    if (!res.ok) {
+      console.error("Update payment failed:", json?.error?.message);
+      return {
+        success: false,
+        message: json?.error?.message || "Failed to update payment status",
+      };
+    }
+
+    return { success: true, data: json.data };
+  } catch (error) {
+    console.error("Payment update error:", error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to update payment status",
+    };
   }
-
-  return json;
 }
 
 export async function getEnrollmentStatus(userId: number, token: string) {
-  const res = await fetch(
-    `${process.env.STRAPI_URL}/api/enrollments?filters[user][id][$eq]=${userId}`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: "no-store",
-    },
-  );
+  try {
+    const res = await fetch(
+      `${process.env.STRAPI_URL}/api/enrollments?filters[user][id][$eq]=${userId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      },
+    );
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch enrollment");
-  }
+    if (!res.ok) {
+      console.warn(`Failed to fetch enrollment: ${res.status}`);
+      return {
+        exists: false,
+        isPaymentDone: false,
+        documentId: null,
+      };
+    }
 
-  const json = await res.json();
-  const enrollment = json?.data?.[0];
+    const json = await res.json();
+    const enrollment = json?.data?.[0];
 
-  if (!enrollment) {
+    if (!enrollment) {
+      return {
+        exists: false,
+        isPaymentDone: false,
+        documentId: null,
+      };
+    }
+
+    return {
+      exists: true,
+      isPaymentDone: enrollment.isPaymentDone,
+      documentId: enrollment.documentId,
+    };
+  } catch (error) {
+    console.error("Error fetching enrollment status:", error);
     return {
       exists: false,
       isPaymentDone: false,
       documentId: null,
     };
   }
-
-  return {
-    exists: true,
-    isPaymentDone: enrollment.isPaymentDone,
-    documentId: enrollment.documentId,
-  };
 }
 
 export async function getEnrollmentData(
   userId: number,
   token: string,
 ): Promise<EnrollmentData | null> {
-  const res = await fetch(
-    `${process.env.STRAPI_URL}/api/enrollments?filters[user][id][$eq]=${userId}&populate=*`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: "no-store",
-    },
-  );
+  try {
+    const res = await fetch(
+      `${process.env.STRAPI_URL}/api/enrollments?filters[user][id][$eq]=${userId}&populate=*`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      },
+    );
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch enrollment data");
-  }
+    if (!res.ok) {
+      console.warn(`Failed to fetch enrollment data: ${res.status}`);
+      return null;
+    }
 
-  const json = await res.json();
-  const enrollment = json?.data?.[0];
+    const json = await res.json();
+    const enrollment = json?.data?.[0];
 
-  if (!enrollment) {
-    return null;
-  }
+    if (!enrollment) {
+      return null;
+    }
 
   return {
     id: enrollment.id,
@@ -339,13 +373,13 @@ export async function getEnrollmentData(
     numberForData: enrollment.numberForData || "",
     passport: enrollment.passport
       ? {
-          url: `${process.env.STRAPI_URL}${enrollment.passport.url}`,
+          url: `${enrollment.passport.url}`,
           name: enrollment.passport.name,
         }
       : undefined,
     schoolIdCard: enrollment.schoolIdCard
       ? {
-          url: `${process.env.STRAPI_URL}${enrollment.schoolIdCard.url}`,
+          url: `${enrollment.schoolIdCard.url}`,
           name: enrollment.schoolIdCard.name,
         }
       : undefined,
@@ -358,6 +392,10 @@ export async function getEnrollmentData(
     createdAt: enrollment.createdAt,
     updatedAt: enrollment.updatedAt,
   };
+  } catch (error) {
+    console.error("Error fetching enrollment data:", error);
+    return null;
+  }
 }
 
 export async function updateEnrollmentData(
@@ -488,61 +526,66 @@ export async function updateEnrollmentData(
 export async function fetchAllEnrollments(
   token: string,
 ): Promise<EnrolleeData[]> {
-  const res = await fetch(
-    `${process.env.STRAPI_URL}/api/enrollments?populate=*&sort=createdAt:desc`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
+  try {
+    const res = await fetch(
+      `${process.env.STRAPI_URL}/api/enrollments?populate=*&sort=createdAt:desc`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
       },
-      cache: "no-store",
-    },
-  );
+    );
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("Strapi API Error:", res.status, errorText);
-    throw new Error(`Failed to fetch enrollments: ${res.status} ${errorText}`);
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.warn("Strapi API Error:", res.status, errorText);
+      return [];
+    }
+
+    const json = await res.json();
+    const enrollments = json?.data || [];
+
+    return enrollments.map((enrollment: any) => ({
+      id: enrollment.id,
+      documentId: enrollment.documentId,
+      firstName: enrollment.firstName || "",
+      lastName: enrollment.lastName || "",
+      phoneNumber: enrollment.phoneNumber || "",
+      email: enrollment.user?.email || "",
+      isPaymentDone: enrollment.isPaymentDone || false,
+      batchName: enrollment.batchName || undefined,
+      selectedPlan: enrollment.selectedPlan || undefined,
+      planName: enrollment.planName || undefined,
+      planAmount: enrollment.planAmount || undefined,
+      planDiscount: enrollment.planDiscount || undefined,
+      createdAt: enrollment.createdAt,
+      updatedAt: enrollment.updatedAt,
+      state: enrollment.state || "",
+      country: enrollment.country || "",
+      yearOfStudy: enrollment.yearOfStudy || "",
+      passport: enrollment.passport
+        ? {
+            url: `${process.env.STRAPI_URL}${enrollment.passport.url}`,
+            name: enrollment.passport.name,
+          }
+        : undefined,
+      schoolIdCard: enrollment.schoolIdCard
+        ? {
+            url: `${process.env.STRAPI_URL}${enrollment.schoolIdCard.url}`,
+            name: enrollment.schoolIdCard.name,
+          }
+        : undefined,
+      user: enrollment.user
+        ? {
+            id: enrollment.user.id,
+            username: enrollment.user.username,
+            email: enrollment.user.email,
+          }
+        : undefined,
+    }));
+  } catch (error) {
+    console.error("Error fetching enrollments:", error);
+    return [];
   }
-
-  const json = await res.json();
-  const enrollments = json?.data || [];
-
-  return enrollments.map((enrollment: any) => ({
-    id: enrollment.id,
-    documentId: enrollment.documentId,
-    firstName: enrollment.firstName || "",
-    lastName: enrollment.lastName || "",
-    phoneNumber: enrollment.phoneNumber || "",
-    email: enrollment.user?.email || "",
-    isPaymentDone: enrollment.isPaymentDone || false,
-    batchName: enrollment.batchName || undefined,
-    selectedPlan: enrollment.selectedPlan || undefined,
-    planName: enrollment.planName || undefined,
-    planAmount: enrollment.planAmount || undefined,
-    planDiscount: enrollment.planDiscount || undefined,
-    createdAt: enrollment.createdAt,
-    updatedAt: enrollment.updatedAt,
-    state: enrollment.state || "",
-    country: enrollment.country || "",
-    yearOfStudy: enrollment.yearOfStudy || "",
-    passport: enrollment.passport
-      ? {
-          url: `${process.env.STRAPI_URL}${enrollment.passport.url}`,
-          name: enrollment.passport.name,
-        }
-      : undefined,
-    schoolIdCard: enrollment.schoolIdCard
-      ? {
-          url: `${process.env.STRAPI_URL}${enrollment.schoolIdCard.url}`,
-          name: enrollment.schoolIdCard.name,
-        }
-      : undefined,
-    user: enrollment.user
-      ? {
-          id: enrollment.user.id,
-          username: enrollment.user.username,
-          email: enrollment.user.email,
-        }
-      : undefined,
-  }));
 }
