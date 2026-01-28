@@ -575,6 +575,7 @@ export interface ApiEnrollmentEnrollment extends Struct.CollectionTypeSchema {
   };
   attributes: {
     address: Schema.Attribute.String;
+    batchName: Schema.Attribute.String;
     country: Schema.Attribute.Enumeration<
       ['India', 'USA', 'Canada', 'UK', 'Nigeria']
     >;

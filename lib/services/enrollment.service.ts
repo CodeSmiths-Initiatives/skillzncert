@@ -30,6 +30,7 @@ export interface EnrollmentData {
     name: string;
   };
   isPaymentDone: boolean;
+  batchName?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -42,6 +43,7 @@ export interface EnrolleeData {
   phoneNumber: string;
   email?: string;
   isPaymentDone: boolean;
+  batchName?: string;
   createdAt: string;
   updatedAt: string;
   state: string;
@@ -221,7 +223,17 @@ export async function updateEnrollmentPayment(
   documentId: string,
   isPaymentDone: boolean,
   token: string,
+  batchName?: string,
 ) {
+  const updateData: any = {
+    isPaymentDone,
+  };
+
+  // Add batch name if provided
+  if (batchName) {
+    updateData.batchName = batchName;
+  }
+
   const res = await fetch(
     `${process.env.STRAPI_URL}/api/enrollments/${documentId}`,
     {
@@ -231,9 +243,7 @@ export async function updateEnrollmentPayment(
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        data: {
-          isPaymentDone,
-        },
+        data: updateData,
       }),
       cache: "no-store",
     },
@@ -332,6 +342,7 @@ export async function getEnrollmentData(
         }
       : undefined,
     isPaymentDone: enrollment.isPaymentDone || false,
+    batchName: enrollment.batchName || undefined,
     createdAt: enrollment.createdAt,
     updatedAt: enrollment.updatedAt,
   };
@@ -492,6 +503,7 @@ export async function fetchAllEnrollments(
     phoneNumber: enrollment.phoneNumber || "",
     email: enrollment.user?.email || "",
     isPaymentDone: enrollment.isPaymentDone || false,
+    batchName: enrollment.batchName || undefined,
     createdAt: enrollment.createdAt,
     updatedAt: enrollment.updatedAt,
     state: enrollment.state || "",

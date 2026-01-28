@@ -3,46 +3,42 @@
 export const PAYMENT_PLANS: Record<string, any> = {
   basic: {
     id: 'basic',
-    name: 'Basic Plan',
-    amount: 500000, // ₦5,000 in kobo
+    name: 'Gold Plan',
+    amount: 500000, // ₦500,000 in kobo
     currency: 'NGN',
     description: 'Perfect for individuals starting their learning journey',
     features: [
-      'Access to basic courses',
-      'Community support',
-      'Certificate of completion',
-      'Mobile app access'
+      '50% on Discount Training Fee.',
+      'Starter Package',
+      '15 validity on the 58% discount exam voucher.',
+      '1 year after training support.',
+      'Exit package'
     ]
   },
   pro: {
     id: 'pro',
-    name: 'Pro Plan',
-    amount: 1500000, // ₦15,000 in kobo
+    name: 'Silver Plan',
+    amount: 550000, // ₦550,000 in kobo
     currency: 'NGN',
     description: 'Ideal for professionals looking to advance their skills',
     features: [
-      'All Basic features',
-      'Advanced courses',
-      'Priority support',
-      'Downloadable resources',
-      'Live webinars',
-      '1-on-1 mentoring sessions'
+      '45% on Discount Training Fee.',
+      '15 validity on the 58% discount exam voucher.',
+      '1 year after training support.',
+      'Exit package'
     ]
   },
   enterprise: {
     id: 'enterprise',
-    name: 'Enterprise Plan',
-    amount: 5000000, // ₦50,000 in kobo
+    name: 'Bronze Plan',
+    amount: 600000, // ₦60,000 in kobo
     currency: 'NGN',
     description: 'Complete solution for organizations and teams',
     features: [
-      'All Pro features',
-      'Custom training programs',
-      'Dedicated account manager',
-      'API access',
-      'White-label solution',
-      'Advanced analytics',
-      'Bulk licensing'
+      '40% on Discount Training Fee.',
+      '15 validity on the 58% discount exam voucher.',
+      '1 year after training support.',
+      'Exit package'
     ]
   }
 };

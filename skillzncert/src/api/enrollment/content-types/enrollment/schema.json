@@ -119,6 +119,10 @@
     },
     "netacadId": {
       "type": "string"
+    },
+    "batchName": {
+      "type": "string",
+      "required": false
     }
   }
 }
