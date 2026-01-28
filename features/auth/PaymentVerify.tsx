@@ -88,6 +88,7 @@ export default function PaymentSuccessPage({ enrollmentDocumentId, userId, userE
   const planName = searchParams.get("planName");
   const amount = searchParams.get("amount");
   const currency = searchParams.get("currency");
+  const planDiscount = searchParams.get("planDiscount");
 
   useEffect(() => {
     debugger
@@ -143,14 +144,24 @@ export default function PaymentSuccessPage({ enrollmentDocumentId, userId, userE
         plan_name: planName || "Basic Plan",
       };
 
-      // Dispatch success action (reducer prevents double execution)
-      dispatch({ type: "PROCESS_SUCCESS", payload: paymentData });
-
       // Mark enrollment as paid
-      await markEnrollmentPaidAction({
+      const markPaidResult = await markEnrollmentPaidAction({
         documentId: enrollmentDocumentId,
         isPaymentDone: true,
       });
+
+      if (!markPaidResult.success) {
+        console.error("Failed to mark enrollment as paid:", markPaidResult.message);
+      }
+
+      // Add batch info to payment data if available
+      const paymentDataWithBatch = {
+        ...paymentData,
+        batchName: markPaidResult.batchName || "Pending",
+      };
+
+      // Dispatch success action with batch info
+      dispatch({ type: "PROCESS_SUCCESS", payload: paymentDataWithBatch });
 
       // Create payment record in database
       const currentDate = new Date();
@@ -164,6 +175,10 @@ export default function PaymentSuccessPage({ enrollmentDocumentId, userId, userE
         emailAddress: userEmail,
         paymentDate: currentDate.toISOString(),
         reference: reference, // Add payment reference
+        planId: planId || "gold",
+        planName: planName || "Gold Plan",
+        planAmount: amount ? parseInt(amount) / 100 : 5000,
+        planDiscount: planDiscount ? parseInt(planDiscount) : 50,
       });
 
       if (!paymentResult.success) {
@@ -284,6 +299,14 @@ export default function PaymentSuccessPage({ enrollmentDocumentId, userId, userE
                     {state.data.email}
                   </span>
                 </div>
+                {state.data.batchName && (
+                  <div className="flex justify-between pt-2 border-t border-gray-200">
+                    <span className="text-gray-600">Assigned Batch:</span>
+                    <span className="font-semibold text-[#51A8B1]">
+                      {state.data.batchName}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )}

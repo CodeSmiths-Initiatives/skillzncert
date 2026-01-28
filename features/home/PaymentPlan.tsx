@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { title } from "process";
+import { PAYMENT_PLANS } from "@/lib/payment-plans";
 
 const containerVariants = {
 	hidden: {},
@@ -46,61 +46,14 @@ export default function PaymentPlan() {
 					viewport={{ once: true, amount: 0.3 }}
 					className="grid grid-cols-1 md:grid-cols-3 gap-8"
 				>
-					{[
-						{
-							bg: "bg-[#efbf00]",
-							price: "₦500,000.00",
-							title: "Gold Plan",
-							content: (
-								<>
-									<ul className="list-disc list-inside space-y-2 text-sm font-medium leading-7 text-gray-700 max-w-xl mb-8">
-										<li>50% on Discount Training Fee.</li>
-										<li>Starter Package</li>
-										<li>15 validity on the 58% discount exam voucher.</li>
-										<li>1 year after training support.</li>
-										<li>Exit package</li>
-									</ul>
-								</>
-							),
-						},
-						{
-							bg: "bg-gray-300",
-							price: "₦550,000.00",
-							title: "Silver plan",
-							content: (
-								<>
-									<ul className="list-disc list-inside space-y-2 text-sm font-medium leading-7 text-gray-700 max-w-xl mb-8">
-										<li>45% on Discount Training Fee.</li>
-										<li>15 validity on the 58% discount exam voucher.</li>
-										<li>1 year after training support.</li>
-										<li>Exit package</li>
-									</ul>
-								</>
-							),
-						},
-						{
-							bg: "bg-[#cc8845]",
-							price: "₦600,000.00",
-							title: "Bronze Plan",
-							content: (
-								<>
-									<ul className="list-disc list-inside space-y-2 text-sm font-medium leading-7 text-gray-700 max-w-xl mb-8">
-										<li>40% on Discount Training Fee.</li>
-										<li>15 validity on the 58% discount exam voucher.</li>
-										<li>1 year after training support.</li>
-										<li>Exit package</li>
-									</ul>
-								</>
-							),
-						},
-					].map((card, index) => (
+					{Object.values(PAYMENT_PLANS).map((plan) => (
 						<motion.div
-							key={index}
+							key={plan.id}
 							variants={cardVariants}
 							tabIndex={0}
 							whileHover={{ y: -6 }}
 							whileFocus={{ y: -6 }}
-							className={`${card.bg} rounded-3xl px-6 py-8 flex flex-col 
+							className={`${plan.bg} rounded-3xl px-6 py-8 flex flex-col 
 							transition-shadow duration-300
 							hover:shadow-xl focus-visible:shadow-xl
 							focus-visible:outline-none focus-visible:ring-4
@@ -108,13 +61,17 @@ export default function PaymentPlan() {
 						>
 							<div className="text-center mb-6">
 								<h2 className="text-3xl font-semibold text-white mb-2">
-									{card.title}
+									{plan.name}
 								</h2>
-								<p className="text-xl font-bold text-black">{card.price}</p>
+								<p className="text-xl font-bold text-black">{plan.price}</p>
 							</div>
 
 							<div className="text-sm font-medium text-black leading-6 space-y-3 flex-1">
-								{card.content}
+								<ul className="list-disc list-inside space-y-2">
+									{plan.features.map((feature: string) => (
+										<li key={feature}>{feature}</li>
+									))}
+								</ul>
 							</div>
 
 							<p className="text-center text-sm font-semibold mt-10">

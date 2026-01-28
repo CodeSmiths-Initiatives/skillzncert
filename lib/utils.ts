@@ -86,3 +86,21 @@ export function validateUsername(username: string): string {
   }
   return "";
 }
+
+/**
+ * Build correct image URL from Strapi
+ * Handles both absolute URLs (already from API) and relative paths
+ * @param imageUrl - The image URL or path from the API
+ * @returns Full image URL with correct base
+ */
+export function buildImageUrl(imageUrl: string | undefined): string | undefined {
+  if (!imageUrl) return undefined;
+  
+  // Check if URL is already absolute (starts with http/https)
+  if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+    return imageUrl;
+  }
+  
+  // Otherwise prepend base URL
+  return `${process.env.STRAPI_URL}${imageUrl}`;
+}

@@ -11,15 +11,37 @@ import {
   CheckCircle,
   Clock,
   Calendar,
+  AlertTriangle,
 } from "lucide-react";
 import { getScheduleAction } from "@/actions/schedule/schedule.actions";
+import { getDashboardMetricsAction } from "@/actions/dashboard/get-metrics.actions";
+import { StatCard } from "@/components/dashboard/stat-card";
 import type { DayOfWeek, DaySchedule } from "@/lib/types/schedule.types";
 import { DAY_LABELS } from "@/lib/types/schedule.types";
 import { formatTimeSlot } from "@/lib/utils/schedule.utils";
+import type { DashboardTopMetrics } from "@/lib/services/dashboard.service";
+import {
+  buildAdminStats,
+  buildUserStats,
+  type StatValue,
+} from "@/lib/types/stats.config";
 
+/**
+ * OverviewSection Component
+ * Displays dashboard metrics for both admin and regular users
+ * 
+ * Architecture:
+ * - Separated admin/user stat building logic
+ * - Proper error classification and handling
+ * - Role-based data display
+ * - Loading and error states per data type
+ */
 export function OverviewSection({ isAdmin }: { isAdmin: boolean }) {
   const [schedule, setSchedule] = useState<DaySchedule[]>([]);
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(true);
+  const [metrics, setMetrics] = useState<DashboardTopMetrics | null>(null);
+  const [isLoadingMetrics, setIsLoadingMetrics] = useState(true);
+  const [metricsError, setMetricsError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'weekly' | 'monthly'>('weekly');
   const [currentDay, setCurrentDay] = useState<DayOfWeek | null>(null);
   const [currentDate, setCurrentDate] = useState<Date | null>(null);
@@ -30,6 +52,45 @@ export function OverviewSection({ isAdmin }: { isAdmin: boolean }) {
     setCurrentDate(today);
     setCurrentDay(today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase() as DayOfWeek);
   }, []);
+
+  // Fetch dashboard metrics for admin
+  // Only admins should fetch metrics (prevents 403 errors)
+  useEffect(() => {
+    if (!isAdmin) {
+      // Non-admin: skip metrics fetch, use static user stats
+      setMetrics(null);
+      setIsLoadingMetrics(false);
+      return;
+    }
+
+    const loadMetrics = async () => {
+      try {
+        setIsLoadingMetrics(true);
+        setMetricsError(null);
+        const result = await getDashboardMetricsAction();
+        
+        if (result.success) {
+          setMetrics(result.data);
+        } else {
+          // Handle different error types
+          if (result.status === 403) {
+            setMetricsError("You don't have permission to view metrics");
+          } else if (result.status === 401) {
+            setMetricsError("Your session has expired. Please log in again.");
+          } else {
+            setMetricsError(result.error || "Failed to load metrics");
+          }
+        }
+      } catch (error) {
+        console.error("Error loading metrics:", error);
+        setMetricsError("Error loading metrics");
+      } finally {
+        setIsLoadingMetrics(false);
+      }
+    };
+
+    loadMetrics();
+  }, [isAdmin]);
 
   // Fetch the weekly schedule
   useEffect(() => {
@@ -49,45 +110,55 @@ export function OverviewSection({ isAdmin }: { isAdmin: boolean }) {
     loadSchedule();
   }, []);
 
-  const stats = isAdmin
-    ? [
-        { title: "Total Enrollees", value: "1,234", icon: Users, change: "+12%" },
-        { title: "Revenue", value: "$45,678", icon: DollarSign, change: "+8%" },
-        { title: "Completed", value: "89", icon: BookOpen, change: "+5%" },
-        { title: "In Progress", value: "76", icon: TrendingUp, change: "+3%" },
-      ]
-    : [
-        { title: "Attendance", value: "90%", icon: BookOpen, change: null },
-        { title: "Completed", value: "3", icon: CheckCircle, change: null },
-        { title: "On Leave", value: "2", icon: Clock, change: null },
-        { title: "Plan", value: "Monthly", icon: TrendingUp, change: null },
-      ];
+  /**
+   * Build stats array based on user role
+   * Using reusable functions from stats config
+   * Makes adding new metrics simple and type-safe
+   * Note: buildAdminStats() handles null/undefined metrics gracefully
+   */
+  const buildStats = (): StatValue[] => {
+    if (isAdmin) {
+      return buildAdminStats(metrics!);
+    }
+
+    if (!isAdmin) {
+      return buildUserStats();
+    }
+
+    // Loading state: empty array
+    return [];
+  };
+
+  const stats = buildStats();
 
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {stats.map((stat, index) => (
-          <Card
+          <StatCard
             key={index}
-            className="hover:shadow-xl hover:shadow-blue-200/50 transition-all duration-300 border-0 bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 group border-t-4 border-t-blue-500"
-          >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600 group-hover:text-slate-700">
-                {stat.title}
-              </CardTitle>
-              <div className="p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
-                <stat.icon className="h-4 w-4 text-blue-600" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-slate-900 mb-1">
-                {stat.value}
-              </div>
-            </CardContent>
-          </Card>
+            title={stat.title}
+            value={stat.value}
+            icon={stat.icon}
+            change={typeof stat.change === "number" ? stat.change : 0}
+            trend={stat.trend}
+            isLoading={isAdmin && isLoadingMetrics}
+            error={isAdmin && metricsError ? metricsError : undefined}
+          />
         ))}
       </div>
+
+      {/* Error State for Metrics (Admin Only) */}
+      {/* {isAdmin && metricsError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 flex gap-3">
+          <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-semibold text-red-900 text-sm">Metrics Error</h3>
+            <p className="text-sm text-red-700 mt-1">{metricsError}</p>
+          </div>
+        </div>
+      )} */}
 
       {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-[6fr_4fr] gap-4 sm:gap-6 max-h-[calc(100vh-280px)]">       
@@ -263,15 +334,6 @@ export function OverviewSection({ isAdmin }: { isAdmin: boolean }) {
                       })}
                   </div>
                 )}
-
-                {/* No schedule message */}
-                {schedule.filter((day) => !day.isHoliday).length === 0 &&
-                  schedule.filter((day) => day.isHoliday).length === 0 && (
-                    <div className="py-8 text-center">
-                      <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-                      <p className="text-sm text-slate-500">No schedule available yet.</p>
-                    </div>
-                  )}
               </>
             ) : (
               // Monthly Calendar View
@@ -413,9 +475,9 @@ export function OverviewSection({ isAdmin }: { isAdmin: boolean }) {
               <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-slate-800">
-                  Completed Advanced React Course
+                  Enrollment started for <span className="font-bold">Networking & Cybersecurity certification</span>
                 </p>
-                <p className="text-xs text-slate-500">2 hours ago</p>
+                <p className="text-xs text-slate-500">1 hours ago</p>
               </div>
               <Badge
                 variant="default"
@@ -423,188 +485,7 @@ export function OverviewSection({ isAdmin }: { isAdmin: boolean }) {
               >
                 Completed
               </Badge>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-slate-800">
-                  Enrolled in Node.js Masterclass
-                </p>
-                <p className="text-xs text-slate-500">1 day ago</p>
-              </div>
-              <Badge
-                variant="outline"
-                className="border-blue-200 text-blue-700 hover:bg-blue-50"
-              >
-                In Progress
-              </Badge>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-slate-800">
-                  Submitted Assignment #3
-                </p>
-                <p className="text-xs text-slate-500">3 days ago</p>
-              </div>
-              <Badge
-                variant="default"
-                className="bg-green-100 text-green-700 hover:bg-green-200"
-              >
-                Graded
-              </Badge>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-slate-800">
-                  Joined Study Group
-                </p>
-                <p className="text-xs text-slate-500">5 days ago</p>
-              </div>
-              <Badge
-                variant="outline"
-                className="border-purple-200 text-purple-700 hover:bg-purple-50"
-              >
-                Active
-              </Badge>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-slate-800">
-                  Certificate Earned
-                </p>
-                <p className="text-xs text-slate-500">1 week ago</p>
-              </div>
-              <Badge
-                variant="default"
-                className="bg-orange-100 text-orange-700 hover:bg-orange-200"
-              >
-                Achievement
-              </Badge>
-            </div>           
-           
-            <div className="flex items-center space-x-4">
-              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-slate-800">
-                  Joined Study Group
-                </p>
-                <p className="text-xs text-slate-500">5 days ago</p>
-              </div>
-              <Badge
-                variant="outline"
-                className="border-purple-200 text-purple-700 hover:bg-purple-50"
-              >
-                Active
-              </Badge>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-slate-800">
-                  Certificate Earned
-                </p>
-                <p className="text-xs text-slate-500">1 week ago</p>
-              </div>
-              <Badge
-                variant="default"
-                className="bg-orange-100 text-orange-700 hover:bg-orange-200"
-              >
-                Achievement
-              </Badge>
-            </div>
-             <div className="flex items-center space-x-4">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-slate-800">
-                  Submitted Assignment #3
-                </p>
-                <p className="text-xs text-slate-500">3 days ago</p>
-              </div>
-              <Badge
-                variant="default"
-                className="bg-green-100 text-green-700 hover:bg-green-200"
-              >
-                Graded
-              </Badge>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-slate-800">
-                  Joined Study Group
-                </p>
-                <p className="text-xs text-slate-500">5 days ago</p>
-              </div>
-              <Badge
-                variant="outline"
-                className="border-purple-200 text-purple-700 hover:bg-purple-50"
-              >
-                Active
-              </Badge>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-slate-800">
-                  Certificate Earned
-                </p>
-                <p className="text-xs text-slate-500">1 week ago</p>
-              </div>
-              <Badge
-                variant="default"
-                className="bg-orange-100 text-orange-700 hover:bg-orange-200"
-              >
-                Achievement
-              </Badge>
-            </div>
-             <div className="flex items-center space-x-4">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-slate-800">
-                  Submitted Assignment #3
-                </p>
-                <p className="text-xs text-slate-500">3 days ago</p>
-              </div>
-              <Badge
-                variant="default"
-                className="bg-green-100 text-green-700 hover:bg-green-200"
-              >
-                Graded
-              </Badge>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-slate-800">
-                  Joined Study Group
-                </p>
-                <p className="text-xs text-slate-500">5 days ago</p>
-              </div>
-              <Badge
-                variant="outline"
-                className="border-purple-200 text-purple-700 hover:bg-purple-50"
-              >
-                Active
-              </Badge>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-slate-800">
-                  Certificate Earned
-                </p>
-                <p className="text-xs text-slate-500">1 week ago</p>
-              </div>
-              <Badge
-                variant="default"
-                className="bg-orange-100 text-orange-700 hover:bg-orange-200"
-              >
-                Achievement
-              </Badge>
-            </div>
+            </div>            
           </CardContent>
         </Card>
       </div>

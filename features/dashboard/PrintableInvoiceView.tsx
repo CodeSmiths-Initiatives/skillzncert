@@ -90,6 +90,22 @@ export function PrintableInvoiceView({ payment }: PrintableInvoiceViewProps) {
         </div>
 
         <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-xl md:rounded-2xl p-4 md:p-8 border border-blue-100 md:border-2">
+          {/* Plan Badge - Prominent display */}
+          {payment.planName && (
+            <div className="mb-6 md:mb-10 p-4 md:p-6 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl md:rounded-2xl border-2 border-amber-200">
+              <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+                <div className="w-3 h-3 md:w-4 md:h-4 bg-amber-500 rounded-full"></div>
+                <p className="text-xs md:text-sm font-bold text-amber-800 uppercase tracking-wide">Selected Plan</p>
+              </div>
+              <p className="text-2xl md:text-3xl font-bold text-amber-900 mb-2 md:mb-3">{payment.planName}</p>
+              {payment.planDiscount && (
+                <p className="text-sm md:text-base text-amber-800">
+                  <span className="font-semibold">Discount:</span> {payment.planDiscount}%
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Mobile Card View */}
           <div className="md:hidden space-y-4">
             <div className="bg-white rounded-lg p-4 shadow-sm">
@@ -216,6 +232,18 @@ export function PrintableInvoiceView({ payment }: PrintableInvoiceViewProps) {
             <p className="text-gray-500 text-xs md:text-sm font-medium uppercase tracking-wide">Payment ID</p>
             <p className="font-bold text-gray-900 text-base md:text-lg">#PAY-{payment.id}</p>
           </div>
+          {payment.planName && (
+            <div className="space-y-1 md:space-y-2 sm:col-span-1">
+              <p className="text-gray-500 text-xs md:text-sm font-medium uppercase tracking-wide">Plan Name</p>
+              <p className="font-bold text-gray-900 text-base md:text-lg">{payment.planName}</p>
+            </div>
+          )}
+          {payment.planDiscount && (
+            <div className="space-y-1 md:space-y-2 sm:col-span-1">
+              <p className="text-gray-500 text-xs md:text-sm font-medium uppercase tracking-wide">Plan Discount</p>
+              <p className="font-bold text-green-700 text-base md:text-lg">{payment.planDiscount}%</p>
+            </div>
+          )}
           {payment.reference && (
             <div className="space-y-1 md:space-y-2">
               <p className="text-gray-500 text-xs md:text-sm font-medium uppercase tracking-wide">Payment Reference</p>

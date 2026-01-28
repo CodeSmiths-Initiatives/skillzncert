@@ -10,6 +10,10 @@ export interface PaymentData {
   emailAddress: string;
   paymentDate: string;
   reference?: string;
+  planId?: string;
+  planName?: string;
+  planAmount?: number;
+  planDiscount?: number;
   createdAt: string;
   updatedAt: string;
   enrollment?: {
@@ -30,6 +34,10 @@ export interface CreatePaymentInput {
   emailAddress: string;
   paymentDate: string;
   reference?: string;
+  planId?: string;
+  planName?: string;
+  planAmount?: number;
+  planDiscount?: number;
 }
 
 export async function createPayment(
@@ -74,12 +82,17 @@ export async function fetchPaymentsByEnrollment(
     }
   );
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("Strapi API Error:", res.status, errorText);
-    throw new Error(`Failed to fetch payments: ${res.status}`);
-  }
 
+   if (!res.ok) {
+     const errorText = await res.text();
+     console.warn("Strapi API Error:", res.status, errorText);
+     // Return empty array instead of throwing error for 403 and other fetch failures
+     if (res.status === 403) {
+       console.warn("Access denied fetching payments - returning empty list");
+       return [];
+     }
+     return [];
+   }
   const json = await res.json();
   const payments = json?.data || [];
 
@@ -95,6 +108,10 @@ export async function fetchPaymentsByEnrollment(
     emailAddress: payment.emailAddress || "",
     paymentDate: payment.paymentDate || "",
     reference: payment.reference || "",
+    planId: payment.planId || "",
+    planName: payment.planName || "",
+    planAmount: payment.planAmount || 0,
+    planDiscount: payment.planDiscount || 0,
     createdAt: payment.createdAt,
     updatedAt: payment.updatedAt,
     enrollment: payment.enrollment ? {
@@ -117,12 +134,17 @@ export async function fetchAllPayments(token: string): Promise<PaymentData[]> {
     }
   );
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("Strapi API Error:", res.status, errorText);
-    throw new Error(`Failed to fetch payments: ${res.status}`);
-  }
 
+   if (!res.ok) {
+     const errorText = await res.text();
+     console.warn("Strapi API Error:", res.status, errorText);
+     // Return empty array instead of throwing error for 403 and other fetch failures
+     if (res.status === 403) {
+       console.warn("Access denied fetching all payments - returning empty list");
+       return [];
+     }
+     return [];
+   }
   const json = await res.json();
   const payments = json?.data || [];
 
@@ -138,6 +160,10 @@ export async function fetchAllPayments(token: string): Promise<PaymentData[]> {
     emailAddress: payment.emailAddress || "",
     paymentDate: payment.paymentDate || "",
     reference: payment.reference || "",
+    planId: payment.planId || "",
+    planName: payment.planName || "",
+    planAmount: payment.planAmount || 0,
+    planDiscount: payment.planDiscount || 0,
     createdAt: payment.createdAt,
     updatedAt: payment.updatedAt,
     enrollment: payment.enrollment ? {
@@ -163,12 +189,17 @@ export async function fetchPaymentsByUser(
     }
   );
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("Strapi API Error:", res.status, errorText);
-    throw new Error(`Failed to fetch user payments: ${res.status}`);
-  }
 
+   if (!res.ok) {
+     const errorText = await res.text();
+     console.warn("Strapi API Error:", res.status, errorText);
+     // Return empty array instead of throwing error for 403 and other fetch failures
+     if (res.status === 403) {
+       console.warn("Access denied fetching user payments - returning empty list");
+       return [];
+     }
+     return [];
+   }
   const json = await res.json();
   const payments = json?.data || [];
 
@@ -184,6 +215,10 @@ export async function fetchPaymentsByUser(
     emailAddress: payment.emailAddress || "",
     paymentDate: payment.paymentDate || "",
     reference: payment.reference || "",
+    planId: payment.planId || "",
+    planName: payment.planName || "",
+    planAmount: payment.planAmount || 0,
+    planDiscount: payment.planDiscount || 0,
     createdAt: payment.createdAt,
     updatedAt: payment.updatedAt,
     enrollment: payment.enrollment ? {

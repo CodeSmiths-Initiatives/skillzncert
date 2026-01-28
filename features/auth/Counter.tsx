@@ -8,10 +8,10 @@ export default function Counter() {
 		const now = new Date();
 		const currentYear = now.getFullYear();
 
-		let targetDate = new Date(currentYear, 2, 1);
+		let targetDate = new Date(currentYear, 1, 1);
 
 		if (now > targetDate) {
-			targetDate = new Date(currentYear + 1, 2, 1);
+			targetDate = new Date(currentYear + 1, 1, 1);
 		}
 
 		const updateCountdown = () => {

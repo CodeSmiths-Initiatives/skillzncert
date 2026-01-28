@@ -8,6 +8,7 @@ import { DashboardContent } from "./DashboardContent";
 const adminSidebarItems = [
   { label: "Overview", route: "overview", iconName: "LayoutDashboard" },
   { label: "Enrollees", route: "enrollees", iconName: "Users" },
+  // { label: "Payments", route: "payments", iconName: "CreditCard" },
   { label: "Schedule", route: "schedule", iconName: "Calendar" },
   { label: "Settings", route: "settings", iconName: "Settings" },
 ];

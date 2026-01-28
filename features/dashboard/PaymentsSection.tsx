@@ -37,11 +37,16 @@ export function PaymentsSection({ userId }: PaymentsSectionProps) {
       try {
         setLoading(true);
         const result = await getUserPayments(userId);
-        if (result.success) {
+
+        if (!result.success) {
+          console.warn("Failed to fetch payments:", result.message);
+          setPayments([]);
+        } else {
           setPayments(result.data);
         }
       } catch (error) {
         console.error("Error fetching payments:", error);
+        setPayments([]);
       } finally {
         setLoading(false);
       }
@@ -131,8 +136,8 @@ export function PaymentsSection({ userId }: PaymentsSectionProps) {
         {payments.length === 0 ? (
           <div className="text-center py-12">
             <Receipt className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600">No payment history yet</p>
-            <p className="text-sm text-gray-500 mt-2">Your payments will appear here once you make them</p>
+             <p className="text-gray-600 font-semibold">No records found</p>
+             <p className="text-sm text-gray-500 mt-2">Payment records will appear here once you make them</p>
           </div>
         ) : (
           <div className="grid gap-4">
@@ -168,6 +173,11 @@ export function PaymentsSection({ userId }: PaymentsSectionProps) {
                           <CreditCard className="h-3 w-3 md:h-3.5 md:w-3.5 shrink-0" />
                           <span className="truncate">{payment.paymentMode}</span>
                         </span>
+                        {payment.planName && (
+                          <span className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                            <span className="text-xs font-semibold">{payment.planName}</span>
+                          </span>
+                        )}
                         {payment.reference && (
                           <span className="flex items-center gap-1">
                             <span className="text-gray-400">#</span>
