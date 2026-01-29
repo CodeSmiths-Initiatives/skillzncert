@@ -35,10 +35,12 @@ export default function AboutUs() {
 					</p>
 
 					<p className="text-base font-medium leading-7 text-gray-700 mb-4">
-						Founded in 2020, we have rapidly grown to become a trusted name in
-						the industry. Our commitment to excellence and customer satisfaction
-						drives everything we do. There’s no doubt about the vast potential
-						of the Networking and Cybersecurity field.
+						There’s no doubt about the vast potential of the Networking and
+						Cybersecurity ﬁeld. Over the years, many professionals have
+						transitioned into this industry, and it has also become a top career
+						choice for newcomers. As a result, numerous public and private
+						higher institutions of learning in the country now offer
+						Cybersecurity as a degree or diploma program.
 					</p>
 
 					<p className="text-base font-medium leading-7 text-gray-700 mb-6">
@@ -64,7 +66,7 @@ export default function AboutUs() {
 							className="relative w-full h-65"
 						>
 							<Image
-								src="static/images/aboutUs.svg"
+								src="/static/images/Background.jpg"
 								alt="Cybersecurity training"
 								fill
 								className="object-cover rounded-3xl"
@@ -81,7 +83,7 @@ export default function AboutUs() {
 							className="relative w-full h-65"
 						>
 							<Image
-								src="static/images/aboutUs1.svg"
+								src="/static/images/Techexpert.jpg"
 								alt="Learning environment"
 								fill
 								className="object-cover rounded-3xl"
@@ -99,7 +101,7 @@ export default function AboutUs() {
 							className="absolute top-0 right-30 w-70 h-110"
 						>
 							<Image
-								src="static/images/aboutUs.svg"
+								src="/static/images/Background.jpg"
 								alt="Cybersecurity training"
 								fill
 								className="object-cover rounded-3xl"
@@ -115,7 +117,7 @@ export default function AboutUs() {
 							className="absolute top-20 right-0 w-70 h-110"
 						>
 							<Image
-								src="static/images/aboutUs1.svg"
+								src="/static/images/Techexpert.jpg"
 								alt="Learning environment"
 								fill
 								className="object-cover rounded-3xl"

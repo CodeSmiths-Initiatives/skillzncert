@@ -38,7 +38,7 @@ export default function ProblemStatement() {
 							className="relative w-full h-65"
 						>
 							<Image
-								src="static/images/aboutUs1.svg"
+								src="/static/images/Background.jpg"
 								alt="Cybersecurity training"
 								fill
 								className="object-cover rounded-3xl"
@@ -55,7 +55,7 @@ export default function ProblemStatement() {
 							className="relative w-full h-65"
 						>
 							<Image
-								src="static/images/aboutUs.svg"
+								src="/static/images/Problem Statement.jpg"
 								alt="Learning environment"
 								fill
 								className="object-cover rounded-3xl"
@@ -73,7 +73,7 @@ export default function ProblemStatement() {
 							className="absolute top-0 left-0 w-70 h-110"
 						>
 							<Image
-								src="static/images/aboutUs1.svg"
+								src="/static/images/Background.jpg"
 								alt="Industry challenge"
 								fill
 								className="object-cover rounded-3xl"
@@ -90,7 +90,7 @@ export default function ProblemStatement() {
 							className="absolute top-20 left-30 w-70 h-110"
 						>
 							<Image
-								src="static/images/aboutUs.svg"
+								src="/static/images/Problem Statement.jpg"
 								alt="Skills gap illustration"
 								fill
 								className="object-cover rounded-3xl"
