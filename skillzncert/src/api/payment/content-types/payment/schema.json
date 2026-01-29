@@ -68,6 +68,14 @@
     "planDiscount": {
       "type": "integer",
       "required": false
+    },
+    "expiryDate": {
+      "type": "datetime",
+      "required": false
+    },
+    "nextPaymentDate": {
+      "type": "datetime",
+      "required": false
     }
   }
 }

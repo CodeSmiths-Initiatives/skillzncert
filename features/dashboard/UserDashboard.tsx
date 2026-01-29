@@ -27,6 +27,7 @@ export default function UserDashboard({ user }: { user: any }) {
         userId={user.id}
         username={user.username}
         email={user.email}
+        userDocumentId={user.documentId || user.id.toString()}
       />
     </DashboardLayout>
   );

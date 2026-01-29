@@ -1,25 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { GoDotFill } from "react-icons/go";
 import { motion } from "framer-motion";
-import { usePaystackPayment } from "react-paystack";
-import { PAYMENT_PLANS } from "@/lib/payment-plans";
+import { PAYMENT_PLANS, type PaymentPlanConfig } from "@/lib/payment-plans";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/toast/ToastContext";
 
-type Plan = {
-	id: string;
-	name: string;
-	amount: number;
-	currency: string;
-	description: string;
-	features: string[];
-	discount?: number;
-	price?: string;
-	bg?: string;
-};
+type Plan = PaymentPlanConfig;
 
 type Props = {
 	userEmail: string;
@@ -28,6 +17,7 @@ type Props = {
 export default function PaymentPage({ userEmail }: Props) {
 	const [selectedPlan, setSelectedPlan] = useState<Plan>(PAYMENT_PLANS.gold);
 	const [isLoading, setIsLoading] = useState(false);
+	const [initializePayment, setInitializePayment] = useState<any>(null);
 	const router = useRouter();
 
 	// Generate payment reference in format: TRAN20251901FF551
@@ -47,26 +37,40 @@ export default function PaymentPage({ userEmail }: Props) {
 		return `TRAN${year}${day}${month}${randomChars}`;
 	};
 
+	// Get the actual amount to charge (first installment for multi-payment plans)
+	const getPaymentAmount = () => {
+		return selectedPlan.installments.firstPayment;
+	};
+
 	// Paystack configuration
 	const config = {
 		reference: generatePaymentReference(),
 		email: userEmail,
-		amount: selectedPlan.amount, // Amount in kobo
+		amount: getPaymentAmount(), // Amount in kobo (first installment)
 		publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
 		currency: "NGN",
 		subaccount: "ACCT_xtlrfkipcz3pp2p",
 		channels: ["card"],
 	};
 
-	// Paystack payment hook
-	const initializePayment = usePaystackPayment(config);
+	// Dynamically load Paystack hook on client side only
+	useEffect(() => {
+		if (typeof window !== "undefined") {
+			import("react-paystack").then((module) => {
+				const paymentHook = module.usePaystackPayment(config);
+				setInitializePayment(() => paymentHook);
+			});
+		}
+	}, [getPaymentAmount(), userEmail]);
 
 	const handlePayment = () => {
+		if (!initializePayment) return;
+		
 		setIsLoading(true);
 		console.log("🔄 Initializing Paystack payment for plan:", selectedPlan.id);
 
 		initializePayment({
-			onSuccess: (reference) => {
+			onSuccess: (reference: any) => {
 				// showToast({
 				//   type: "success",
 				//   title: "Payment Successful",
@@ -79,7 +83,7 @@ export default function PaymentPage({ userEmail }: Props) {
 					reference: reference.reference,
 					planId: selectedPlan.id,
 					planName: selectedPlan.name,
-					amount: selectedPlan.amount.toString(),
+					amount: getPaymentAmount().toString(), // Pass first installment amount
 					currency: selectedPlan.currency,
 					planDiscount: selectedPlan.discount?.toString() || "0",
 				});
@@ -108,14 +112,14 @@ export default function PaymentPage({ userEmail }: Props) {
 				initial={{ opacity: 0, y: 30 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.7, ease: "easeOut" }}
-				className="relative z-10 max-w-7xl mx-auto py-16 flex flex-col gap-14"
+				className="relative z-10 max-w-7xl mx-auto py-10 flex flex-col gap-14"
 			>
 				{/* Header */}
 				<div className="text-center text-white">
-					<h1 className="text-3xl sm:text-4xl md:text-5xl font-bold">
+					<h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">
 						Choose Your Plan
 					</h1>
-					<p className="text-white/80 mt-3 max-w-xl mx-auto text-sm sm:text-base">
+					<p className="text-white/80 mt-1 max-w-xl mx-auto text-sm sm:text-base">
 						Secure checkout with Paystack · Cancel anytime · No hidden fees
 					</p>
 				</div>
@@ -151,8 +155,18 @@ export default function PaymentPage({ userEmail }: Props) {
 
 								<div className="py-4">
 									<span className="text-3xl font-bold text-[#0b3c42]">
-										{formatAmount(plan.amount)}
+										{formatAmount(plan.installments.firstPayment)}
 									</span>
+									{plan.installments.count > 1 && (
+										<div className="mt-2">
+											<span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
+												Installment 1 of {plan.installments.count}
+											</span>
+											<p className="text-xs text-gray-500 mt-2">
+												Total: {formatAmount(plan.amount)}
+											</p>
+										</div>
+									)}
 								</div>
 
 								<ul className="space-y-2 text-sm text-gray-600">
@@ -186,7 +200,7 @@ export default function PaymentPage({ userEmail }: Props) {
             px-6 sm:px-8 py-7
           "
 				>
-					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
 						<div>
 							<p className="text-xs text-gray-500 uppercase tracking-wide">
 								Selected Plan
@@ -194,18 +208,58 @@ export default function PaymentPage({ userEmail }: Props) {
 							<p className="text-lg font-semibold text-gray-900 mt-1">
 								{selectedPlan.name}
 								<span className="ml-2 text-[#51A8B1] font-bold">
-									{formatAmount(selectedPlan.amount)}
+									{formatAmount(getPaymentAmount())}
 								</span>
 							</p>
+							{selectedPlan.installments.count > 1 && (
+								<motion.div
+									initial={{ opacity: 0, scale: 0.95 }}
+									animate={{ opacity: 1, scale: 1 }}
+									transition={{ delay: 0.1, duration: 0.3 }}
+									className="mt-2 inline-block"
+								>
+									<span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
+										Installment 1 of {selectedPlan.installments.count}
+									</span>
+									<p className="text-xs text-gray-500 mt-1">
+										Next: {formatAmount(selectedPlan.installments.subsequentPayment)} every {selectedPlan.installments.intervalMonths} months · Total: {formatAmount(selectedPlan.amount)}
+									</p>
+								</motion.div>
+							)}
+							{selectedPlan.duration && (
+								<motion.p 
+									initial={{ opacity: 0, scale: 0.95 }}
+									animate={{ opacity: 1, scale: 1 }}
+									transition={{ delay: 0.15, duration: 0.3 }}
+									className="text-sm text-gray-700 mt-2 font-bold"
+								>
+									Duration: <span className="text-[#51A8B1]">{selectedPlan.duration}</span>
+								</motion.p>
+							)}
+							<motion.p 
+								initial={{ opacity: 0, scale: 0.95 }}
+								animate={{ opacity: 1, scale: 1 }}
+								transition={{ delay: 0.2, duration: 0.3 }}
+								className="text-sm text-gray-700 mt-1 font-bold"
+							>
+								Bank Charges: <span className="text-orange-600">{formatAmount(getPaymentAmount())} × % of Paystack</span>
+							</motion.p>
+							<motion.p 
+								initial={{ opacity: 0, scale: 0.95 }}
+								animate={{ opacity: 1, scale: 1 }}
+								transition={{ delay: 0.3, duration: 0.3 }}
+								className="text-sm text-gray-700 mt-1 font-bold"
+							>
+								{selectedPlan.installments.count > 1 ? 'First Payment' : 'Total'}: <span className="text-[#0b3c42] text-base">{formatAmount(getPaymentAmount())} + Bank Charges</span>
+							</motion.p>
 						</div>
-
 						<div className="flex items-center gap-2 text-sm text-gray-500">
 							<span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
 							Secure checkout with Paystack
 						</div>
 					</div>
 
-					<div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mb-6" />
+					<div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mb-4" />
 
 					<div className="flex flex-col sm:flex-row justify-end gap-4">
 						<Link
@@ -219,7 +273,7 @@ export default function PaymentPage({ userEmail }: Props) {
 							whileHover={{ scale: 1.04 }}
 							whileTap={{ scale: 0.97 }}
 							onClick={handlePayment}
-							disabled={isLoading}
+							disabled={isLoading || !initializePayment}
 							className="
                 inline-flex items-center justify-center
                 bg-[#51A8B1] hover:bg-teal-600 disabled:bg-gray-400
@@ -237,6 +291,11 @@ export default function PaymentPage({ userEmail }: Props) {
 								<div className="flex items-center gap-2">
 									<div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
 									Opening Payment...
+								</div>
+							) : !initializePayment ? (
+								<div className="flex items-center gap-2">
+									<div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+									Loading...
 								</div>
 							) : (
 								"Pay with Card"

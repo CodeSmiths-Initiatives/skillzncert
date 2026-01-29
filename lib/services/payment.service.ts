@@ -14,6 +14,8 @@ export interface PaymentData {
   planName?: string;
   planAmount?: number;
   planDiscount?: number;
+  expiryDate?: string;
+  nextPaymentDate?: string;
   createdAt: string;
   updatedAt: string;
   enrollment?: {
@@ -38,6 +40,8 @@ export interface CreatePaymentInput {
   planName?: string;
   planAmount?: number;
   planDiscount?: number;
+  expiryDate?: string;
+  nextPaymentDate?: string;
 }
 
 export async function createPayment(
@@ -112,6 +116,8 @@ export async function fetchPaymentsByEnrollment(
     planName: payment.planName || "",
     planAmount: payment.planAmount || 0,
     planDiscount: payment.planDiscount || 0,
+    expiryDate: payment.expiryDate || "",
+    nextPaymentDate: payment.nextPaymentDate || "",
     createdAt: payment.createdAt,
     updatedAt: payment.updatedAt,
     enrollment: payment.enrollment ? {
@@ -164,6 +170,8 @@ export async function fetchAllPayments(token: string): Promise<PaymentData[]> {
     planName: payment.planName || "",
     planAmount: payment.planAmount || 0,
     planDiscount: payment.planDiscount || 0,
+    expiryDate: payment.expiryDate || "",
+    nextPaymentDate: payment.nextPaymentDate || "",
     createdAt: payment.createdAt,
     updatedAt: payment.updatedAt,
     enrollment: payment.enrollment ? {
@@ -219,6 +227,8 @@ export async function fetchPaymentsByUser(
     planName: payment.planName || "",
     planAmount: payment.planAmount || 0,
     planDiscount: payment.planDiscount || 0,
+    expiryDate: payment.expiryDate || "",
+    nextPaymentDate: payment.nextPaymentDate || "",
     createdAt: payment.createdAt,
     updatedAt: payment.updatedAt,
     enrollment: payment.enrollment ? {

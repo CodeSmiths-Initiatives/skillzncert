@@ -610,6 +610,10 @@ export interface ApiEnrollmentEnrollment extends Struct.CollectionTypeSchema {
       }>;
     passport: Schema.Attribute.Media<'images' | 'files'> &
       Schema.Attribute.Required;
+    payment_dues: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::payment-due.payment-due'
+    >;
     payments: Schema.Attribute.Relation<'oneToMany', 'api::payment.payment'>;
     phoneNumber: Schema.Attribute.String &
       Schema.Attribute.Required &
@@ -674,6 +678,87 @@ export interface ApiGlobalGlobal extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiPaymentDuePaymentDue extends Struct.CollectionTypeSchema {
+  collectionName: 'payment_dues';
+  info: {
+    description: 'Tracks installment payment dues for multi-payment plans';
+    displayName: 'Payment Due';
+    pluralName: 'payment-dues';
+    singularName: 'payment-due';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    dueAmount: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    dueDate: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    emailAddress: Schema.Attribute.Email & Schema.Attribute.Required;
+    enrollment: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::enrollment.enrollment'
+    >;
+    enrollmentDocumentId: Schema.Attribute.String & Schema.Attribute.Required;
+    installmentNumber: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::payment-due.payment-due'
+    > &
+      Schema.Attribute.Private;
+    notes: Schema.Attribute.Text;
+    paidAmount: Schema.Attribute.Decimal &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    paidDate: Schema.Attribute.DateTime;
+    parentPaymentDocumentId: Schema.Attribute.String;
+    paymentDocumentId: Schema.Attribute.String;
+    paymentReference: Schema.Attribute.String;
+    planId: Schema.Attribute.Enumeration<['gold', 'silver', 'bronze']> &
+      Schema.Attribute.Required;
+    planName: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<
+      ['pending', 'paid', 'overdue', 'cancelled']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'pending'>;
+    totalInstallments: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    userDocumentId: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
 export interface ApiPaymentPayment extends Struct.CollectionTypeSchema {
   collectionName: 'payments';
   info: {
@@ -695,6 +780,7 @@ export interface ApiPaymentPayment extends Struct.CollectionTypeSchema {
       'api::enrollment.enrollment'
     >;
     enrollmentDocumentId: Schema.Attribute.String & Schema.Attribute.Required;
+    expiryDate: Schema.Attribute.DateTime;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -702,6 +788,7 @@ export interface ApiPaymentPayment extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     month: Schema.Attribute.String & Schema.Attribute.Required;
+    nextPaymentDate: Schema.Attribute.DateTime;
     paymentDate: Schema.Attribute.Date & Schema.Attribute.Required;
     paymentMode: Schema.Attribute.String & Schema.Attribute.Required;
     planAmount: Schema.Attribute.Decimal;
@@ -1303,6 +1390,7 @@ declare module '@strapi/strapi' {
       'api::category.category': ApiCategoryCategory;
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
       'api::global.global': ApiGlobalGlobal;
+      'api::payment-due.payment-due': ApiPaymentDuePaymentDue;
       'api::payment.payment': ApiPaymentPayment;
       'api::test.test': ApiTestTest;
       'api::weekly-schedule.weekly-schedule': ApiWeeklyScheduleWeeklySchedule;

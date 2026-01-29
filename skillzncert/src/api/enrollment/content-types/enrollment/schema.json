@@ -99,6 +99,12 @@
       "target": "api::payment.payment",
       "mappedBy": "enrollment"
     },
+    "payment_dues": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::payment-due.payment-due",
+      "mappedBy": "enrollment"
+    },
     "preferredNetwork": {
       "type": "enumeration",
       "enum": [

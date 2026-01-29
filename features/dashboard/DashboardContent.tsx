@@ -14,20 +14,21 @@ interface DashboardContentProps {
   userId: number;
   username?: string;
   email?: string;
+  userDocumentId?: string;
 }
 
-export function DashboardContent({ activeRoute, isAdmin, userId, username, email }: DashboardContentProps) {
+export function DashboardContent({ activeRoute, isAdmin, userId, username, email, userDocumentId }: DashboardContentProps) {
   // Route to the appropriate section
   const renderContent = () => {
     switch (activeRoute) {
       case "overview":
-        return <OverviewSection isAdmin={isAdmin} />;
+        return <OverviewSection isAdmin={isAdmin} userDocumentId={userDocumentId} userId={userId} />;
       
       case "profile":
         return <ProfileSection />;
       
       case "payments":
-        return <PaymentsSection userId={userId} />;
+        return <PaymentsSection userId={userId} userEmail={email || ""} />;
       
       case "enrollees":
         return <EnrolleesSection />;
@@ -39,7 +40,7 @@ export function DashboardContent({ activeRoute, isAdmin, userId, username, email
         return <SettingsSection initialUsername={username} initialEmail={email} />;
       
       default:
-        return <OverviewSection isAdmin={isAdmin} />;
+        return <OverviewSection isAdmin={isAdmin} userDocumentId={userDocumentId} userId={userId} />;
     }
   };
 

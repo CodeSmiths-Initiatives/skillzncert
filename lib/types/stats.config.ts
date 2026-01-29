@@ -10,7 +10,7 @@
  * - Easy to extend with conditions, calculations
  */
 
-import { Users, DollarSign, BookOpen, TrendingUp, CheckCircle, Clock } from "lucide-react";
+import { Users, DollarSign, BookOpen, TrendingUp, CheckCircle, Clock, Award } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { DashboardTopMetrics } from "@/lib/services/dashboard.service";
 
@@ -89,7 +89,7 @@ export const USER_STATS_CONFIG: Array<StatConfig & { defaultValue: string }> = [
     format: "percentage",
     requiredPermission: "view:own_dashboard",
     description: "Your attendance rate",
-    defaultValue: "90%",
+    defaultValue: "0%",
   },
   {
     id: "completed_courses",
@@ -98,7 +98,7 @@ export const USER_STATS_CONFIG: Array<StatConfig & { defaultValue: string }> = [
     format: "count",
     requiredPermission: "view:own_dashboard",
     description: "Courses completed",
-    defaultValue: "3",
+    defaultValue: "0",
   },
   {
     id: "on_leave",
@@ -107,16 +107,16 @@ export const USER_STATS_CONFIG: Array<StatConfig & { defaultValue: string }> = [
     format: "count",
     requiredPermission: "view:own_dashboard",
     description: "Current leave count",
-    defaultValue: "2",
+    defaultValue: "0",
   },
   {
     id: "plan",
-    title: "Plan",
-    icon: TrendingUp,
+    title: "Active Plan",
+    icon: Award,
     format: "text",
     requiredPermission: "view:own_dashboard",
     description: "Your subscription plan",
-    defaultValue: "Monthly",
+    defaultValue: "No Active Plan",
   },
 ];
 
@@ -171,20 +171,6 @@ export function buildAdminStats(metrics: DashboardTopMetrics): StatValue[] {
       trend: metrics?.inProgress?.trend ?? "stable",
     },
   ];
-}
-
-/**
- * Build user stats with default values
- * Can be extended later with actual user data from server
- */
-export function buildUserStats(): StatValue[] {
-  return USER_STATS_CONFIG.map((config) => ({
-    title: config.title,
-    value: config.defaultValue,
-    icon: config.icon,
-    change: null,
-    trend: "stable" as const,
-  }));
 }
 
 /**

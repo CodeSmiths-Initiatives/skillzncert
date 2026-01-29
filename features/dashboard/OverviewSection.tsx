@@ -12,19 +12,19 @@ import {
   Clock,
   Calendar,
   AlertTriangle,
+  Award,
 } from "lucide-react";
 import { getScheduleAction } from "@/actions/schedule/schedule.actions";
 import { getDashboardMetricsAction } from "@/actions/dashboard/get-metrics.actions";
+import { getUserPayments } from "@/actions/payment/get-user-payments.actions";
 import { StatCard } from "@/components/dashboard/stat-card";
 import type { DayOfWeek, DaySchedule } from "@/lib/types/schedule.types";
 import { DAY_LABELS } from "@/lib/types/schedule.types";
 import { formatTimeSlot } from "@/lib/utils/schedule.utils";
 import type { DashboardTopMetrics } from "@/lib/services/dashboard.service";
-import {
-  buildAdminStats,
-  buildUserStats,
-  type StatValue,
-} from "@/lib/types/stats.config";
+import { buildAdminStats, type StatValue } from "@/lib/types/stats.config";
+import { PAYMENT_PLANS } from "@/lib/payment-plans";
+import type { PaymentData } from "@/lib/services/payment.service";
 
 /**
  * OverviewSection Component
@@ -36,12 +36,22 @@ import {
  * - Role-based data display
  * - Loading and error states per data type
  */
-export function OverviewSection({ isAdmin }: { isAdmin: boolean }) {
+export function OverviewSection({ 
+  isAdmin,
+  userDocumentId,
+  userId,
+}: { 
+  isAdmin: boolean;
+  userDocumentId?: string;
+  userId?: number;
+}) {
   const [schedule, setSchedule] = useState<DaySchedule[]>([]);
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(true);
   const [metrics, setMetrics] = useState<DashboardTopMetrics | null>(null);
   const [isLoadingMetrics, setIsLoadingMetrics] = useState(true);
   const [metricsError, setMetricsError] = useState<string | null>(null);
+  const [userStats, setUserStats] = useState<StatValue[]>([]);
+  const [isLoadingUserStats, setIsLoadingUserStats] = useState(!isAdmin);
   const [viewMode, setViewMode] = useState<'weekly' | 'monthly'>('weekly');
   const [currentDay, setCurrentDay] = useState<DayOfWeek | null>(null);
   const [currentDate, setCurrentDate] = useState<Date | null>(null);
@@ -110,6 +120,111 @@ export function OverviewSection({ isAdmin }: { isAdmin: boolean }) {
     loadSchedule();
   }, []);
 
+  // Fetch user stats for non-admin users
+  useEffect(() => {
+    if (isAdmin || !userId) {
+      setIsLoadingUserStats(false);
+      return;
+    }
+
+    const loadUserStats = async () => {
+      try {
+        setIsLoadingUserStats(true);
+        
+        // Fetch user payments to get latest plan
+        const paymentsResult = await getUserPayments(userId);
+        
+        let activePlanDisplay = "No Active Plan";
+        
+        if (paymentsResult.success && paymentsResult.data.length > 0) {
+          // Find latest payment with a plan
+          const latestPlanPayment = paymentsResult.data.find(
+            (payment: PaymentData) => payment.planId && payment.planId !== "none"
+          );
+          
+          if (latestPlanPayment && latestPlanPayment.planId) {
+            // Get plan config to show duration
+            const planConfig = PAYMENT_PLANS[latestPlanPayment.planId];
+            if (planConfig) {
+              activePlanDisplay = `${latestPlanPayment.planName} (${planConfig.duration})`;
+            } else {
+              activePlanDisplay = latestPlanPayment.planName || "Unknown Plan";
+            }
+          }
+        }
+        
+        // Build user stats with plan info
+        setUserStats([
+          {
+            title: "Attendance",
+            value: "0%",
+            icon: BookOpen,
+            change: null,
+            trend: "stable" as const,
+          },
+          {
+            title: "Completed",
+            value: "0",
+            icon: CheckCircle,
+            change: null,
+            trend: "stable" as const,
+          },
+          {
+            title: "On Leave",
+            value: "0",
+            icon: Clock,
+            change: null,
+            trend: "stable" as const,
+          },
+          {
+            title: "Active Plan",
+            value: activePlanDisplay,
+            icon: Award,
+            change: null,
+            trend: "stable" as const,
+          },
+        ]);
+      } catch (error) {
+        console.error("Error loading user stats:", error);
+        // Fallback to default stats
+        setUserStats([
+          {
+            title: "Attendance",
+            value: "0%",
+            icon: BookOpen,
+            change: null,
+            trend: "stable" as const,
+          },
+          {
+            title: "Completed",
+            value: "0",
+            icon: CheckCircle,
+            change: null,
+            trend: "stable" as const,
+          },
+          {
+            title: "On Leave",
+            value: "0",
+            icon: Clock,
+            change: null,
+            trend: "stable" as const,
+          },
+          {
+            title: "Active Plan",
+            value: "No Active Plan",
+            icon: Award,
+            change: null,
+            trend: "stable" as const,
+          },
+        ]);
+      } finally {
+        setIsLoadingUserStats(false);
+      }
+    };
+
+    loadUserStats();
+  }, [isAdmin, userId]);
+
   /**
    * Build stats array based on user role
    * Using reusable functions from stats config
@@ -122,7 +237,7 @@ export function OverviewSection({ isAdmin }: { isAdmin: boolean }) {
     }
 
     if (!isAdmin) {
-      return buildUserStats();
+      return userStats;
     }
 
     // Loading state: empty array
@@ -143,7 +258,7 @@ export function OverviewSection({ isAdmin }: { isAdmin: boolean }) {
             icon={stat.icon}
             change={typeof stat.change === "number" ? stat.change : 0}
             trend={stat.trend}
-            isLoading={isAdmin && isLoadingMetrics}
+            isLoading={isAdmin ? isLoadingMetrics : isLoadingUserStats}
             error={isAdmin && metricsError ? metricsError : undefined}
           />
         ))}

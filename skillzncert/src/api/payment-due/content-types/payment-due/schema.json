@@ -1,0 +1,103 @@
+{
+  "kind": "collectionType",
+  "collectionName": "payment_dues",
+  "info": {
+    "singularName": "payment-due",
+    "pluralName": "payment-dues",
+    "displayName": "Payment Due",
+    "description": "Tracks installment payment dues for multi-payment plans"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "userDocumentId": {
+      "type": "string",
+      "required": true
+    },
+    "enrollmentDocumentId": {
+      "type": "string",
+      "required": true
+    },
+    "parentPaymentDocumentId": {
+      "type": "string",
+      "required": false,
+      "description": "Document ID of the first payment that created these dues"
+    },
+    "planId": {
+      "type": "enumeration",
+      "enum": ["gold", "silver", "bronze"],
+      "required": true
+    },
+    "planName": {
+      "type": "string",
+      "required": true
+    },
+    "installmentNumber": {
+      "type": "integer",
+      "required": true,
+      "min": 1,
+      "description": "Which installment this is (1, 2, 3, 4, etc.)"
+    },
+    "totalInstallments": {
+      "type": "integer",
+      "required": true,
+      "min": 1,
+      "description": "Total number of installments for this plan"
+    },
+    "dueAmount": {
+      "type": "decimal",
+      "required": true,
+      "min": 0,
+      "description": "Amount due for this installment in kobo"
+    },
+    "dueDate": {
+      "type": "datetime",
+      "required": true,
+      "description": "When this installment payment is due"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "paid", "overdue", "cancelled"],
+      "default": "pending",
+      "required": true
+    },
+    "paidAmount": {
+      "type": "decimal",
+      "default": 0,
+      "min": 0,
+      "description": "Amount actually paid (supports partial payments)"
+    },
+    "paidDate": {
+      "type": "datetime",
+      "required": false,
+      "description": "When the payment was received"
+    },
+    "paymentReference": {
+      "type": "string",
+      "required": false,
+      "description": "Paystack reference when paid"
+    },
+    "paymentDocumentId": {
+      "type": "string",
+      "required": false,
+      "description": "Document ID of payment record when this due is paid"
+    },
+    "emailAddress": {
+      "type": "email",
+      "required": true
+    },
+    "notes": {
+      "type": "text",
+      "required": false,
+      "description": "Additional notes or comments"
+    },
+    "enrollment": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::enrollment.enrollment",
+      "inversedBy": "payment_dues"
+    }
+  }
+}

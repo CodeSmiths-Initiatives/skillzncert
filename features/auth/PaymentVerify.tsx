@@ -7,8 +7,10 @@ import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/components/toast/ToastContext";
 import { markEnrollmentPaidAction } from "@/actions/enrollment/mark-paid.actions";
 import { createPaymentAction } from "@/actions/payment/create-payment.actions";
+import { createPaymentDuesBatchAction } from "@/actions/payment/payment-dues.actions";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { storage } from "@/lib/storage";
+import { generatePaymentDues, hasInstallments } from "@/lib/utils/installment-calculator";
 
 // Payment verification state machine - Senior Engineer Approach
 type PaymentState = {
@@ -91,7 +93,6 @@ export default function PaymentSuccessPage({ enrollmentDocumentId, userId, userE
   const planDiscount = searchParams.get("planDiscount");
 
   useEffect(() => {
-    debugger
     const completedReference = sessionStorage.getItem("reference") || localStorage.getItem("reference");  
 
     if (completedReference === reference) {
@@ -165,6 +166,48 @@ export default function PaymentSuccessPage({ enrollmentDocumentId, userId, userE
 
       // Create payment record in database
       const currentDate = new Date();
+      
+      // Calculate plan expiry date based on plan type
+      const currentPlanId = planId || "gold";
+      let expiryDate = new Date(currentDate);
+      
+      switch (currentPlanId.toLowerCase()) {
+        case 'gold':
+          // 1 year from now
+          expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+          break;
+        case 'silver':
+          // 6 months from now
+          expiryDate.setMonth(expiryDate.getMonth() + 6);
+          break;
+        case 'bronze':
+          // 3 months from now
+          expiryDate.setMonth(expiryDate.getMonth() + 3);
+          break;
+        default:
+          // Default to 1 year
+          expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+      }
+      
+      // Calculate next payment due date based on installments
+      let nextPaymentDate = expiryDate; // Default to expiry date
+      
+      if (hasInstallments(currentPlanId)) {
+        // For plans with installments, next payment is based on interval
+        nextPaymentDate = new Date(currentDate);
+        
+        switch (currentPlanId.toLowerCase()) {
+          case 'silver':
+            // Next payment in 6 months
+            nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 6);
+            break;
+          case 'bronze':
+            // Next payment in 3 months
+            nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 3);
+            break;
+        }
+      }
+      
       const paymentResult = await createPaymentAction({
         userDocumentId: userId.toString(),
         enrollmentDocumentId: enrollmentDocumentId,
@@ -175,14 +218,58 @@ export default function PaymentSuccessPage({ enrollmentDocumentId, userId, userE
         emailAddress: userEmail,
         paymentDate: currentDate.toISOString(),
         reference: reference, // Add payment reference
-        planId: planId || "gold",
+        planId: currentPlanId,
         planName: planName || "Gold Plan",
         planAmount: amount ? parseInt(amount) / 100 : 5000,
         planDiscount: planDiscount ? parseInt(planDiscount) : 50,
+        expiryDate: expiryDate.toISOString(), // Add plan expiry date
+        nextPaymentDate: nextPaymentDate.toISOString(), // Next payment due date
       });
 
       if (!paymentResult.success) {
         console.error("Failed to create payment record:", paymentResult.message);
+      }
+
+      // ============================================================
+      // INSTALLMENT PAYMENT DUES CREATION
+      // ============================================================
+      // For multi-installment plans (Silver: 2 payments, Bronze: 4 payments),
+      // automatically create payment due records for remaining installments
+      // ============================================================
+      
+      if (paymentResult.success && hasInstallments(currentPlanId)) {
+        console.log(`Creating payment dues for ${currentPlanId} plan installments...`);
+        
+        try {
+          // Generate payment due records (skip first installment as it's already paid)
+          const paymentDues = generatePaymentDues({
+            planId: currentPlanId,
+            userDocumentId: userId.toString(),
+            enrollmentDocumentId: enrollmentDocumentId,
+            parentPaymentDocumentId: paymentResult.data?.documentId,
+            emailAddress: userEmail,
+            startDate: currentDate,
+            skipFirstInstallment: true, // First payment already made
+          });
+
+          if (paymentDues.length > 0) {
+            const duesResult = await createPaymentDuesBatchAction(paymentDues);
+            
+            if (duesResult.success) {
+              console.log(
+                `✅ Successfully created ${paymentDues.length} payment dues for ${currentPlanId} plan`
+              );
+              console.log(`Plan: ${planName || currentPlanId}`);
+              console.log(`Total installments: ${paymentDues[0]?.totalInstallments || 0}`);
+              console.log(`Remaining payments: ${paymentDues.length}`);
+            } else {
+              console.error("❌ Failed to create payment dues:", duesResult.message);
+            }
+          }
+        } catch (dueError) {
+          // Don't fail the main payment flow if dues creation fails
+          console.error("Error creating payment dues:", dueError);
+        }
       }
 
       // Show toast (only once due to ref check)
