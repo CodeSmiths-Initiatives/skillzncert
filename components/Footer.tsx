@@ -1,59 +1,35 @@
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
+import { CiMail } from "react-icons/ci";
+import { FaFacebook, FaInstagram } from "react-icons/fa";
+import { FaHouseChimney, FaWhatsapp, FaXTwitter } from "react-icons/fa6";
+import { IoCall } from "react-icons/io5";
 
 export default function Footer() {
 	return (
 		<footer className="bg-gray-50 text-white py-6">
 			<div className="max-w-full mx-auto">
-				<div className="grid grid-cols-1 md:grid-cols-4 mx-10 my-10 gap-10 text-[#9CA3AF]">
+				<div className="grid grid-cols-1 md:grid-cols-5 mx-10 my-10 gap-10 text-[#9CA3AF]">
 					<div>
-						<div className="flex items-center space-x-2 mb-5 text-white">
-							{/* <Image
-								src="static/images/logo 1.svg"
-								alt="Logo"
-								width={50}
-								height={10}
-								unoptimized
-							/>
-							<h3 className="text-xl font-semibold">CE-EMS</h3> */}
-
+						<div className="flex flex-col space-y-5">
 							<Image
 								src="static/images/sec logo.svg"
 								alt="Logo"
-								width={60}
+								width={70}
 								height={10}
 							/>
-							<Image
-								src="static/images/skillsncert.svg"
-								alt="Logo"
-								width={150}
-								height={50}
-							/>
+							<Link href={"/"}>
+								<Image
+									src="static/images/skillsncert.svg"
+									alt="Logo"
+									width={220}
+									height={70}
+								/>
+							</Link>
 						</div>
-						<p className="text-sm text-gray-800 font-medium pr-20">
-							Complete education management solution for modern institutions
-						</p>
 					</div>
-					<div>
-						<ul className="flex flex-col space-y-2 text-sm font-medium text-gray-700">
-							<li className="text-black text-xl font-semibold">
-								<a href="#" />
-								Products
-							</li>
-							<li>
-								<a href="#" />
-								Intergration
-							</li>
-							<li>
-								<a href="#" />
-								Pricing
-							</li>
-							<li>
-								<a href="#" />
-								Security
-							</li>
-						</ul>
-					</div>
+
 					<div>
 						<ul className="flex flex-col space-y-2 text-sm font-medium text-gray-700">
 							<li className="text-black text-xl font-semibold">
@@ -61,47 +37,62 @@ export default function Footer() {
 								Company
 							</li>
 							<li>
-								<a href="#" />
-								About
+								<Link href="#About">ABOUT</Link>
 							</li>
 							<li>
-								<a href="#" />
-								Blog
-							</li>
-							<li>
-								<a href="#" />
-								Career
-							</li>
-							<li>
-								<a href="#" />
-								Contact
+								<Link href="#Courses">COURSES</Link>
 							</li>
 						</ul>
 					</div>
 					<div>
-						<ul className="flex flex-col space-y-2 text-sm font-medium text-gray-700">
+						<ul className="flex flex-col space-y-3 text-sm font-medium text-gray-700">
 							<li className="text-black text-xl font-semibold">
-								<a href="#" />
-								Legal
+								<Link href="#">Contact Us</Link>
 							</li>
-							<li>
-								<a href="#" />
-								privacy
+							<li className="flex items-center gap-x-1">
+								<FaWhatsapp className="text-teal-600" size={20} /> 08039134906
 							</li>
-							<li>
-								<a href="#" />
-								Terms
+							<li className="flex items-center gap-x-1">
+								<IoCall className="text-teal-600" size={20} /> 08039134906
 							</li>
-							<li>
-								<a href="#" />
-								Cookies Policy
+						</ul>
+					</div>
+					<div>
+						<ul className="flex flex-col space-y-3 text-sm font-medium text-gray-700">
+							<li className="text-black text-xl font-semibold">
+								<Link href="#">Address</Link>
+							</li>
+
+							<li className="flex items-center gap-x-1">
+								<CiMail className="text-teal-600" size={20} />
+								aliyuthayo@trainwithsec.com
+							</li>
+							<li className="flex items-center gap-x-1">
+								<FaHouseChimney className="text-teal-600" size={20} />
+								Room 27, Kwara State Library, Ilorin
+							</li>
+						</ul>
+					</div>
+					<div>
+						<ul className="flex flex-col space-y-3 text-sm font-medium text-gray-700">
+							<li className="text-black text-xl font-semibold">
+								<Link href="#">Follow Us</Link>
+							</li>
+
+							<li className="flex items-center gap-x-1">
+								<FaFacebook className="text-teal-600" size={20} /> Sec-concepts
+								Network
+							</li>
+							<li className="flex items-center gap-x-1">
+								<FaXTwitter className="text-teal-600" size={20} /> @aliyuthayo
+							</li>
+							<li className="flex items-center gap-x-1">
+								<FaInstagram className="text-teal-600" size={20} />{" "}
+								secconceptsnetwork
 							</li>
 						</ul>
 					</div>
 				</div>
-				<p className="text-center text-base font-medium text-gray-700 border-t border-gray-700 mt-10 py-7">
-					&copy; 2026 - 2031 Cloutedge Tech horizon. All rights reserved.
-				</p>
 			</div>
 		</footer>
 	);

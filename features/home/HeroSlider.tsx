@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import clsx from "clsx";
 import { motion, AnimatePresence, Variants } from "framer-motion";
@@ -37,6 +37,8 @@ const slides = [
 	},
 ];
 
+const SLIDE_DURATION = 5000; // 5 seconds per slide
+
 const containerVariants: Variants = {
 	hidden: { opacity: 0, y: 40 },
 	visible: {
@@ -54,8 +56,52 @@ const slideVariants = {
 
 export default function HeroSlider() {
 	const [current, setCurrent] = useState(0);
+	const [progress, setProgress] = useState(0);
+	const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+	const videoRef = useRef<HTMLVideoElement>(null);
 
-	const progress = ((current + 1) / slides.length) * 100;
+	useEffect(() => {
+		// Don't auto-advance if video is playing
+		if (isVideoPlaying) {
+			setProgress(0);
+			return;
+		}
+
+		// Reset progress when slide changes
+		setProgress(0);
+
+		// Animate progress bar
+		const progressInterval = setInterval(() => {
+			setProgress((prev) => {
+				if (prev >= 100) return 100;
+				return prev + (100 / SLIDE_DURATION) * 50; // Update every 50ms
+			});
+		}, 50);
+
+		// Auto-advance to next slide
+		const slideTimer = setTimeout(() => {
+			setCurrent((prev) => (prev + 1) % slides.length);
+		}, SLIDE_DURATION);
+
+		return () => {
+			clearInterval(progressInterval);
+			clearTimeout(slideTimer);
+		};
+	}, [current, isVideoPlaying]);
+
+	const handleVideoPlay = () => {
+		setIsVideoPlaying(true);
+	};
+
+	const handleVideoPause = () => {
+		setIsVideoPlaying(false);
+	};
+
+	const handleVideoEnded = () => {
+		setIsVideoPlaying(false);
+		// Optionally auto-advance to next slide when video ends
+		setCurrent((prev) => (prev + 1) % slides.length);
+	};
 
 	return (
 		<section className="relative w-full overflow-hidden bg-[#F4FAFD]">
@@ -109,8 +155,12 @@ export default function HeroSlider() {
 							>
 								{slides[current].video ? (
 									<video
+										ref={videoRef}
 										src={slides[current].video}
 										controls
+										onPlay={handleVideoPlay}
+										onPause={handleVideoPause}
+										onEnded={handleVideoEnded}
 										className="object-cover h-full w-full rounded-lg"
 										style={{
 											objectFit: "contain",
@@ -133,28 +183,11 @@ export default function HeroSlider() {
 				</div>
 
 				<div className="mt-16 flex flex-col items-center gap-6">
-					<div className="flex gap-3">
-						{slides.map((_, index) => (
-							<button
-								suppressHydrationWarning
-								key={index}
-								onClick={() => setCurrent(index)}
-								className={clsx(
-									"h-3 w-3 rounded-full transition",
-									current === index
-										? "bg-[#58AEB3]"
-										: "bg-gray-300 hover:bg-gray-400",
-								)}
-								aria-label={`Go to slide ${index + 1}`}
-							/>
-						))}
-					</div>
-
-					<div className="relative h-2 w-64 rounded-full bg-gray-300">
+					<div className="relative h-2 w-64 rounded-full bg-gray-300 overflow-hidden">
 						<motion.div
 							className="absolute left-0 top-0 h-full rounded-full bg-[#58AEB3]"
-							animate={{ width: `${progress}%` }}
-							transition={{ duration: 0.5, ease: "easeOut" }}
+							style={{ width: `${progress}%` }}
+							transition={{ duration: 0.05, ease: "linear" }}
 						/>
 					</div>
 				</div>
