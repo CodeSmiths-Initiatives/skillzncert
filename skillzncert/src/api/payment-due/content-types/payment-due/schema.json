@@ -27,7 +27,11 @@
     },
     "planId": {
       "type": "enumeration",
-      "enum": ["gold", "silver", "bronze"],
+      "enum": [
+        "gold",
+        "silver",
+        "bronze"
+      ],
       "required": true
     },
     "planName": {
@@ -59,7 +63,12 @@
     },
     "status": {
       "type": "enumeration",
-      "enum": ["pending", "paid", "overdue", "cancelled"],
+      "enum": [
+        "pending",
+        "paid",
+        "overdue",
+        "cancelled"
+      ],
       "default": "pending",
       "required": true
     },

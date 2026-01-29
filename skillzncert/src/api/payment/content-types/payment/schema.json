@@ -54,7 +54,11 @@
     },
     "planId": {
       "type": "enumeration",
-      "enum": ["gold", "silver", "bronze"],
+      "enum": [
+        "gold",
+        "silver",
+        "bronze"
+      ],
       "required": false
     },
     "planName": {

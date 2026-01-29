@@ -576,9 +576,7 @@ export interface ApiEnrollmentEnrollment extends Struct.CollectionTypeSchema {
   attributes: {
     address: Schema.Attribute.String;
     batchName: Schema.Attribute.String;
-    country: Schema.Attribute.Enumeration<
-      ['India', 'USA', 'Canada', 'UK', 'Nigeria']
-    >;
+    country: Schema.Attribute.Enumeration<['Nigeria']>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -633,7 +631,47 @@ export interface ApiEnrollmentEnrollment extends Struct.CollectionTypeSchema {
     schoolIdCard: Schema.Attribute.Media<'images' | 'files'> &
       Schema.Attribute.Required;
     selectedPlan: Schema.Attribute.Enumeration<['gold', 'silver', 'bronze']>;
-    state: Schema.Attribute.Enumeration<['Delhi', 'Lagos']>;
+    state: Schema.Attribute.Enumeration<
+      [
+        'Abia',
+        'Adamawa',
+        'Akwa Ibom',
+        'Anambra',
+        'Bauchi',
+        'Bayelsa',
+        'Benue',
+        'Borno',
+        'Cross River',
+        'Delta',
+        'Ebonyi',
+        'Edo',
+        'Ekiti',
+        'Enugu',
+        'FCT',
+        'Gombe',
+        'Imo',
+        'Jigawa',
+        'Kaduna',
+        'Kano',
+        'Katsina',
+        'Kebbi',
+        'Kogi',
+        'Kwara',
+        'Lagos',
+        'Nasarawa',
+        'Niger',
+        'Ogun',
+        'Ondo',
+        'Osun',
+        'Oyo',
+        'Plateau',
+        'Rivers',
+        'Sokoto',
+        'Taraba',
+        'Yobe',
+        'Zamfara',
+      ]
+    >;
     universityAttending: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
