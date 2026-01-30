@@ -46,7 +46,7 @@ export default function PaymentPage({ userEmail }: Props) {
 	const config = {
 		reference: generatePaymentReference(),
 		email: userEmail,
-		amount: getPaymentAmount(), // Amount in kobo (first installment)
+		amount: getPaymentAmount() + 200000, // Amount in kobo (first installment) + ₦2000 fee
 		publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
 		currency: "NGN",
 		subaccount: "ACCT_xtlrfkipcz3pp2p",
@@ -83,7 +83,7 @@ export default function PaymentPage({ userEmail }: Props) {
 					reference: reference.reference,
 					planId: selectedPlan.id,
 					planName: selectedPlan.name,
-					amount: getPaymentAmount().toString(), // Pass first installment amount
+					amount: (getPaymentAmount() + 200000).toString(), // Pass first installment amount + ₦2000 fee
 					currency: selectedPlan.currency,
 					planDiscount: selectedPlan.discount?.toString() || "0",
 				});
@@ -242,7 +242,7 @@ export default function PaymentPage({ userEmail }: Props) {
 								transition={{ delay: 0.2, duration: 0.3 }}
 								className="text-sm text-gray-700 mt-1 font-bold"
 							>
-								Bank Charges: <span className="text-orange-600">{formatAmount(getPaymentAmount())} × % of Paystack</span>
+								Bank Charges: <span className="text-orange-600">{	} × % of Paystack</span>
 							</motion.p>
 							<motion.p 
 								initial={{ opacity: 0, scale: 0.95 }}
@@ -250,7 +250,7 @@ export default function PaymentPage({ userEmail }: Props) {
 								transition={{ delay: 0.3, duration: 0.3 }}
 								className="text-sm text-gray-700 mt-1 font-bold"
 							>
-								{selectedPlan.installments.count > 1 ? 'First Payment' : 'Total'}: <span className="text-[#0b3c42] text-base">{formatAmount(getPaymentAmount())} + Bank Charges</span>
+								{selectedPlan.installments.count > 1 ? 'First Payment' : 'Total'}: <span className="text-[#0b3c42] text-base"> {formatAmount(getPaymentAmount())} + {formatAmount(200000)} </span>
 							</motion.p>
 						</div>
 						<div className="flex items-center gap-2 text-sm text-gray-500">

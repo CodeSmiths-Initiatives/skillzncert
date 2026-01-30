@@ -170,7 +170,7 @@ export function PaymentsSection({ userId, userEmail }: PaymentsSectionProps) {
       // Create Paystack configuration for this installment
       const config = createDuePaymentConfig(
         userEmail,
-        Math.round(due.dueAmount), // Already in kobo
+        Math.round(due.dueAmount) + 200000, // Already in kobo + ₦2000 fee
         due.documentId,
         due.planId,
         due.planName,
@@ -198,7 +198,7 @@ export function PaymentsSection({ userId, userEmail }: PaymentsSectionProps) {
             const updateDueResult = await markPaymentDueAsPaidAction(
               due.documentId,
               {
-                paidAmount: Math.round(due.dueAmount / 100), // Convert to naira
+                paidAmount: Math.round(due.dueAmount / 100) + 2000, // Convert to naira + ₦2000 fee
                 paymentReference: reference.reference,
                 paidDate: new Date().toISOString(),
                 paymentDocumentId: '' // Will be updated after payment record creation
@@ -217,13 +217,13 @@ export function PaymentsSection({ userId, userEmail }: PaymentsSectionProps) {
               paymentMode: "Online",
               month: currentDate.toLocaleString('en-US', { month: 'long' }),
               year: currentDate.getFullYear(),
-              amount: Math.round(due.dueAmount / 100), // Convert to naira
+              amount: Math.round(due.dueAmount / 100) + 2000, // Convert to naira + ₦2000 fee
               emailAddress: userEmail,
               paymentDate: currentDate.toISOString(),
               reference: reference.reference,
               planId: due.planId,
               planName: `${due.planName} - Installment ${due.installmentNumber}`,
-              planAmount: Math.round(due.dueAmount / 100),
+              planAmount: Math.round(due.dueAmount / 100) + 2000,
               planDiscount: 0,
             });
 
@@ -559,9 +559,17 @@ export function PaymentsSection({ userId, userEmail }: PaymentsSectionProps) {
                             {/* Amount Display */}
                             <div className="text-right w-full">
                               <p className="text-xs sm:text-sm text-gray-500 font-semibold mb-1">Amount Due</p>
-                              <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+                              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
                                 {formatAmount(Math.round(due.dueAmount / 100))}
                               </p>
+                              <p className="text-xs sm:text-sm text-red-600 font-semibold mt-1">
+                                + ₦2,000 bank charges
+                              </p>
+                              <div className="border-t border-gray-300 mt-2 pt-2">
+                                <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+                                  {formatAmount(Math.round(due.dueAmount / 100) + 2000)}
+                                </p>
+                              </div>
                             </div>
 
                             {/* Conditional Action Button or Locked State */}
