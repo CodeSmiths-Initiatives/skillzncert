@@ -49,7 +49,7 @@ export default function PaymentPage({ userEmail }: Props) {
 		amount: getPaymentAmount() + 200000, // Amount in kobo (first installment) + ₦2000 fee
 		publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
 		currency: "NGN",
-		subaccount: "ACCT_xtlrfkipcz3pp2p",
+		subaccount: process.env.PAYSTACK_SUBACCOUNT_CODE!,
 		channels: ["card"],
 	};
 
