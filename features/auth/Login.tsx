@@ -18,8 +18,8 @@ export default function Login() {
 	const [isPending, startTransition] = useTransition();
 
 	const [form, setForm] = useState({
-		email: "Admin@yopmail.com",
-		password: "Mail_123",
+		email: "",
+		password: "",
 	});
 
 	const [errors, setErrors] = useState<Record<string, string>>({});
