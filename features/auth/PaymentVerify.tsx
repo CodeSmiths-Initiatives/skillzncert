@@ -95,8 +95,10 @@ export default function PaymentSuccessPage({ enrollmentDocumentId, userId, userE
   useEffect(() => {
     const completedReference = sessionStorage.getItem("reference") || localStorage.getItem("reference");  
 
-    if (completedReference === reference) {
+    // Only redirect if BOTH reference exists AND matches (prevents null === null)
+    if (completedReference && reference && completedReference === reference) {
       router.replace("/dashboard");
+      return;
     }
     // Prevent double processing due to React.StrictMode
     if (hasProcessedRef.current) {
