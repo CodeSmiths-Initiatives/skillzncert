@@ -39,7 +39,7 @@ export async function updateUserProfileAction(userId: number, data: any) {
       entityType: "user",
       entityId: userId.toString(),
       description: `Failed to update user profile`,
-      metadata: { error: error.message },
+      metadata: { error: error instanceof Error ? error.message : String(error) },
       severity: "error"
     });
     
@@ -252,13 +252,16 @@ export async function criticalOperation(data: any) {
     return { success: true, result };
   } catch (error) {
     // Log critical errors
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
     await logAuditAction({
       action: "update",
       entityType: "system",
-      description: `Critical operation failed: ${error.message}`,
+      description: `Critical operation failed: ${errorMessage}`,
       metadata: {
-        error: error.message,
-        stack: error.stack,
+        error: errorMessage,
+        stack: errorStack,
         input: data
       },
       severity: "critical"

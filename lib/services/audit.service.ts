@@ -19,6 +19,7 @@ import type {
   AuditLogResponse,
   CreateAuditLogPayload,
   RecentActivity,
+  AuditAction,
 } from "@/lib/types/audit.types";
 import { actionIconMap, severityBadgeMap } from "@/lib/types/audit.types";
 
@@ -216,7 +217,7 @@ export async function getRecentActivity(
   isAdmin: boolean = true
 ): Promise<RecentActivity[]> {
   // Role-based action filtering
-  const actions = isAdmin
+  const actions: AuditAction[] = isAdmin
     ? [
         "schedule_created",
         "schedule_updated",
