@@ -1,20 +1,20 @@
 /**
  * ScheduleSection Component - Standalone Weekly Class Schedule Page
  * 
- * Dedicated page for managing weekly class timings
- * Separated from settings for better UX and simpler actions/services
+ * Dedicated page for managing weekly class timings with batch support
+ * Supports three batches: Morning, Noon, and Evening
  */
 
 "use client";
 
-import { memo } from "react";
-import { Calendar } from "lucide-react";
+import { memo, useState } from "react";
+import { Calendar, Clock } from "lucide-react";
 import { useToast } from "@/components/toast/ToastContext";
 import { useWeeklySchedule } from "@/lib/hooks/useWeeklySchedule";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DEFAULT_WEEKLY_SCHEDULE } from "@/lib/types/schedule.types";
-import type { DaySchedule, DayOfWeek, TimeSlot } from "@/lib/types/schedule.types";
+import { DEFAULT_BATCH_SCHEDULES, BATCH_LABELS } from "@/lib/types/schedule.types";
+import type { DaySchedule, DayOfWeek, TimeSlot, BatchType } from "@/lib/types/schedule.types";
 import { DAY_LABELS } from "@/lib/types/schedule.types";
 import type { ChangeEvent } from "react";
 
@@ -28,12 +28,50 @@ const ScheduleHeader = memo(function ScheduleHeader() {
         <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
           <Calendar className="h-6 w-6" aria-hidden="true" />
         </div>
-        <h1 className="text-2xl md:text-3xl font-bold">Class Schedule</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Batch Schedule Management</h1>
       </div>
       <p className="text-white/90 text-sm md:text-base">
-        Manage your weekly class timings and availability
+        Manage timings for Morning, Noon, and Evening batches
       </p>
     </header>
+  );
+});
+
+/**
+ * Batch selector component
+ */
+const BatchSelector = memo(function BatchSelector({
+  selectedBatch,
+  onBatchChange,
+  disabled,
+}: {
+  selectedBatch: BatchType;
+  onBatchChange: (batch: BatchType) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+      <div className="flex items-center gap-2">
+        <Clock className="h-5 w-5 text-blue-600" aria-hidden="true" />
+        <label htmlFor="batch-selector" className="font-semibold text-gray-700">
+          Select Batch:
+        </label>
+      </div>
+      <select
+        id="batch-selector"
+        value={selectedBatch}
+        onChange={(e) => onBatchChange(e.target.value as BatchType)}
+        disabled={disabled}
+        className="px-4 py-2 border-2 border-blue-300 rounded-lg text-base font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all bg-white"
+      >
+        <option value="morning">{BATCH_LABELS.morning}</option>
+        <option value="noon">{BATCH_LABELS.noon}</option>
+        <option value="evening">{BATCH_LABELS.evening}</option>
+      </select>
+      <div className="ml-auto px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+        {BATCH_LABELS[selectedBatch]}
+      </div>
+    </div>
   );
 });
 
@@ -216,9 +254,11 @@ const DayScheduleRow = memo(function DayScheduleRow({
  */
 function ScheduleSectionComponent() {
   const { showToast } = useToast();
+  const [selectedBatch, setSelectedBatch] = useState<BatchType>("morning");
 
   const weeklySchedule = useWeeklySchedule({
-    initialSchedule: DEFAULT_WEEKLY_SCHEDULE,
+    batchName: selectedBatch,
+    initialSchedule: DEFAULT_BATCH_SCHEDULES[selectedBatch],
     onSuccess: (message) => {
       showToast({
         type: "success",
@@ -235,26 +275,43 @@ function ScheduleSectionComponent() {
     },
   });
 
+  const handleBatchChange = (newBatch: BatchType) => {
+    if (weeklySchedule.hasChanges) {
+      const confirmed = confirm(
+        "You have unsaved changes. Switching batches will discard them. Continue?"
+      );
+      if (!confirmed) return;
+    }
+    setSelectedBatch(newBatch);
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <ScheduleHeader />
+
+      {/* Batch Selector */}
+      <BatchSelector
+        selectedBatch={selectedBatch}
+        onBatchChange={handleBatchChange}
+        disabled={weeklySchedule.isPending || weeklySchedule.isLoading}
+      />
 
       {/* Schedule Card */}
       <Card className="p-6 md:p-8 bg-white shadow-lg border-gray-200">
         {weeklySchedule.isLoading ? (
           <div className="py-12 text-center text-gray-500">
             <div className="animate-spin rounded-full h-12 w-12 border-b-3 border-purple-500 mx-auto mb-4"></div>
-            <p className="text-lg">Loading your schedule...</p>
+            <p className="text-lg">Loading {BATCH_LABELS[selectedBatch]}...</p>
           </div>
         ) : (
           <>
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Weekly Schedule
+                {BATCH_LABELS[selectedBatch]} - Weekly Schedule
               </h2>
               <p className="text-gray-600">
-                Configure your class timings for each day. You can set times for any day or mark days as holidays.
+                Configure class timings for {selectedBatch} batch. You can set times for any day or mark days as holidays.
               </p>
             </div>
 
@@ -288,7 +345,7 @@ function ScheduleSectionComponent() {
                 ) : (
                   <>
                     <span className="mr-2">💾</span>
-                    Save Schedule
+                    Save {BATCH_LABELS[selectedBatch]}
                   </>
                 )}
               </Button>
@@ -301,15 +358,15 @@ function ScheduleSectionComponent() {
                 suppressHydrationWarning
               >
                 <span className="mr-2">↺</span>
-                Reset to Default
+                Reset to Saved
               </Button>
             </div>
 
             {/* Info note */}
             <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-800">
-                <span className="font-semibold">💡 Tip:</span> Set class timings for any day of the week. 
-                Mark days as holidays when classes are not scheduled.
+                <span className="font-semibold">💡 Tip:</span> Each batch (Morning, Noon, Evening) has its own schedule. 
+                Switch between batches using the dropdown above to manage different timings.
               </p>
             </div>
           </>

@@ -11,6 +11,11 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "batchName": {
+      "type": "enumeration",
+      "enum": ["morning", "noon", "evening"],
+      "required": true
+    },
     "scheduleData": {
       "type": "text",
       "required": true

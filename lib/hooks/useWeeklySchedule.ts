@@ -1,25 +1,27 @@
 import { useState, useCallback, useMemo, useTransition, useEffect } from "react";
-import type { DaySchedule, DayOfWeek } from "@/lib/types/schedule.types";
+import type { DaySchedule, DayOfWeek, BatchType } from "@/lib/types/schedule.types";
 import { validateDaySchedule, areSchedulesEqual } from "@/lib/utils/schedule.utils";
-import { saveScheduleAction, getScheduleAction } from "@/actions/schedule/schedule.actions";
+import { saveBatchScheduleAction, getBatchScheduleAction } from "@/actions/schedule/schedule.actions";
 
 /**
  * Options for useWeeklySchedule hook
  */
 export interface UseWeeklyScheduleOptions {
+  batchName: BatchType;
   initialSchedule: DaySchedule[];
   onSuccess?: (message: string) => void;
   onError?: (message: string) => void;
 }
 
 /**
- * Custom hook for managing weekly schedule
+ * Custom hook for managing batch-based weekly schedule
  * Follows single responsibility principle and separation of concerns
  * 
  * @param options - Configuration options
  * @returns Weekly schedule state and handlers
  */
 export function useWeeklySchedule({
+  batchName,
   initialSchedule,
   onSuccess,
   onError,
@@ -28,6 +30,7 @@ export function useWeeklySchedule({
   const [isLoading, setIsLoading] = useState(false);
   
   const [schedule, setSchedule] = useState<DaySchedule[]>(initialSchedule);
+  const [originalSchedule, setOriginalSchedule] = useState<DaySchedule[]>(initialSchedule);
   const [errors, setErrors] = useState<Record<DayOfWeek, string>>({
     monday: "",
     tuesday: "",
@@ -39,32 +42,39 @@ export function useWeeklySchedule({
   });
 
   /**
-   * Load schedule from server on mount
+   * Load schedule from server when batch changes
    */
   useEffect(() => {
     const loadSchedule = async () => {
       setIsLoading(true);
       try {
-        const result = await getScheduleAction();
+        const result = await getBatchScheduleAction(batchName);
         if (result.success && result.data) {
           setSchedule(result.data.schedule);
+          setOriginalSchedule(result.data.schedule);
+        } else {
+          // No schedule exists yet, use default
+          setSchedule(initialSchedule);
+          setOriginalSchedule(initialSchedule);
         }
       } catch (error) {
-        console.error("Failed to load schedule:", error);
+        console.error(`Failed to load ${batchName} schedule:`, error);
+        setSchedule(initialSchedule);
+        setOriginalSchedule(initialSchedule);
       } finally {
         setIsLoading(false);
       }
     };
 
     loadSchedule();
-  }, []);
+  }, [batchName, initialSchedule]);
 
   /**
-   * Check if schedule has changed from initial
+   * Check if schedule has changed from original
    */
   const hasChanges = useMemo(() => {
-    return !areSchedulesEqual(schedule, initialSchedule);
-  }, [schedule, initialSchedule]);
+    return !areSchedulesEqual(schedule, originalSchedule);
+  }, [schedule, originalSchedule]);
 
   /**
    * Validate entire schedule
@@ -152,9 +162,10 @@ export function useWeeklySchedule({
 
     startTransition(async () => {
       try {
-        const result = await saveScheduleAction(schedule);
+        const result = await saveBatchScheduleAction(batchName, schedule);
 
         if (result.success) {
+          setOriginalSchedule(schedule); // Update original to current
           onSuccess?.(result.message || "Schedule saved successfully!");
         } else {
           onError?.(result.message || "Failed to save schedule.");
@@ -167,13 +178,13 @@ export function useWeeklySchedule({
         );
       }
     });
-  }, [schedule, validateSchedule, hasChanges, onSuccess, onError]);
+  }, [schedule, batchName, validateSchedule, hasChanges, onSuccess, onError]);
 
   /**
-   * Reset schedule to initial values
+   * Reset schedule to original values
    */
   const resetSchedule = useCallback(() => {
-    setSchedule(initialSchedule);
+    setSchedule(originalSchedule);
     setErrors({
       monday: "",
       tuesday: "",
@@ -183,7 +194,7 @@ export function useWeeklySchedule({
       saturday: "",
       sunday: "",
     });
-  }, [initialSchedule]);
+  }, [originalSchedule]);
 
   /**
    * Check if schedule has any errors

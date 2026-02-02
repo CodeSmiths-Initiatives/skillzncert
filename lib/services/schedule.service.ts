@@ -1,18 +1,18 @@
-import type { DaySchedule, WeeklySchedule } from "../types/schedule.types";
+import type { DaySchedule, WeeklySchedule, BatchType } from "../types/schedule.types";
 
 /**
  * Weekly Schedule Service
- * Handles all API calls for schedule management
+ * Handles all API calls for batch-based schedule management
  */
 
 /**
- * Get global weekly schedule (shared by all users)
+ * Get all batch schedules
  * @param token - Auth token
- * @returns Weekly schedule or null if not found
+ * @returns Map of batch schedules
  */
-export async function getWeeklySchedule(
+export async function getAllBatchSchedules(
   token: string
-): Promise<WeeklySchedule | null> {
+): Promise<Map<BatchType, WeeklySchedule>> {
   const res = await fetch(
     `${process.env.STRAPI_URL}/api/weekly-schedules`,
     {
@@ -24,7 +24,50 @@ export async function getWeeklySchedule(
   );
 
   if (!res.ok) {
-    throw new Error("Failed to fetch weekly schedule");
+    throw new Error("Failed to fetch weekly schedules");
+  }
+
+  const json = await res.json();
+  const schedules = json?.data || [];
+
+  const scheduleMap = new Map<BatchType, WeeklySchedule>();
+
+  schedules.forEach((schedule: any) => {
+    scheduleMap.set(schedule.batchName as BatchType, {
+      id: schedule.id,
+      documentId: schedule.documentId,
+      batchName: schedule.batchName as BatchType,
+      schedule: JSON.parse(schedule.scheduleData),
+      createdAt: schedule.createdAt,
+      updatedAt: schedule.updatedAt,
+    });
+  });
+
+  return scheduleMap;
+}
+
+/**
+ * Get schedule for a specific batch
+ * @param batchName - Batch type (morning/noon/evening)
+ * @param token - Auth token
+ * @returns Weekly schedule or null if not found
+ */
+export async function getBatchSchedule(
+  batchName: BatchType,
+  token: string
+): Promise<WeeklySchedule | null> {
+  const res = await fetch(
+    `${process.env.STRAPI_URL}/api/weekly-schedules?filters[batchName][$eq]=${batchName}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch ${batchName} batch schedule`);
   }
 
   const json = await res.json();
@@ -37,19 +80,22 @@ export async function getWeeklySchedule(
   return {
     id: schedule.id,
     documentId: schedule.documentId,
-    schedule: JSON.parse(schedule.scheduleData), // Parse JSON from Strapi
+    batchName: schedule.batchName as BatchType,
+    schedule: JSON.parse(schedule.scheduleData),
     createdAt: schedule.createdAt,
     updatedAt: schedule.updatedAt,
   };
 }
 
 /**
- * Create global weekly schedule (shared by all users)
+ * Create batch schedule
+ * @param batchName - Batch type (morning/noon/evening)
  * @param schedule - Schedule data
  * @param token - Auth token
  * @returns Created schedule
  */
-export async function createWeeklySchedule(
+export async function createBatchSchedule(
+  batchName: BatchType,
   schedule: DaySchedule[],
   token: string
 ): Promise<WeeklySchedule> {
@@ -63,6 +109,7 @@ export async function createWeeklySchedule(
       },
       body: JSON.stringify({
         data: {
+          batchName,
           scheduleData: JSON.stringify(schedule),
         },
       }),
@@ -74,13 +121,14 @@ export async function createWeeklySchedule(
 
   if (!res.ok) {
     throw new Error(
-      json?.error?.message || "Failed to create weekly schedule"
+      json?.error?.message || `Failed to create ${batchName} batch schedule`
     );
   }
 
   return {
     id: json.data.id,
     documentId: json.data.documentId,
+    batchName: json.data.batchName as BatchType,
     schedule: JSON.parse(json.data.scheduleData),
     createdAt: json.data.createdAt,
     updatedAt: json.data.updatedAt,
@@ -88,14 +136,16 @@ export async function createWeeklySchedule(
 }
 
 /**
- * Update weekly schedule
+ * Update batch schedule
  * @param documentId - Schedule document ID
+ * @param batchName - Batch type (morning/noon/evening)
  * @param schedule - Updated schedule data
  * @param token - Auth token
  * @returns Updated schedule
  */
-export async function updateWeeklySchedule(
+export async function updateBatchSchedule(
   documentId: string,
+  batchName: BatchType,
   schedule: DaySchedule[],
   token: string
 ): Promise<WeeklySchedule> {
@@ -109,6 +159,7 @@ export async function updateWeeklySchedule(
       },
       body: JSON.stringify({
         data: {
+          batchName,
           scheduleData: JSON.stringify(schedule),
         },
       }),
@@ -120,13 +171,14 @@ export async function updateWeeklySchedule(
 
   if (!res.ok) {
     throw new Error(
-      json?.error?.message || "Failed to update weekly schedule"
+      json?.error?.message || `Failed to update ${batchName} batch schedule`
     );
   }
 
   return {
     id: json.data.id,
     documentId: json.data.documentId,
+    batchName: json.data.batchName as BatchType,
     schedule: JSON.parse(json.data.scheduleData),
     createdAt: json.data.createdAt,
     updatedAt: json.data.updatedAt,

@@ -3,6 +3,9 @@
 import { cookies } from "next/headers";
 import { createPayment } from "@/lib/services/payment.service";
 import type { CreatePaymentInput } from "@/lib/services/payment.service";
+import { logPaymentCompleted } from "@/actions/audit/audit.actions";
+import { PAYMENT_PLANS } from "@/lib/payment-plans";
+import { getAuthUser } from "@/lib/auth/get-auth-user";
 
 export async function createPaymentAction(paymentData: CreatePaymentInput) {
   try {
@@ -52,6 +55,27 @@ export async function createPaymentAction(paymentData: CreatePaymentInput) {
     }
 
     const result = await createPayment(paymentData, token);
+
+    // Log audit trail for payment completion
+    const { user } = await getAuthUser();
+    const userName = user?.username || paymentData.emailAddress || "Unknown User";
+    const planName = paymentData.planId && PAYMENT_PLANS[paymentData.planId]
+      ? PAYMENT_PLANS[paymentData.planId].name
+      : "Payment";
+
+    await logPaymentCompleted(
+      userName,
+      paymentData.amount,
+      planName,
+      result.documentId || result.id?.toString() || "",
+      {
+        paymentMode: paymentData.paymentMode,
+        month: paymentData.month,
+        year: paymentData.year,
+        planId: paymentData.planId,
+        enrollmentId: paymentData.enrollmentDocumentId,
+      }
+    );
 
     return {
       success: true,

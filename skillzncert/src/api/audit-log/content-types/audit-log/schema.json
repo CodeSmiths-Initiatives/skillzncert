@@ -1,0 +1,79 @@
+{
+  "kind": "collectionType",
+  "collectionName": "audit_logs",
+  "info": {
+    "singularName": "audit-log",
+    "pluralName": "audit-logs",
+    "displayName": "Audit Log",
+    "description": "System-wide audit trail for tracking user actions and system events"
+  },
+  "options": {
+    "draftAndPublish": false,
+    "comment": "Audit logs should never be drafted"
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "action": {
+      "type": "enumeration",
+      "enum": [
+        "create",
+        "update",
+        "delete",
+        "payment_completed",
+        "enrollment_created",
+        "enrollment_updated",
+        "schedule_created",
+        "schedule_updated",
+        "user_login",
+        "user_logout",
+        "user_registered"
+      ],
+      "required": true
+    },
+    "entityType": {
+      "type": "enumeration",
+      "enum": [
+        "schedule",
+        "payment",
+        "enrollment",
+        "user",
+        "batch",
+        "system"
+      ],
+      "required": true
+    },
+    "entityId": {
+      "type": "string",
+      "required": false
+    },
+    "userId": {
+      "type": "integer",
+      "required": false
+    },
+    "userName": {
+      "type": "string",
+      "required": false
+    },
+    "userEmail": {
+      "type": "email",
+      "required": false
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "metadata": {
+      "type": "json",
+      "required": false
+    },
+    "ipAddress": {
+      "type": "string",
+      "required": false
+    },
+    "severity": {
+      "type": "enumeration",
+      "enum": ["info", "warning", "error", "critical"],
+      "default": "info"
+    }
+  }
+}

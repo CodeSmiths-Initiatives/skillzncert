@@ -14,17 +14,19 @@ import {
   AlertTriangle,
   Award,
 } from "lucide-react";
-import { getScheduleAction } from "@/actions/schedule/schedule.actions";
+import { getAllSchedulesAction } from "@/actions/schedule/schedule.actions";
 import { getDashboardMetricsAction } from "@/actions/dashboard/get-metrics.actions";
 import { getUserPayments } from "@/actions/payment/get-user-payments.actions";
+import { getRecentActivityAction } from "@/actions/audit/audit.actions";
 import { StatCard } from "@/components/dashboard/stat-card";
-import type { DayOfWeek, DaySchedule } from "@/lib/types/schedule.types";
-import { DAY_LABELS } from "@/lib/types/schedule.types";
+import type { DayOfWeek, DaySchedule, BatchType } from "@/lib/types/schedule.types";
+import { DAY_LABELS, BATCH_LABELS } from "@/lib/types/schedule.types";
 import { formatTimeSlot } from "@/lib/utils/schedule.utils";
 import type { DashboardTopMetrics } from "@/lib/services/dashboard.service";
 import { buildAdminStats, type StatValue } from "@/lib/types/stats.config";
 import { PAYMENT_PLANS } from "@/lib/payment-plans";
 import type { PaymentData } from "@/lib/services/payment.service";
+import type { RecentActivity } from "@/lib/types/audit.types";
 
 /**
  * OverviewSection Component
@@ -45,7 +47,8 @@ export function OverviewSection({
   userDocumentId?: string;
   userId?: number;
 }) {
-  const [schedule, setSchedule] = useState<DaySchedule[]>([]);
+  const [schedules, setSchedules] = useState<Record<BatchType, DaySchedule[]>>({} as any);
+  const [selectedBatch, setSelectedBatch] = useState<BatchType>("morning");
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(true);
   const [metrics, setMetrics] = useState<DashboardTopMetrics | null>(null);
   const [isLoadingMetrics, setIsLoadingMetrics] = useState(true);
@@ -55,6 +58,8 @@ export function OverviewSection({
   const [viewMode, setViewMode] = useState<'weekly' | 'monthly'>('weekly');
   const [currentDay, setCurrentDay] = useState<DayOfWeek | null>(null);
   const [currentDate, setCurrentDate] = useState<Date | null>(null);
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+  const [isLoadingActivity, setIsLoadingActivity] = useState(true);
 
   // Set current day after mounting to avoid hydration mismatch
   useEffect(() => {
@@ -102,22 +107,26 @@ export function OverviewSection({
     loadMetrics();
   }, [isAdmin]);
 
-  // Fetch the weekly schedule
+  // Fetch all batch schedules
   useEffect(() => {
-    const loadSchedule = async () => {
+    const loadSchedules = async () => {
       try {
-        const result = await getScheduleAction();
-        if (result.success && result.data?.schedule) {
-          setSchedule(result.data.schedule);
+        const result = await getAllSchedulesAction();
+        if (result.success && result.data) {
+          const schedulesData: Record<BatchType, DaySchedule[]> = {} as any;
+          Object.entries(result.data).forEach(([batchName, scheduleObj]: [string, any]) => {
+            schedulesData[batchName as BatchType] = scheduleObj.schedule;
+          });
+          setSchedules(schedulesData);
         }
       } catch (error) {
-        console.error("Failed to load schedule:", error);
+        console.error("Failed to load schedules:", error);
       } finally {
         setIsLoadingSchedule(false);
       }
     };
 
-    loadSchedule();
+    loadSchedules();
   }, []);
 
   // Fetch user stats for non-admin users
@@ -225,6 +234,81 @@ export function OverviewSection({
     loadUserStats();
   }, [isAdmin, userId]);
 
+  // Fetch recent activity with role-based filtering
+  useEffect(() => {
+    const loadRecentActivity = async () => {
+      try {
+        setIsLoadingActivity(true);
+        // Pass isAdmin flag to server for role-based filtering
+        // Admins see all activities, enrollees only see schedule-related activities
+        const result = await getRecentActivityAction(10, isAdmin);
+        if (result.success) {
+          setRecentActivity(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to load recent activity:", error);
+      } finally {
+        setIsLoadingActivity(false);
+      }
+    };
+
+    loadRecentActivity();
+  }, [isAdmin]);
+
+  /**
+   * Format timestamp for display
+   */
+  const getTimeAgo = (timestamp: string): string => {
+    const now = new Date();
+    const past = new Date(timestamp);
+    const diffMs = now.getTime() - past.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffDays > 0) {
+      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    } else if (diffHours > 0) {
+      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    } else if (diffMins > 0) {
+      return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    } else {
+      return 'Just now';
+    }
+  };
+
+  /**
+   * Get Badge component variant based on audit badge variant
+   */
+  const getBadgeVariant = (variant: string): "default" | "secondary" | "destructive" | "outline" => {
+    switch (variant) {
+      case "success":
+        return "default"; // Map to default since Badge doesn't have success
+      case "warning":
+        return "default";
+      case "error":
+        return "destructive";
+      default:
+        return "default";
+    }
+  };
+
+  /**
+   * Get badge color classes based on variant
+   */
+  const getBadgeClasses = (variant: string): string => {
+    switch (variant) {
+      case "success":
+        return "bg-emerald-100 text-emerald-700 hover:bg-emerald-200";
+      case "warning":
+        return "bg-amber-100 text-amber-700 hover:bg-amber-200";
+      case "error":
+        return "bg-red-100 text-red-700 hover:bg-red-200";
+      default:
+        return "bg-emerald-100 text-emerald-700 hover:bg-emerald-200";
+    }
+  };
+
   /**
    * Build stats array based on user role
    * Using reusable functions from stats config
@@ -281,34 +365,52 @@ export function OverviewSection({
         {/* Progress Overview - 70% width */}
         <Card className="bg-gradient-to-br from-blue-50 to-sky-50 border-0 hover:shadow-xl hover:shadow-blue-200/50 transition-all duration-300 group border-t-4 border-t-blue-500 flex flex-col">
           <CardHeader className="border-b border-blue-100/50 flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-slate-800 group-hover:text-slate-900 flex items-center">
-                <div className="p-1.5 bg-blue-100 rounded-md mr-2 group-hover:bg-blue-200 transition-colors">
-                  <Calendar className="h-4 w-4 text-blue-600" />
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-slate-800 group-hover:text-slate-900 flex items-center">
+                  <div className="p-1.5 bg-blue-100 rounded-md mr-2 group-hover:bg-blue-200 transition-colors">
+                    <Calendar className="h-4 w-4 text-blue-600" />
+                  </div>
+                  Weekly Schedule
+                </CardTitle>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setViewMode('weekly')}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                      viewMode === 'weekly'
+                        ? 'bg-blue-500 text-white shadow-md'
+                        : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                    }`}
+                  >
+                    Week
+                  </button>
+                  <button
+                    onClick={() => setViewMode('monthly')}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                      viewMode === 'monthly'
+                        ? 'bg-blue-500 text-white shadow-md'
+                        : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                    }`}
+                  >
+                    Month
+                  </button>
                 </div>
-                Weekly Schedule
-              </CardTitle>
+              </div>
+              {/* Batch Selector */}
               <div className="flex gap-2">
-                <button
-                  onClick={() => setViewMode('weekly')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                    viewMode === 'weekly'
-                      ? 'bg-blue-500 text-white shadow-md'
-                      : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                  }`}
-                >
-                  Week
-                </button>
-                <button
-                  onClick={() => setViewMode('monthly')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                    viewMode === 'monthly'
-                      ? 'bg-blue-500 text-white shadow-md'
-                      : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                  }`}
-                >
-                  Month
-                </button>
+                {(['morning', 'noon', 'evening'] as BatchType[]).map((batch) => (
+                  <button
+                    key={batch}
+                    onClick={() => setSelectedBatch(batch)}
+                    className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                      selectedBatch === batch
+                        ? 'bg-blue-500 text-white shadow-md'
+                        : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                    }`}
+                  >
+                    {BATCH_LABELS[batch]}
+                  </button>
+                ))}
               </div>
             </div>
           </CardHeader>
@@ -318,10 +420,10 @@ export function OverviewSection({
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
                 <p className="text-sm text-slate-500">Loading schedule...</p>
               </div>
-            ) : schedule.length === 0 ? (
+            ) : !schedules[selectedBatch] || schedules[selectedBatch].length === 0 ? (
               <div className="py-8 text-center">
                 <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-                <p className="text-sm text-slate-500">No schedule available yet.</p>
+                <p className="text-sm text-slate-500">No schedule available for {BATCH_LABELS[selectedBatch]} yet.</p>
                 <p className="text-xs text-slate-400 mt-1">
                   Admin can set up the schedule in Settings.
                 </p>
@@ -329,17 +431,17 @@ export function OverviewSection({
             ) : viewMode === 'weekly' ? (
               <>
                 {/* Weekly View - Class Days */}
-                {schedule.filter((day) => !day.isHoliday).length > 0 && (
+                {schedules[selectedBatch].filter((day) => !day.isHoliday).length > 0 && (
                   <div className="space-y-3 mb-4">
                     <div className="flex items-center gap-2">
                       <div className="p-1 bg-blue-100 rounded-md">
                         <Clock className="h-3 w-3 text-blue-600" />
                       </div>
                       <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                        Class Schedule
+                        {BATCH_LABELS[selectedBatch]} Schedule
                       </h4>
                     </div>
-                    {schedule
+                    {schedules[selectedBatch]
                       .filter((day) => !day.isHoliday)
                       .map((daySchedule) => {
                         const isToday = daySchedule.day === currentDay;
@@ -386,7 +488,7 @@ export function OverviewSection({
                 )}
 
                 {/* Holidays Section */}
-                {schedule.filter((day) => day.isHoliday).length > 0 && (
+                {schedules[selectedBatch].filter((day) => day.isHoliday).length > 0 && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <div className="p-1 bg-rose-100 rounded-md">
@@ -396,7 +498,7 @@ export function OverviewSection({
                         Holidays
                       </h4>
                     </div>
-                    {schedule
+                    {schedules[selectedBatch]
                       .filter((day) => day.isHoliday)
                       .map((daySchedule) => {
                         const isToday = daySchedule.day === currentDay;
@@ -473,6 +575,7 @@ export function OverviewSection({
                     if (!currentDate) return null;
                     
                     const today = currentDate;
+                    const schedule = schedules[selectedBatch] || [];
                     const year = today.getFullYear();
                     const month = today.getMonth();
                     const firstDay = new Date(year, month, 1).getDay();
@@ -586,21 +689,42 @@ export function OverviewSection({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 overflow-y-auto max-h-[calc(100vh-400px)] scrollbar-emerald">
-            <div className="flex items-center space-x-4">
-              <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-slate-800">
-                  Enrollment started for <span className="font-bold">Networking & Cybersecurity certification</span>
-                </p>
-                <p className="text-xs text-slate-500">1 hours ago</p>
+            {isLoadingActivity ? (
+              <div className="py-8 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto mb-2"></div>
+                <p className="text-sm text-slate-500">Loading activity...</p>
               </div>
-              <Badge
-                variant="default"
-                className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
-              >
-                Completed
-              </Badge>
-            </div>            
+            ) : recentActivity.length === 0 ? (
+              <div className="py-8 text-center">
+                <CheckCircle className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+                <p className="text-sm text-slate-500">No recent activity yet.</p>
+                <p className="text-xs text-slate-400 mt-1">
+                  Activities will appear here as users interact with the system.
+                </p>
+              </div>
+            ) : (
+              recentActivity.map((activity) => (
+                <div key={activity.id} className="flex items-center space-x-4">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full flex-shrink-0"></div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-800 truncate">
+                      {activity.description}
+                    </p>
+                    <p className="text-xs text-slate-500" suppressHydrationWarning>
+                      {getTimeAgo(activity.timestamp)}
+                    </p>
+                  </div>
+                  {activity.badge && (
+                    <Badge
+                      variant={getBadgeVariant(activity.badge.variant)}
+                      className={getBadgeClasses(activity.badge.variant)}
+                    >
+                      {activity.badge.text}
+                    </Badge>
+                  )}
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
       </div>

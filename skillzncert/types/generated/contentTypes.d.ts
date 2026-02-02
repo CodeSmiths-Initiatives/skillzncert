@@ -499,6 +499,66 @@ export interface ApiArticleArticle extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiAuditLogAuditLog extends Struct.CollectionTypeSchema {
+  collectionName: 'audit_logs';
+  info: {
+    description: 'System-wide audit trail for tracking user actions and system events';
+    displayName: 'Audit Log';
+    pluralName: 'audit-logs';
+    singularName: 'audit-log';
+  };
+  options: {
+    comment: 'Audit logs should never be drafted';
+    draftAndPublish: false;
+  };
+  attributes: {
+    action: Schema.Attribute.Enumeration<
+      [
+        'create',
+        'update',
+        'delete',
+        'payment_completed',
+        'enrollment_created',
+        'enrollment_updated',
+        'schedule_created',
+        'schedule_updated',
+        'user_login',
+        'user_logout',
+        'user_registered',
+      ]
+    > &
+      Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text & Schema.Attribute.Required;
+    entityId: Schema.Attribute.String;
+    entityType: Schema.Attribute.Enumeration<
+      ['schedule', 'payment', 'enrollment', 'user', 'batch', 'system']
+    > &
+      Schema.Attribute.Required;
+    ipAddress: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::audit-log.audit-log'
+    > &
+      Schema.Attribute.Private;
+    metadata: Schema.Attribute.JSON;
+    publishedAt: Schema.Attribute.DateTime;
+    severity: Schema.Attribute.Enumeration<
+      ['info', 'warning', 'error', 'critical']
+    > &
+      Schema.Attribute.DefaultTo<'info'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    userEmail: Schema.Attribute.Email;
+    userId: Schema.Attribute.Integer;
+    userName: Schema.Attribute.String;
+  };
+}
+
 export interface ApiAuthorAuthor extends Struct.CollectionTypeSchema {
   collectionName: 'authors';
   info: {
@@ -892,6 +952,8 @@ export interface ApiWeeklyScheduleWeeklySchedule
     draftAndPublish: false;
   };
   attributes: {
+    batchName: Schema.Attribute.Enumeration<['morning', 'noon', 'evening']> &
+      Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1424,6 +1486,7 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::about.about': ApiAboutAbout;
       'api::article.article': ApiArticleArticle;
+      'api::audit-log.audit-log': ApiAuditLogAuditLog;
       'api::author.author': ApiAuthorAuthor;
       'api::category.category': ApiCategoryCategory;
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
