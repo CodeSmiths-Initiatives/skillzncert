@@ -25,7 +25,7 @@ export default function Solution() {
 					OUR SOLUTION
 				</h1>
 			</div>
-			<div className="grid md:grid-cols-2 grid-cols-1 items-center">
+			<div className="grid md:grid-cols-2 grid-cols-1 gap-12 items-center">
 				<div>
 					<p className="text-base font-medium leading-7 text-gray-700 mb-4">
 						Skillz’n’cert, a Sec-Concepts Networks project, through its Cisco
@@ -57,7 +57,7 @@ export default function Solution() {
 					</ul>
 				</div>
 				<div className="relative w-full">
-					<div className="md:hidden flex flex-col gap-6">
+					<div className="lg:hidden flex flex-col gap-6">
 						<motion.div
 							custom={0}
 							variants={imageVariant}
@@ -92,7 +92,7 @@ export default function Solution() {
 						</motion.div>
 					</div>
 
-					<div className="hidden md:block relative h-135">
+					<div className="hidden lg:block relative h-135">
 						<motion.div
 							custom={0}
 							variants={imageVariant}

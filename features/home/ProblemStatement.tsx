@@ -22,13 +22,13 @@ export default function ProblemStatement() {
 	return (
 		<section className="w-full bg-gray-50 px-10 md:px-20 py-5 md:py-16">
 			<div className="mb-10">
-				<h1 className="text-3xl md:text-4xl font-semibold mb-6 text-center">
+				<h1 className="text-2xl md:text-4xl font-semibold mb-6 text-center">
 					PROBLEM STATEMENT
 				</h1>
 			</div>
 			<div className="grid md:grid-cols-2 gap-12 items-start max-w-7xl mx-auto">
 				<div>
-					<div className="md:hidden flex flex-col-reverse gap-6 mb-10">
+					<div className="lg:hidden flex flex-col-reverse gap-6 mb-10">
 						<motion.div
 							custom={0}
 							variants={imageVariant}
@@ -63,7 +63,7 @@ export default function ProblemStatement() {
 						</motion.div>
 					</div>
 
-					<div className="hidden md:block relative w-full h-130 mb-10">
+					<div className="hidden lg:block relative w-full h-130 mb-10">
 						<motion.div
 							custom={0}
 							variants={imageVariant}
