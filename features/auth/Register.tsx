@@ -15,7 +15,7 @@ import { useState, useTransition } from "react";
 
 export default function Register() {
 	const router = useRouter();
-	const { showToast } = useToast();	
+	const { showToast } = useToast();
 
 	const [isPending, startTransition] = useTransition();
 
@@ -100,7 +100,7 @@ export default function Register() {
 	});
 
 	return (
-		<AuthLayout imageSrc="/static/images/auth_image.png">
+		<AuthLayout imageSrc="/static/images/loginPage.jpg" imageAlt="Register">
 			<div className="text-center mb-6">
 				<Image
 					src="/static/images/logo1.svg"

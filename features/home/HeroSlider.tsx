@@ -137,7 +137,7 @@ export default function HeroSlider() {
 									hover:-translate-y-px hover:shadow-lg
 									focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#58AEB3]/40"
 								>
-									Learn More
+									<a href="#About">Learn More</a>
 								</button>
 							</motion.div>
 						</AnimatePresence>

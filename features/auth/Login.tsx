@@ -100,7 +100,7 @@ export default function Login() {
 	});
 
 	return (
-		<AuthLayout imageSrc="/static/images/auth_image.png">
+		<AuthLayout imageSrc="/static/images/loginPage.jpg" imageAlt="Login">
 			{/* HEADER */}
 			<div className="text-center mb-6">
 				<Image
