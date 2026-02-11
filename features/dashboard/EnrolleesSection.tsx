@@ -19,6 +19,7 @@ import {
   RefreshCw,
   ChevronLeft,
   ChevronRight,
+  Download,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { getAllEnrollments } from "@/actions/enrollment/get-all-enrollments.actions";
@@ -74,6 +75,50 @@ export function EnrolleesSection() {
     } finally {
       setRefreshing(false);
     }
+  };
+
+  const handleExportToExcel = () => {
+    // Convert enrollees data to CSV format
+    const headers = [
+      "First Name",
+      "Last Name",
+      "Email",
+      "Phone Number",
+      "State",
+      "Country",
+      "Batch",
+      "Payment Status",
+      "Enrolled Date",
+      "Year of Study",
+    ];
+
+    const csvRows = [
+      headers.join(","),
+      ...filteredEnrollees.map((enrollee) => [
+        `"${enrollee.firstName}"`,
+        `"${enrollee.lastName}"`,
+        `"${enrollee.email || enrollee.user?.email || "N/A"}"`,
+        `"${enrollee.phoneNumber}"`,
+        `"${enrollee.state || "N/A"}"`,
+        `"${enrollee.country || "N/A"}"`,
+        `"${enrollee.batchName || "Not Assigned"}"`,
+        `"${enrollee.isPaymentDone ? "Paid" : "Pending"}"`,
+        `"${new Date(enrollee.createdAt).toLocaleDateString()}"`,
+        `"${enrollee.yearOfStudy || "N/A"}"`,
+      ].join(",")),
+    ];
+
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute("href", url);
+    link.setAttribute("download", `enrollees_${new Date().toISOString().split("T")[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   // Close dropdown when clicking outside
@@ -372,14 +417,24 @@ export function EnrolleesSection() {
               ({filteredEnrollees.length} {filteredEnrollees.length === 1 ? "result" : "results"})
             </span>
           </h2>
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200 disabled:opacity-50"
-            title="Refresh data"
-          >
-            <RefreshCw className={`h-5 w-5 text-blue-600 ${refreshing ? "animate-spin" : ""}`} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExportToExcel}
+              disabled={filteredEnrollees.length === 0}
+              className="p-2 hover:bg-green-50 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Export to Excel"
+            >
+              <Download className="h-5 w-5 text-green-600" />
+            </button>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200 disabled:opacity-50"
+              title="Refresh data"
+            >
+              <RefreshCw className={`h-5 w-5 text-blue-600 ${refreshing ? "animate-spin" : ""}`} />
+            </button>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -390,7 +445,7 @@ export function EnrolleesSection() {
                 <th className="text-left py-4 px-4 font-semibold text-gray-700">Location</th>
                 <th className="text-left py-4 px-4 font-semibold text-gray-700">Batch</th>
                 <th className="text-left py-4 px-4 font-semibold text-gray-700">Enrolled Date</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Education Year</th>
+                {/* <th className="text-left py-4 px-4 font-semibold text-gray-700">Education Year</th> */}
                 <th className="text-left py-4 px-4 font-semibold text-gray-700">Payment Status</th>
                 <th className="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
               </tr>
@@ -445,11 +500,11 @@ export function EnrolleesSection() {
                       {new Date(enrollee.createdAt).toLocaleDateString()}
                     </p>
                   </td>
-                  <td className="py-4 px-4">
+                  {/* <td className="py-4 px-4">
                     <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                       {enrollee.yearOfStudy || "N/A"}
                     </span>
-                  </td>
+                  </td> */}
                   <td className="py-4 px-4">
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${enrollee.isPaymentDone ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
                       {enrollee.isPaymentDone ? "Paid" : "Pending"}
