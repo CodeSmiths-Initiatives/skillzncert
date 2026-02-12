@@ -1,13 +1,33 @@
 export default ({ env }) => ({
+  // SendGrid Email Configuration (Paid service)
+  // email: {
+  //   config: {
+  //     provider: "sendgrid",
+  //     providerOptions: {
+  //       apiKey: env("SENDGRID_API_KEY"),
+  //     },
+  //     settings: {
+  //       defaultFrom: "skillzncert@yopmail.com",
+  //       defaultReplyTo: "skillzncert@yopmail.com",
+  //     },
+  //   },
+  // },
+
+  // Nodemailer with Gmail (Free - up to 500 emails/day)
   email: {
     config: {
-      provider: "sendgrid",
+      provider: "nodemailer",
       providerOptions: {
-        apiKey: env("SENDGRID_API_KEY"), // Make sure to set this in your .env file
+        host: env("SMTP_HOST", "smtp.gmail.com"),
+        port: env("SMTP_PORT", 587),
+        auth: {
+          user: env("SMTP_USERNAME"), // Your Gmail address
+          pass: env("SMTP_PASSWORD"), // Your Gmail App Password (not regular password)
+        },
       },
       settings: {
-        defaultFrom: "skillzncert@yopmail.com", // Set default sender email
-        defaultReplyTo: "skillzncert@yopmail.com", // Set default reply-to email
+        defaultFrom: env("SMTP_USERNAME"), // Your Gmail address
+        defaultReplyTo: env("SMTP_USERNAME"),
       },
     },
   },
