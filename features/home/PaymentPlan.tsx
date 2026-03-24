@@ -34,11 +34,11 @@ export default function PaymentPlan() {
 					PAYMENT PLAN
 				</h1>
 
-				<p className="text-sm md:text-base font-light text-gray-700 text-center max-w-3xl mx-auto mb-16 leading-7">
+				{/* <p className="text-sm md:text-base font-light text-gray-700 text-center max-w-3xl mx-auto mb-16 leading-7">
 					The training fee for the CCNA and CyberOps programs is ₦1,000,000.00.
 					Skillz’n’Cert students are required to make payment based on the plan
 					selected below.
-				</p>
+				</p> */}
 
 				<motion.div
 					variants={containerVariants}
