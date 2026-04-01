@@ -384,13 +384,13 @@ export async function getEnrollmentData(
     referralCode: enrollment.referralCode || "",
     passport: enrollment.passport
       ? {
-          url: `${process.env.STRAPI_URL}${enrollment.passport.url}`,
+          url: `${enrollment.passport.url}`,
           name: enrollment.passport.name,
         }
       : undefined,
     schoolIdCard: enrollment.schoolIdCard
       ? {
-          url: `${process.env.STRAPI_URL}${enrollment.schoolIdCard.url}`,
+          url: `${enrollment.schoolIdCard.url}`,
           name: enrollment.schoolIdCard.name,
         }
       : undefined,
@@ -585,13 +585,13 @@ export async function fetchAllEnrollments(
       referralCode: enrollment.referralCode || "",
       passport: enrollment.passport
         ? {
-            url: `${process.env.STRAPI_URL}${enrollment.passport.url}`,
+            url: `${enrollment.passport.url}`,
             name: enrollment.passport.name,
           }
         : undefined,
       schoolIdCard: enrollment.schoolIdCard
         ? {
-            url: `${process.env.STRAPI_URL}${enrollment.schoolIdCard.url}`,
+            url: `${enrollment.schoolIdCard.url}`,
             name: enrollment.schoolIdCard.name,
           }
         : undefined,
