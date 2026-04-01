@@ -181,6 +181,9 @@
     "planDiscount": {
       "type": "integer",
       "required": false
+    },
+    "referralCode": {
+      "type": "string"
     }
   }
 }

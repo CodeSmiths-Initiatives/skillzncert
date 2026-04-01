@@ -102,6 +102,7 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
     netacadId: enrollment.netacadId || "",
     preferredNetwork: enrollment.preferredNetwork,
     numberForData: enrollment.numberForData,
+    referralCode: enrollment.referralCode || "",
   });
 
   const [errors, setErrors] = useState({
@@ -146,6 +147,7 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
       netacadId: enrollment.netacadId || "",
       preferredNetwork: enrollment.preferredNetwork,
       numberForData: enrollment.numberForData,
+      referralCode: enrollment.referralCode || "",
     });
     setErrors({
       firstName: "",
@@ -401,6 +403,13 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
             value={formData.previousCertification}
             isEditing={isEditing}
             name="previousCertification"
+            onChange={handleChange}
+          />
+          <ProfileField
+            label="Referral Code"
+            value={formData.referralCode}
+            isEditing={isEditing}
+            name="referralCode"
             onChange={handleChange}
           />
           <ProfileField

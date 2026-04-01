@@ -688,6 +688,7 @@ export interface ApiEnrollmentEnrollment extends Struct.CollectionTypeSchema {
     >;
     previousCertification: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
+    referralCode: Schema.Attribute.String;
     schoolIdCard: Schema.Attribute.Media<'images' | 'files'> &
       Schema.Attribute.Required;
     selectedPlan: Schema.Attribute.Enumeration<['gold', 'silver', 'bronze']>;

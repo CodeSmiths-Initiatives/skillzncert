@@ -21,6 +21,7 @@ export interface EnrollmentData {
   netacadId?: string;
   preferredNetwork: string;
   numberForData: string;
+  referralCode?: string;
   passport?: {
     url: string;
     name: string;
@@ -57,6 +58,13 @@ export interface EnrolleeData {
   state: string;
   country: string;
   yearOfStudy: string;
+  universityAttending?: string;
+  previousCertification?: string;
+  hasNetacadAccount?: boolean;
+  netacadId?: string;
+  preferredNetwork?: string;
+  numberForData?: string;
+  referralCode?: string;
   passport?: {
     url: string;
     name: string;
@@ -89,6 +97,7 @@ interface EnrollmentCreateData {
   numberForData: string;
   passport: number;
   schoolIdCard: number;
+  referralCode?: string;
 }
 
 export async function fetchEnrollmentByUser(
@@ -201,6 +210,7 @@ export async function submitEnrollment(formData: FormData, token: string) {
       numberForData: formData.get("data[numberForData]") as string,
       passport: passportId,
       schoolIdCard: schoolIdCardId,
+      referralCode: formData.get("data[referralCode]") as string || undefined,
     };
 
     // Submit enrollment
@@ -371,15 +381,16 @@ export async function getEnrollmentData(
     netacadId: enrollment.netacadId || "",
     preferredNetwork: enrollment.preferredNetwork || "",
     numberForData: enrollment.numberForData || "",
+    referralCode: enrollment.referralCode || "",
     passport: enrollment.passport
       ? {
-          url: `${enrollment.passport.url}`,
+          url: `${process.env.STRAPI_URL}${enrollment.passport.url}`,
           name: enrollment.passport.name,
         }
       : undefined,
     schoolIdCard: enrollment.schoolIdCard
       ? {
-          url: `${enrollment.schoolIdCard.url}`,
+          url: `${process.env.STRAPI_URL}${enrollment.schoolIdCard.url}`,
           name: enrollment.schoolIdCard.name,
         }
       : undefined,
@@ -421,6 +432,7 @@ export async function updateEnrollmentData(
       "netacadId",
       "preferredNetwork",
       "numberForData",
+      "referralCode",
     ];
 
     textFields.forEach((field) => {
@@ -564,6 +576,13 @@ export async function fetchAllEnrollments(
       state: enrollment.state || "",
       country: enrollment.country || "",
       yearOfStudy: enrollment.yearOfStudy || "",
+      universityAttending: enrollment.universityAttending || "",
+      previousCertification: enrollment.previousCertification || "",
+      hasNetacadAccount: enrollment.hasNetacadAccount || false,
+      netacadId: enrollment.netacadId || "",
+      preferredNetwork: enrollment.preferredNetwork || "",
+      numberForData: enrollment.numberForData || "",
+      referralCode: enrollment.referralCode || "",
       passport: enrollment.passport
         ? {
             url: `${process.env.STRAPI_URL}${enrollment.passport.url}`,
