@@ -46,19 +46,13 @@
 export default ({ env }) => ({
   email: {
     config: {
-      provider: "nodemailer",
+      provider: "sendgrid",
       providerOptions: {
-        host: env("SMTP_HOST", "smtp.gmail.com"),
-        port: env.int("SMTP_PORT", 587),
-        secure: false,
-        auth: {
-          user: env("SMTP_USERNAME", ""),
-          pass: env("SMTP_PASSWORD", ""),
-        },
+        apiKey: env("SENDGRID_API_KEY"),
       },
       settings: {
-        defaultFrom: env("SMTP_USERNAME", "noreply@skillzncert.com"),
-        defaultReplyTo: env("SMTP_USERNAME", "noreply@skillzncert.com"),
+        defaultFrom: "noreply@skillzncert.com",
+        defaultReplyTo: "noreply@skillzncert.com",
       },
     },
   },
