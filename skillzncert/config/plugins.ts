@@ -46,13 +46,19 @@
 export default ({ env }) => ({
   email: {
     config: {
-      provider: "sendgrid",
+      provider: "nodemailer",
       providerOptions: {
-        apiKey: env("SENDGRID_API_KEY"),
+        host: env("SMTP_HOST", "smtp.gmail.com"),
+        port: env.int("SMTP_PORT", 465), // Use 465 for SSL, 587 for TLS
+        secure: true, // Set to true if using port 465
+        auth: {
+          user: env("SMTP_USERNAME"), // Your Gmail address
+          pass: env("SMTP_PASSWORD"), // Your Gmail App Password (not regular password)
+        },
       },
       settings: {
-        defaultFrom: "noreply@skillzncert.com",
-        defaultReplyTo: "noreply@skillzncert.com",
+        defaultFrom: env("SMTP_USERNAME"), // Your Gmail address
+        defaultReplyTo: env("SMTP_USERNAME"),
       },
     },
   },
