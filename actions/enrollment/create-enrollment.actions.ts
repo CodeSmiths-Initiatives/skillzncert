@@ -34,6 +34,7 @@ export async function submitEnrollmentAction(formData: FormData) {
         phoneNumber: formData.get("data[phoneNumber]") as string,
         country: formData.get("data[country]") as string,
         yearOfStudy: formData.get("data[yearOfStudy]") as string,
+        referralCode: formData.get("data[referralCode]") as string,
       }
     );
   }

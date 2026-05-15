@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/toast/ToastContext";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -25,6 +26,7 @@ export default function Onboarding() {
 	const [passport, setPassport] = useState<File | null>(null);
 	const [schoolId, setSchoolId] = useState<File | null>(null);
 	const [hasNetAcad, setHasNetAcad] = useState<boolean | null>(null);
+	const [showReferralModal, setShowReferralModal] = useState(false);
 
 	const [form, setForm] = useState({
 		firstName: "",
@@ -41,6 +43,7 @@ export default function Onboarding() {
 		netacadId: "",
 		preferredNetwork: "",
 		numberForData: "",
+		referralCode: "",
 	});
 
 	const [errors, setErrors] = useState({
@@ -152,6 +155,50 @@ export default function Onboarding() {
 		}
 	};
 
+	const performSubmission = () => {
+		if (!passport || !schoolId) {
+			showToast({
+				type: "error",
+				title: "Documents required",
+				description: "Please upload passport and school ID.",
+			});
+			return;
+		}
+
+		startTransition(async () => {
+			// Create FormData fresh inside the async function to avoid React serialization issues
+			const data = new FormData();
+
+			// Append form data fields
+			Object.entries(form).forEach(([k, v]) =>
+				data.append(`data[${k}]`, String(v))
+			);
+
+			// Append file uploads (must match Strapi media field names exactly)
+			data.append("files.passport", passport);
+			data.append("files.schoolIdCard", schoolId);
+
+			const res = await submitEnrollmentAction(data);
+
+			if (!res.success) {
+				showToast({
+					type: "error",
+					title: "Submission failed",
+					description: res.message,
+				});
+				return;
+			}
+
+			showToast({
+				type: "success",
+				title: "Enrollment submitted",
+				description: "Your enrollment has been successfully saved.",
+			});
+
+			router.replace("/payment");
+		});
+	};
+
 	const validateForm = (): boolean => {
 		const firstNameError = validateName(form.firstName, "First name");
 		const lastNameError = validateName(form.lastName, "Last name");
@@ -191,7 +238,15 @@ export default function Onboarding() {
 		}
 
 		// Check validation errors
-		if (firstNameError || lastNameError || phoneError || numberForDataError || yearError || stateError || countryError) {
+		if (
+			firstNameError ||
+			lastNameError ||
+			phoneError ||
+			numberForDataError ||
+			yearError ||
+			stateError ||
+			countryError
+		) {
 			showToast({
 				type: "error",
 				title: "Validation failed",
@@ -240,38 +295,14 @@ export default function Onboarding() {
 			return;
 		}
 
-		startTransition(async () => {
-			// Create FormData fresh inside the async function to avoid React serialization issues
-			const data = new FormData();
+		// Check if referral code is empty
+		if (!form.referralCode.trim()) {
+			setShowReferralModal(true);
+			return;
+		}
 
-			// Append form data fields
-			Object.entries(form).forEach(([k, v]) =>
-				data.append(`data[${k}]`, String(v))
-			);
-
-			// Append file uploads (must match Strapi media field names exactly)
-			data.append("files.passport", passport);
-			data.append("files.schoolIdCard", schoolId);
-
-			const res = await submitEnrollmentAction(data);
-
-			if (!res.success) {
-				showToast({
-					type: "error",
-					title: "Submission failed",
-					description: res.message,
-				});
-				return;
-			}
-
-			showToast({
-				type: "success",
-				title: "Enrollment submitted",
-				description: "Your enrollment has been successfully saved.",
-			});
-
-			router.replace("/payment");
-		});
+		// Proceed with submission
+		performSubmission();
 	};
 
 	return (
@@ -585,6 +616,13 @@ export default function Onboarding() {
 							/>
 						</TwoCol>
 
+						<Input
+							name="referralCode"
+							placeholder="Referral Code (Optional)"
+							value={form.referralCode}
+							onChange={handleChange}
+						/>
+
 						<TwoCol>
 							<select
 								name="preferredNetwork"
@@ -675,6 +713,37 @@ export default function Onboarding() {
 					</form>
 				</div>
 			</div>
+
+			{/* Referral Code Confirmation Modal */}
+			<Modal
+				isOpen={showReferralModal}
+				onClose={() => setShowReferralModal(false)}
+				title="Confirm Submission"
+				size="md"
+			>
+				<div className="space-y-4">
+					<p className="text-gray-700">
+						Are you sure you want to submit without adding a referral code?
+					</p>
+					<div className="flex gap-3 justify-end">
+						<Button
+							variant="outline"
+							onClick={() => setShowReferralModal(false)}
+						>
+							Close
+						</Button>
+						<Button
+							onClick={() => {
+								setShowReferralModal(false);
+								performSubmission();
+							}}
+							className="bg-[#51A8B1] hover:bg-teal-600"
+						>
+							Yes, Continue
+						</Button>
+					</div>
+				</div>
+			</Modal>
 		</div>
 	);
 }

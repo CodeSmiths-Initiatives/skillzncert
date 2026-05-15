@@ -154,6 +154,69 @@ export function PrintableEnrolleeView({ enrollee }: PrintableEnrolleeViewProps) 
               {enrollee.yearOfStudy || "N/A"}
             </span>
           </div>
+
+          <div className="print-row flex justify-between py-3 border-b border-gray-200">
+            <span className="text-gray-600 font-medium">University</span>
+            <span className="text-gray-900 font-semibold">
+              {enrollee.universityAttending || "N/A"}
+            </span>
+          </div>
+
+          <div className="print-row flex justify-between py-3 border-b border-gray-200">
+            <span className="text-gray-600 font-medium">Previous Certification</span>
+            <span className="text-gray-900 font-semibold">
+              {enrollee.previousCertification || "N/A"}
+            </span>
+          </div>
+
+          <div className="print-row flex justify-between py-3 border-b border-gray-200">
+            <span className="text-gray-600 font-medium">NetAcad Account</span>
+            <span className="text-gray-900 font-semibold">
+              {enrollee.hasNetacadAccount ? "Yes" : "No"}
+            </span>
+          </div>
+
+          {enrollee.hasNetacadAccount && (
+            <div className="print-row flex justify-between py-3">
+              <span className="text-gray-600 font-medium">NetAcad ID/Email</span>
+              <span className="text-gray-900 font-semibold">
+                {enrollee.netacadId || "N/A"}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Additional Details Section */}
+      <div className="print-section mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="p-2 bg-indigo-100 rounded-lg">
+            <FileText className="h-5 w-5 text-indigo-600" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900">Additional Details</h2>
+        </div>
+
+        <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-6 space-y-4">
+          <div className="print-row flex justify-between py-3 border-b border-gray-200">
+            <span className="text-gray-600 font-medium">Referral Code</span>
+            <span className="text-gray-900 font-semibold">
+              {enrollee.referralCode || "N/A"}
+            </span>
+          </div>
+
+          <div className="print-row flex justify-between py-3 border-b border-gray-200">
+            <span className="text-gray-600 font-medium">Preferred Network</span>
+            <span className="text-gray-900 font-semibold">
+              {enrollee.preferredNetwork || "N/A"}
+            </span>
+          </div>
+
+          <div className="print-row flex justify-between py-3">
+            <span className="text-gray-600 font-medium">Number for FREE DATA</span>
+            <span className="text-gray-900 font-semibold">
+              {enrollee.numberForData || "N/A"}
+            </span>
+          </div>
         </div>
       </div>
 
