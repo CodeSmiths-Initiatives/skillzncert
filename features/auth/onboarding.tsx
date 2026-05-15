@@ -415,7 +415,7 @@ export default function Onboarding() {
 			<div className="flex items-center justify-center px-6 py-8">
 				<div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8">
 					<h2 className="text-2xl font-bold text-gray-900 mb-1">
-						Personal & Academic Details
+ 						Personal & Academic Details
 					</h2>
 					<p className="text-sm text-gray-500 mb-6">
 						Fields marked * are required
