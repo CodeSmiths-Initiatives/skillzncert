@@ -708,7 +708,7 @@ export default function Onboarding() {
 							disabled={isPending}
 							className="w-full bg-[#51A8B1] py-5 text-base font-semibold hover:bg-teal-600"
 						>
-							{isPending ? "Submitting..." : "Continue to Payment"}
+							{isPending ? "Submitting..." : "Save"}
 						</Button>
 					</form>
 				</div>
