@@ -9,10 +9,8 @@ import {
   UserX,
   Search,
   Eye,
-  Printer,
   Mail,
   Phone,
-  Calendar,
   Loader2,
   MoreVertical,
   Layers,
@@ -21,64 +19,142 @@ import {
   ChevronRight,
   Download,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getAllEnrollments } from "@/actions/enrollment/get-all-enrollments.actions";
-import type { EnrolleeData } from "@/lib/services/enrollment.service";
+import type {
+  EnrolleeData,
+  EnrollmentDashboardCounts,
+  EnrollmentPagination,
+} from "@/lib/services/enrollment.service";
 import { EnrolleeDetailsModal } from "./EnrolleeDetailsModal";
+
+const DEFAULT_PAGE_SIZE = 10;
+
+type PaymentFilter = "all" | "paid" | "pending";
+
+const emptyPagination: EnrollmentPagination = {
+  page: 1,
+  pageSize: DEFAULT_PAGE_SIZE,
+  pageCount: 0,
+  total: 0,
+};
+
+const emptyCounts: EnrollmentDashboardCounts = {
+  total: 0,
+  completed: 0,
+  inProgress: 0,
+  activeBatches: 0,
+};
 
 export function EnrolleesSection() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
   const [batchFilter, setBatchFilter] = useState<string>("all");
-  const [paymentFilter, setPaymentFilter] = useState<string>("all");
+  const [paymentFilter, setPaymentFilter] = useState<PaymentFilter>("all");
+
   const [enrollees, setEnrollees] = useState<EnrolleeData[]>([]);
+  const [pagination, setPagination] =
+    useState<EnrollmentPagination>(emptyPagination);
+  const [counts, setCounts] = useState<EnrollmentDashboardCounts>(emptyCounts);
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedEnrollee, setSelectedEnrollee] = useState<EnrolleeData | null>(null);
+
+  const [selectedEnrollee, setSelectedEnrollee] = useState<EnrolleeData | null>(
+    null,
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
-  const hasFetched = useRef(false);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (hasFetched.current) return;
-    hasFetched.current = true;
+    const timeout = window.setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm.trim());
+    }, 400);
 
-    const fetchEnrollees = async () => {
+    return () => window.clearTimeout(timeout);
+  }, [searchTerm]);
+
+  const fetchEnrollees = useCallback(
+    async ({
+      page = 1,
+      pageSize = DEFAULT_PAGE_SIZE,
+      showMainLoader = false,
+      showRefreshLoader = false,
+    }: {
+      page?: number;
+      pageSize?: number;
+      showMainLoader?: boolean;
+      showRefreshLoader?: boolean;
+    } = {}) => {
       try {
-        setLoading(true);
-        const result = await getAllEnrollments();
-        if (result.success) {
-          setEnrollees(result.data);
+        if (showMainLoader) setLoading(true);
+        if (showRefreshLoader) setRefreshing(true);
+
+        const result = await getAllEnrollments({
+          page,
+          pageSize,
+          search: debouncedSearchTerm,
+          batch: batchFilter,
+          paymentStatus: paymentFilter,
+        });
+
+        if (!result.success) {
+          console.warn(result.message);
+          setEnrollees([]);
+          setPagination(emptyPagination);
+          setCounts(emptyCounts);
+          return;
         }
+
+        setEnrollees(result.data);
+        setPagination(result.pagination);
+        setCounts(result.counts);
       } catch (error) {
         console.error("Error fetching enrollees:", error);
+        setEnrollees([]);
+        setPagination(emptyPagination);
+        setCounts(emptyCounts);
       } finally {
-        setLoading(false);
+        if (showMainLoader) setLoading(false);
+        if (showRefreshLoader) setRefreshing(false);
       }
-    };
+    },
+    [batchFilter, debouncedSearchTerm, paymentFilter],
+  );
 
-    fetchEnrollees();
-  }, []);
+  useEffect(() => {
+    fetchEnrollees({
+      page: 1,
+      pageSize: DEFAULT_PAGE_SIZE,
+      showMainLoader: true,
+    });
+  }, [fetchEnrollees]);
 
   const handleRefresh = async () => {
-    setRefreshing(true);
-    try {
-      const result = await getAllEnrollments();
-      if (result.success) {
-        setEnrollees(result.data);
-        setCurrentPage(1); // Reset to first page on refresh
-      }
-    } catch (error) {
-      console.error("Error refreshing enrollees:", error);
-    } finally {
-      setRefreshing(false);
+    await fetchEnrollees({
+      page: pagination.page || 1,
+      pageSize: pagination.pageSize || DEFAULT_PAGE_SIZE,
+      showRefreshLoader: true,
+    });
+  };
+
+  const handlePageChange = async (page: number) => {
+    if (page < 1 || page > pagination.pageCount || page === pagination.page) {
+      return;
     }
+
+    await fetchEnrollees({
+      page,
+      pageSize: pagination.pageSize || DEFAULT_PAGE_SIZE,
+    });
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleExportToExcel = () => {
-    // Convert enrollees data to CSV format
     const headers = [
       "First Name",
       "Last Name",
@@ -96,44 +172,59 @@ export function EnrolleesSection() {
 
     const csvRows = [
       headers.join(","),
-      ...filteredEnrollees.map((enrollee) => [
-        `"${enrollee.firstName}"`,
-        `"${enrollee.lastName}"`,
-        `"${enrollee.email || enrollee.user?.email || "N/A"}"`,
-        `"${enrollee.phoneNumber}"`,
-        `"${enrollee.state || "N/A"}"`,
-        `"${enrollee.country || "N/A"}"`,
-        `"${enrollee.universityAttending || "N/A"}"`,
-        `"${enrollee.referralCode || "N/A"}"`,
-        `"${enrollee.batchName || "Not Assigned"}"`,
-        `"${enrollee.isPaymentDone ? "Paid" : "Pending"}"`,
-        `"${new Date(enrollee.createdAt).toLocaleDateString()}"`,
-        `"${enrollee.yearOfStudy || "N/A"}"`,
-      ].join(",")),
+      ...enrollees.map((enrollee) =>
+        [
+          `"${enrollee.firstName}"`,
+          `"${enrollee.lastName}"`,
+          `"${enrollee.email || enrollee.user?.email || "N/A"}"`,
+          `"${enrollee.phoneNumber}"`,
+          `"${enrollee.state || "N/A"}"`,
+          `"${enrollee.country || "N/A"}"`,
+          `"${enrollee.universityAttending || "N/A"}"`,
+          `"${enrollee.referralCode || "N/A"}"`,
+          `"${enrollee.batchName || "Not Assigned"}"`,
+          `"${enrollee.isPaymentDone ? "Paid" : "Pending"}"`,
+          `"${new Date(enrollee.createdAt).toLocaleDateString()}"`,
+          `"${enrollee.yearOfStudy || "N/A"}"`,
+        ].join(","),
+      ),
     ];
 
     const csvContent = csvRows.join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    
+
     link.setAttribute("href", url);
-    link.setAttribute("download", `enrollees_${new Date().toISOString().split("T")[0]}.csv`);
+    link.setAttribute(
+      "download",
+      `enrollees_page_${pagination.page}_${
+        new Date().toISOString().split("T")[0]
+      }.csv`,
+    );
+
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setOpenDropdown(null);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
+
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
@@ -143,133 +234,95 @@ export function EnrolleesSection() {
     setOpenDropdown(null);
   };
 
-  const handlePrintEnrollee = (enrollee: EnrolleeData) => {
-    setSelectedEnrollee(enrollee);
-    setIsModalOpen(true);
-    setOpenDropdown(null);
-    // Print will be triggered from the modal
-    setTimeout(() => {
-      window.print();
-    }, 500);
-  };
-
   const toggleDropdown = (enrolleeId: number) => {
-    setOpenDropdown(openDropdown === enrolleeId ? null : enrolleeId);
-  };
-
-  // Get unique batches from enrollees
-  const uniqueBatches = Array.from(
-    new Set(
-      enrollees
-        .map((e) => e.batchName)
-        .filter((batch): batch is string => !!batch)
-    )
-  ).sort((a, b) => {
-    // Sort by batch number
-    const numA = parseInt(a.replace(/\D/g, "")) || 0;
-    const numB = parseInt(b.replace(/\D/g, "")) || 0;
-    return numA - numB;
-  });
-
-  const filteredEnrollees = enrollees.filter((enrollee) => {
-    // Text search filter
-    const matchesSearch =
-      `${enrollee.firstName} ${enrollee.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      enrollee.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      enrollee.phoneNumber.includes(searchTerm);
-
-    // Batch filter
-    const matchesBatch =
-      batchFilter === "all" ||
-      (batchFilter === "unassigned" && !enrollee.batchName) ||
-      enrollee.batchName === batchFilter;
-
-    // Payment filter
-    const matchesPayment =
-      paymentFilter === "all" ||
-      (paymentFilter === "paid" && enrollee.isPaymentDone) ||
-      (paymentFilter === "pending" && !enrollee.isPaymentDone);
-
-    return matchesSearch && matchesBatch && matchesPayment;
-  }).sort((a, b) => {
-    // Sort by enrollment date descending (newest first)
-    const dateA = new Date(a.createdAt).getTime();
-    const dateB = new Date(b.createdAt).getTime();
-    return dateB - dateA;
-  });
-
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredEnrollees.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedEnrollees = filteredEnrollees.slice(startIndex, endIndex);
-
-  // Reset to page 1 when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, batchFilter, paymentFilter]);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setOpenDropdown((current) => (current === enrolleeId ? null : enrolleeId));
   };
 
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
+    const totalPages = pagination.pageCount;
+    const currentPage = pagination.page;
     const maxVisible = 5;
-    
+
     if (totalPages <= maxVisible) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
+      for (let page = 1; page <= totalPages; page++) {
+        pages.push(page);
       }
-    } else {
-      if (currentPage <= 3) {
-        for (let i = 1; i <= 4; i++) pages.push(i);
-        pages.push('...');
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1);
-        pages.push('...');
-        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
-      } else {
-        pages.push(1);
-        pages.push('...');
-        pages.push(currentPage - 1);
-        pages.push(currentPage);
-        pages.push(currentPage + 1);
-        pages.push('...');
-        pages.push(totalPages);
-      }
+
+      return pages;
     }
+
+    if (currentPage <= 3) {
+      for (let page = 1; page <= 4; page++) {
+        pages.push(page);
+      }
+
+      pages.push("...");
+      pages.push(totalPages);
+      return pages;
+    }
+
+    if (currentPage >= totalPages - 2) {
+      pages.push(1);
+      pages.push("...");
+
+      for (let page = totalPages - 3; page <= totalPages; page++) {
+        pages.push(page);
+      }
+
+      return pages;
+    }
+
+    pages.push(1);
+    pages.push("...");
+    pages.push(currentPage - 1);
+    pages.push(currentPage);
+    pages.push(currentPage + 1);
+    pages.push("...");
+    pages.push(totalPages);
+
     return pages;
   };
 
   const stats = [
     {
       title: "Total Enrollees",
-      value: enrollees.length,
+      value: counts.total,
       icon: Users,
       color: "blue",
     },
     {
       title: "Payment Done",
-      value: enrollees.filter((e) => e.isPaymentDone).length,
+      value: counts.completed,
       icon: UserCheck,
       color: "green",
     },
     {
       title: "Payment Pending",
-      value: enrollees.filter((e) => !e.isPaymentDone).length,
+      value: counts.inProgress,
       icon: UserX,
       color: "red",
     },
     {
       title: "Active Batches",
-      value: uniqueBatches.length,
+      value: counts.activeBatches,
       icon: Layers,
       color: "purple",
     },
   ];
+
+  const startEntry =
+    pagination.total === 0
+      ? 0
+      : (pagination.page - 1) * pagination.pageSize + 1;
+
+  const endEntry = Math.min(
+    pagination.page * pagination.pageSize,
+    pagination.total,
+  );
+
+  const hasActiveFilters =
+    searchTerm || batchFilter !== "all" || paymentFilter !== "all";
 
   if (loading) {
     return (
@@ -278,6 +331,7 @@ export function EnrolleesSection() {
           <h1 className="text-3xl font-bold mb-1">Enrollees Management</h1>
           <p className="text-white/90">View and manage all enrolled students</p>
         </div>
+
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
         </div>
@@ -293,9 +347,9 @@ export function EnrolleesSection() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
+        {stats.map((stat) => (
           <Card
-            key={index}
+            key={stat.title}
             className="p-6 bg-white shadow-sm border-gray-100 hover:shadow-md transition-shadow"
           >
             <div className="flex items-center justify-between">
@@ -303,18 +357,29 @@ export function EnrolleesSection() {
                 <p className="text-sm text-gray-600 mb-1">{stat.title}</p>
                 <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
               </div>
-              <div className={`p-4 rounded-full ${
-                stat.color === "blue" ? "bg-blue-100" : 
-                stat.color === "green" ? "bg-green-100" : 
-                stat.color === "red" ? "bg-red-100" : 
-                "bg-purple-100"
-              }`}>
-                <stat.icon className={`h-8 w-8 ${
-                  stat.color === "blue" ? "text-blue-600" : 
-                  stat.color === "green" ? "text-green-600" : 
-                  stat.color === "red" ? "text-red-600" : 
-                  "text-purple-600"
-                }`} />
+
+              <div
+                className={`p-4 rounded-full ${
+                  stat.color === "blue"
+                    ? "bg-blue-100"
+                    : stat.color === "green"
+                      ? "bg-green-100"
+                      : stat.color === "red"
+                        ? "bg-red-100"
+                        : "bg-purple-100"
+                }`}
+              >
+                <stat.icon
+                  className={`h-8 w-8 ${
+                    stat.color === "blue"
+                      ? "text-blue-600"
+                      : stat.color === "green"
+                        ? "text-green-600"
+                        : stat.color === "red"
+                          ? "text-red-600"
+                          : "text-purple-600"
+                  }`}
+                />
               </div>
             </div>
           </Card>
@@ -324,38 +389,34 @@ export function EnrolleesSection() {
       <Card className="p-6 bg-white shadow-sm border-gray-100">
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex-1 min-w-[200px] max-w-md relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+
             <Input
               type="text"
-              placeholder="Search by name or email..."
+              placeholder="Search by name, email, or phone..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(event) => setSearchTerm(event.target.value)}
               className="pl-10"
             />
           </div>
 
-          {/* Batch Filter */}
           <div className="min-w-[160px]">
             <select
               value={batchFilter}
-              onChange={(e) => setBatchFilter(e.target.value)}
+              onChange={(event) => setBatchFilter(event.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700"
             >
               <option value="all">All Batches</option>
               <option value="unassigned">Unassigned</option>
-              {uniqueBatches.map((batch) => (
-                <option key={batch} value={batch}>
-                  {batch}
-                </option>
-              ))}
             </select>
           </div>
 
-          {/* Payment Status Filter */}
           <div className="min-w-[160px]">
             <select
               value={paymentFilter}
-              onChange={(e) => setPaymentFilter(e.target.value)}
+              onChange={(event) =>
+                setPaymentFilter(event.target.value as PaymentFilter)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700"
             >
               <option value="all">All Payments</option>
@@ -364,8 +425,7 @@ export function EnrolleesSection() {
             </select>
           </div>
 
-          {/* Clear Filters Button */}
-          {(searchTerm || batchFilter !== "all" || paymentFilter !== "all") && (
+          {hasActiveFilters && (
             <Button
               variant="outline"
               size="sm"
@@ -380,82 +440,73 @@ export function EnrolleesSection() {
             </Button>
           )}
         </div>
-
-        {/* Active Filters Display */}
-        {(batchFilter !== "all" || paymentFilter !== "all") && (
-          <div className="flex items-center gap-2 mt-4 flex-wrap">
-            <span className="text-sm text-gray-600 font-medium">Active Filters:</span>
-            {batchFilter !== "all" && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium flex items-center gap-1">
-                {batchFilter === "unassigned" ? "Unassigned Batch" : batchFilter}
-                <button
-                  onClick={() => setBatchFilter("all")}
-                  className="ml-1 hover:text-blue-900"
-                >
-                  ×
-                </button>
-              </span>
-            )}
-            {paymentFilter !== "all" && (
-              <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${
-                paymentFilter === "paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-              }`}>
-                {paymentFilter === "paid" ? "Paid" : "Pending"}
-                <button
-                  onClick={() => setPaymentFilter("all")}
-                  className={paymentFilter === "paid" ? "ml-1 hover:text-green-900" : "ml-1 hover:text-red-900"}
-                >
-                  ×
-                </button>
-              </span>
-            )}
-          </div>
-        )}
       </Card>
 
       <Card className="p-6 bg-white shadow-sm border-gray-100">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between gap-4 mb-4">
           <h2 className="text-lg font-semibold text-gray-900">
             Enrollees List
             <span className="ml-2 text-sm font-normal text-gray-500">
-              ({filteredEnrollees.length} {filteredEnrollees.length === 1 ? "result" : "results"})
+              ({pagination.total}{" "}
+              {pagination.total === 1 ? "record" : "records"})
             </span>
           </h2>
+
           <div className="flex items-center gap-2">
             <button
               onClick={handleExportToExcel}
-              disabled={filteredEnrollees.length === 0}
+              disabled={enrollees.length === 0}
               className="p-2 hover:bg-green-50 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Export to Excel"
+              title="Export current page"
             >
               <Download className="h-5 w-5 text-green-600" />
             </button>
+
             <button
               onClick={handleRefresh}
               disabled={refreshing}
               className="p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200 disabled:opacity-50"
               title="Refresh data"
             >
-              <RefreshCw className={`h-5 w-5 text-blue-600 ${refreshing ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`h-5 w-5 text-blue-600 ${
+                  refreshing ? "animate-spin" : ""
+                }`}
+              />
             </button>
           </div>
         </div>
+
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Student</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Contact</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Location</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Batch</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Enrolled Date</th>
-                {/* <th className="text-left py-4 px-4 font-semibold text-gray-700">Education Year</th> */}
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Payment Status</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
+                <th className="text-left py-4 px-4 font-semibold text-gray-700">
+                  Student
+                </th>
+                <th className="text-left py-4 px-4 font-semibold text-gray-700">
+                  Contact
+                </th>
+                <th className="text-left py-4 px-4 font-semibold text-gray-700">
+                  Location
+                </th>
+                <th className="text-left py-4 px-4 font-semibold text-gray-700">
+                  Batch
+                </th>
+                <th className="text-left py-4 px-4 font-semibold text-gray-700">
+                  Enrolled Date
+                </th>
+                <th className="text-left py-4 px-4 font-semibold text-gray-700">
+                  Payment Status
+                </th>
+                <th className="text-left py-4 px-4 font-semibold text-gray-700">
+                  Actions
+                </th>
               </tr>
             </thead>
+
             <tbody>
-              {paginatedEnrollees.map((enrollee) => (
+              {enrollees.map((enrollee) => (
                 <tr
                   key={enrollee.id}
                   className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
@@ -463,31 +514,42 @@ export function EnrolleesSection() {
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
-                        {enrollee.firstName.charAt(0)}{enrollee.lastName.charAt(0)}
+                        {enrollee.firstName.charAt(0)}
+                        {enrollee.lastName.charAt(0)}
                       </div>
+
                       <p className="font-semibold text-gray-900">
                         {enrollee.firstName} {enrollee.lastName}
                       </p>
                     </div>
                   </td>
+
                   <td className="py-4 px-4">
                     <div className="space-y-1">
                       <p className="text-sm text-gray-600 flex items-center gap-2">
                         <Mail className="h-3 w-3" />
                         {enrollee.email || enrollee.user?.email || "N/A"}
                       </p>
+
                       <p className="text-sm text-gray-600 flex items-center gap-2">
                         <Phone className="h-3 w-3" />
                         {enrollee.phoneNumber}
                       </p>
                     </div>
                   </td>
+
                   <td className="py-4 px-4">
                     <div className="space-y-1">
-                      <p className="text-sm text-gray-700 font-medium">{enrollee.state || "N/A"}</p>
-                      <p className="text-xs text-gray-500">{enrollee.country || "N/A"}</p>
+                      <p className="text-sm text-gray-700 font-medium">
+                        {enrollee.state || "N/A"}
+                      </p>
+
+                      <p className="text-xs text-gray-500">
+                        {enrollee.country || "N/A"}
+                      </p>
                     </div>
                   </td>
+
                   <td className="py-4 px-4">
                     {enrollee.batchName ? (
                       <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
@@ -499,23 +561,30 @@ export function EnrolleesSection() {
                       </span>
                     )}
                   </td>
+
                   <td className="py-4 px-4">
                     <p className="text-gray-700">
                       {new Date(enrollee.createdAt).toLocaleDateString()}
                     </p>
                   </td>
-                  {/* <td className="py-4 px-4">
-                    <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                      {enrollee.yearOfStudy || "N/A"}
-                    </span>
-                  </td> */}
+
                   <td className="py-4 px-4">
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${enrollee.isPaymentDone ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        enrollee.isPaymentDone
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
                       {enrollee.isPaymentDone ? "Paid" : "Pending"}
                     </span>
                   </td>
+
                   <td className="py-4 px-4">
-                    <div className="relative" ref={openDropdown === enrollee.id ? dropdownRef : null}>
+                    <div
+                      className="relative"
+                      ref={openDropdown === enrollee.id ? dropdownRef : null}
+                    >
                       <Button
                         variant="ghost"
                         size="sm"
@@ -525,7 +594,6 @@ export function EnrolleesSection() {
                         <MoreVertical className="h-4 w-4" />
                       </Button>
 
-                      {/* Dropdown Menu */}
                       {openDropdown === enrollee.id && (
                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10 animate-fadeIn">
                           <button
@@ -535,13 +603,6 @@ export function EnrolleesSection() {
                             <Eye className="h-4 w-4 text-blue-600" />
                             View Details
                           </button>
-                          {/* <button
-                            onClick={() => handlePrintEnrollee(enrollee)}
-                            className="w-full text-left px-4 py-2 hover:bg-green-50 flex items-center gap-2 text-gray-700 transition-colors"
-                          >
-                            <Printer className="h-4 w-4 text-green-600" />
-                            Print Details
-                          </button> */}
                         </div>
                       )}
                     </div>
@@ -550,7 +611,8 @@ export function EnrolleesSection() {
               ))}
             </tbody>
           </table>
-          {filteredEnrollees.length === 0 && (
+
+          {enrollees.length === 0 && (
             <div className="text-center py-12">
               <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-600">No enrollees found</p>
@@ -558,51 +620,53 @@ export function EnrolleesSection() {
           )}
         </div>
 
-        {/* Pagination */}
-        {filteredEnrollees.length > 0 && (
+        {pagination.total > 0 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
             <div className="text-sm text-gray-600">
-              Showing {startIndex + 1} to {Math.min(endIndex, filteredEnrollees.length)} of {filteredEnrollees.length} entries
+              Showing {startEntry} to {endEntry} of {pagination.total} entries
             </div>
-            
+
             <div className="flex items-center gap-2">
               <Button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
+                onClick={() => handlePageChange(pagination.page - 1)}
+                disabled={pagination.page <= 1}
                 variant="outline"
                 size="sm"
                 className="h-9 w-9 p-0"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              
+
               <div className="flex gap-1">
-                {getPageNumbers().map((page, index) => (
-                  page === '...' ? (
-                    <span key={`ellipsis-${index}`} className="px-3 py-1.5 text-gray-400">
+                {getPageNumbers().map((page, index) =>
+                  page === "..." ? (
+                    <span
+                      key={`ellipsis-${index}`}
+                      className="px-3 py-1.5 text-gray-400"
+                    >
                       ...
                     </span>
                   ) : (
                     <Button
                       key={page}
                       onClick={() => handlePageChange(page as number)}
-                      variant={currentPage === page ? "default" : "outline"}
+                      variant={pagination.page === page ? "default" : "outline"}
                       size="sm"
                       className={`h-9 w-9 p-0 ${
-                        currentPage === page
+                        pagination.page === page
                           ? "bg-blue-600 text-white hover:bg-blue-700"
                           : "hover:bg-blue-50"
                       }`}
                     >
                       {page}
                     </Button>
-                  )
-                ))}
+                  ),
+                )}
               </div>
-              
+
               <Button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(pagination.page + 1)}
+                disabled={pagination.page >= pagination.pageCount}
                 variant="outline"
                 size="sm"
                 className="h-9 w-9 p-0"
@@ -614,7 +678,6 @@ export function EnrolleesSection() {
         )}
       </Card>
 
-      {/* Enrollee Details Modal */}
       <EnrolleeDetailsModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

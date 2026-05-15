@@ -100,6 +100,142 @@ interface EnrollmentCreateData {
   referralCode?: string;
 }
 
+export interface EnrollmentPagination {
+  page: number;
+  pageSize: number;
+  pageCount: number;
+  total: number;
+}
+
+export interface EnrollmentDashboardCounts {
+  total: number;
+  completed: number;
+  inProgress: number;
+  activeBatches: number;
+}
+
+export interface PaginatedEnrollmentsResponse {
+  data: EnrolleeData[];
+  pagination: EnrollmentPagination;
+  counts: EnrollmentDashboardCounts;
+}
+
+export interface FetchEnrollmentsParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  batch?: string;
+  paymentStatus?: "all" | "paid" | "pending";
+}
+
+const DEFAULT_PAGE = 1;
+const DEFAULT_PAGE_SIZE = 10;
+const STUDENTS_PER_BATCH = 20;
+
+const emptyPagination: EnrollmentPagination = {
+  page: DEFAULT_PAGE,
+  pageSize: DEFAULT_PAGE_SIZE,
+  pageCount: 0,
+  total: 0,
+};
+
+const emptyCounts: EnrollmentDashboardCounts = {
+  total: 0,
+  completed: 0,
+  inProgress: 0,
+  activeBatches: 0,
+};
+
+function mapEnrollment(enrollment: any): EnrolleeData {
+  return {
+    id: enrollment.id,
+    documentId: enrollment.documentId,
+    firstName: enrollment.firstName || "",
+    lastName: enrollment.lastName || "",
+    phoneNumber: enrollment.phoneNumber || "",
+    email: enrollment.user?.email || "",
+    isPaymentDone: Boolean(enrollment.isPaymentDone),
+    batchName: enrollment.batchName || undefined,
+    selectedPlan: enrollment.selectedPlan || undefined,
+    planName: enrollment.planName || undefined,
+    planAmount: enrollment.planAmount || undefined,
+    planDiscount: enrollment.planDiscount || undefined,
+    createdAt: enrollment.createdAt,
+    updatedAt: enrollment.updatedAt,
+    state: enrollment.state || "",
+    country: enrollment.country || "",
+    yearOfStudy: String(enrollment.yearOfStudy || ""),
+    universityAttending: enrollment.universityAttending || "",
+    previousCertification: enrollment.previousCertification || "",
+    hasNetacadAccount: Boolean(enrollment.hasNetacadAccount),
+    netacadId: enrollment.netacadId || "",
+    preferredNetwork: enrollment.preferredNetwork || "",
+    numberForData: enrollment.numberForData || "",
+    referralCode: enrollment.referralCode || "",
+    passport: enrollment.passport
+      ? {
+          url: enrollment.passport.url,
+          name: enrollment.passport.name,
+        }
+      : undefined,
+    schoolIdCard: enrollment.schoolIdCard
+      ? {
+          url: enrollment.schoolIdCard.url,
+          name: enrollment.schoolIdCard.name,
+        }
+      : undefined,
+    user: enrollment.user
+      ? {
+          id: enrollment.user.id,
+          username: enrollment.user.username,
+          email: enrollment.user.email,
+        }
+      : undefined,
+  };
+}
+
+function buildEnrollmentQuery(params: FetchEnrollmentsParams): string {
+  const {
+    page = DEFAULT_PAGE,
+    pageSize = DEFAULT_PAGE_SIZE,
+    search = "",
+    batch = "all",
+    paymentStatus = "all",
+  } = params;
+
+  const query = new URLSearchParams();
+
+  query.set("populate", "*");
+  query.set("sort", "createdAt:desc");
+  query.set("pagination[page]", String(page));
+  query.set("pagination[pageSize]", String(pageSize));
+
+  if (paymentStatus === "paid") {
+    query.set("filters[isPaymentDone][$eq]", "true");
+  }
+
+  if (paymentStatus === "pending") {
+    query.set("filters[isPaymentDone][$eq]", "false");
+  }
+
+  if (batch === "unassigned") {
+    query.set("filters[batchName][$null]", "true");
+  } else if (batch !== "all") {
+    query.set("filters[batchName][$eq]", batch);
+  }
+
+  const cleanedSearch = search.trim();
+
+  if (cleanedSearch) {
+    query.set("filters[$or][0][firstName][$containsi]", cleanedSearch);
+    query.set("filters[$or][1][lastName][$containsi]", cleanedSearch);
+    query.set("filters[$or][2][phoneNumber][$containsi]", cleanedSearch);
+    query.set("filters[$or][3][user][email][$containsi]", cleanedSearch);
+  }
+
+  return query.toString();
+}
+
 export async function fetchEnrollmentByUser(
   userId: number,
   token: string,
@@ -210,7 +346,7 @@ export async function submitEnrollment(formData: FormData, token: string) {
       numberForData: formData.get("data[numberForData]") as string,
       passport: passportId,
       schoolIdCard: schoolIdCardId,
-      referralCode: formData.get("data[referralCode]") as string || undefined,
+      referralCode: (formData.get("data[referralCode]") as string) || undefined,
     };
 
     // Submit enrollment
@@ -289,7 +425,10 @@ export async function updateEnrollmentPayment(
     console.error("Payment update error:", error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Failed to update payment status",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to update payment status",
     };
   }
 }
@@ -364,45 +503,45 @@ export async function getEnrollmentData(
       return null;
     }
 
-  return {
-    id: enrollment.id,
-    documentId: enrollment.documentId,
-    firstName: enrollment.firstName || "",
-    lastName: enrollment.lastName || "",
-    phoneNumber: enrollment.phoneNumber || "",
-    address: enrollment.address || "",
-    state: enrollment.state || "",
-    country: enrollment.country || "",
-    preferredLanguage: enrollment.preferredLanguage || "",
-    yearOfStudy: enrollment.yearOfStudy || "",
-    previousCertification: enrollment.previousCertification || "",
-    universityAttending: enrollment.universityAttending || "",
-    hasNetacadAccount: enrollment.hasNetacadAccount || false,
-    netacadId: enrollment.netacadId || "",
-    preferredNetwork: enrollment.preferredNetwork || "",
-    numberForData: enrollment.numberForData || "",
-    referralCode: enrollment.referralCode || "",
-    passport: enrollment.passport
-      ? {
-          url: `${enrollment.passport.url}`,
-          name: enrollment.passport.name,
-        }
-      : undefined,
-    schoolIdCard: enrollment.schoolIdCard
-      ? {
-          url: `${enrollment.schoolIdCard.url}`,
-          name: enrollment.schoolIdCard.name,
-        }
-      : undefined,
-    isPaymentDone: enrollment.isPaymentDone || false,
-    batchName: enrollment.batchName || undefined,
-    selectedPlan: enrollment.selectedPlan || undefined,
-    planName: enrollment.planName || undefined,
-    planAmount: enrollment.planAmount || undefined,
-    planDiscount: enrollment.planDiscount || undefined,
-    createdAt: enrollment.createdAt,
-    updatedAt: enrollment.updatedAt,
-  };
+    return {
+      id: enrollment.id,
+      documentId: enrollment.documentId,
+      firstName: enrollment.firstName || "",
+      lastName: enrollment.lastName || "",
+      phoneNumber: enrollment.phoneNumber || "",
+      address: enrollment.address || "",
+      state: enrollment.state || "",
+      country: enrollment.country || "",
+      preferredLanguage: enrollment.preferredLanguage || "",
+      yearOfStudy: enrollment.yearOfStudy || "",
+      previousCertification: enrollment.previousCertification || "",
+      universityAttending: enrollment.universityAttending || "",
+      hasNetacadAccount: enrollment.hasNetacadAccount || false,
+      netacadId: enrollment.netacadId || "",
+      preferredNetwork: enrollment.preferredNetwork || "",
+      numberForData: enrollment.numberForData || "",
+      referralCode: enrollment.referralCode || "",
+      passport: enrollment.passport
+        ? {
+            url: `${enrollment.passport.url}`,
+            name: enrollment.passport.name,
+          }
+        : undefined,
+      schoolIdCard: enrollment.schoolIdCard
+        ? {
+            url: `${enrollment.schoolIdCard.url}`,
+            name: enrollment.schoolIdCard.name,
+          }
+        : undefined,
+      isPaymentDone: enrollment.isPaymentDone || false,
+      batchName: enrollment.batchName || undefined,
+      selectedPlan: enrollment.selectedPlan || undefined,
+      planName: enrollment.planName || undefined,
+      planAmount: enrollment.planAmount || undefined,
+      planDiscount: enrollment.planDiscount || undefined,
+      createdAt: enrollment.createdAt,
+      updatedAt: enrollment.updatedAt,
+    };
   } catch (error) {
     console.error("Error fetching enrollment data:", error);
     return null;
@@ -535,6 +674,116 @@ export async function updateEnrollmentData(
   }
 }
 
+async function fetchEnrollmentCount(
+  token: string,
+  filterQuery = "",
+): Promise<number> {
+  const query = new URLSearchParams();
+
+  query.set("pagination[page]", "1");
+  query.set("pagination[pageSize]", "1");
+
+  const url = filterQuery
+    ? `${process.env.STRAPI_URL}/api/enrollments?${filterQuery}&${query.toString()}`
+    : `${process.env.STRAPI_URL}/api/enrollments?${query.toString()}`;
+
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.warn("Failed to fetch enrollment count:", res.status, errorText);
+    return 0;
+  }
+
+  const json = await res.json();
+
+  return json?.meta?.pagination?.total ?? 0;
+}
+
+export async function fetchEnrollmentDashboardCounts(
+  token: string,
+): Promise<EnrollmentDashboardCounts> {
+  const [total, completed, inProgress] = await Promise.all([
+    fetchEnrollmentCount(token),
+    fetchEnrollmentCount(token, "filters[isPaymentDone][$eq]=true"),
+    fetchEnrollmentCount(token, "filters[isPaymentDone][$eq]=false"),
+  ]);
+
+  return {
+    total,
+    completed,
+    inProgress,
+    activeBatches: Math.ceil(total / STUDENTS_PER_BATCH),
+  };
+}
+
+export async function fetchPaginatedEnrollments(
+  token: string,
+  params: FetchEnrollmentsParams = {},
+): Promise<PaginatedEnrollmentsResponse> {
+  try {
+    const query = buildEnrollmentQuery(params);
+
+    const [enrollmentRes, counts] = await Promise.all([
+      fetch(`${process.env.STRAPI_URL}/api/enrollments?${query}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
+      }),
+      fetchEnrollmentDashboardCounts(token),
+    ]);
+
+    if (!enrollmentRes.ok) {
+      const errorText = await enrollmentRes.text();
+      console.warn("Strapi API Error:", enrollmentRes.status, errorText);
+
+      return {
+        data: [],
+        pagination: {
+          ...emptyPagination,
+          page: params.page ?? DEFAULT_PAGE,
+          pageSize: params.pageSize ?? DEFAULT_PAGE_SIZE,
+        },
+        counts,
+      };
+    }
+
+    const json = await enrollmentRes.json();
+
+    return {
+      data: (json?.data || []).map(mapEnrollment),
+      pagination: {
+        page: json?.meta?.pagination?.page ?? params.page ?? DEFAULT_PAGE,
+        pageSize:
+          json?.meta?.pagination?.pageSize ??
+          params.pageSize ??
+          DEFAULT_PAGE_SIZE,
+        pageCount: json?.meta?.pagination?.pageCount ?? 0,
+        total: json?.meta?.pagination?.total ?? 0,
+      },
+      counts,
+    };
+  } catch (error) {
+    console.error("Error fetching paginated enrollments:", error);
+
+    return {
+      data: [],
+      pagination: {
+        ...emptyPagination,
+        page: params.page ?? DEFAULT_PAGE,
+        pageSize: params.pageSize ?? DEFAULT_PAGE_SIZE,
+      },
+      counts: emptyCounts,
+    };
+  }
+}
+
 export async function fetchAllEnrollments(
   token: string,
 ): Promise<EnrolleeData[]> {
@@ -557,6 +806,8 @@ export async function fetchAllEnrollments(
 
     const json = await res.json();
     const enrollments = json?.data || [];
+
+    const totalEnrollments = json?.meta?.pagination?.total ?? 0;
 
     return enrollments.map((enrollment: any) => ({
       id: enrollment.id,
@@ -602,6 +853,7 @@ export async function fetchAllEnrollments(
             email: enrollment.user.email,
           }
         : undefined,
+      totalEnrollments, // Include total count for potential pagination use
     }));
   } catch (error) {
     console.error("Error fetching enrollments:", error);

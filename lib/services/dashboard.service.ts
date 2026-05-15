@@ -4,9 +4,15 @@
    ===================================================== */
 
 import { fetchAllPayments } from "./payment.service";
-import { fetchAllEnrollments } from "./enrollment.service";
+import {
+  fetchEnrollmentDashboardCounts,
+  fetchAllEnrollments,
+} from "./enrollment.service";
 import type { PaymentData } from "./payment.service";
-import type { EnrolleeData } from "./enrollment.service";
+import type {
+  EnrolleeData,
+  EnrollmentDashboardCounts,
+} from "./enrollment.service";
 
 export interface DashboardStats {
   totalEnrollees: number;
@@ -51,64 +57,51 @@ export interface DashboardTopMetrics {
  */
 export function calculateDashboardStats(
   payments: PaymentData[],
-  enrollees: EnrolleeData[]
+  enrollees: EnrolleeData[],
+  enrollmentCounts: EnrollmentDashboardCounts,
 ): DashboardStats {
   const now = new Date();
-  const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+  const oneMonthAgo = new Date(
+    now.getFullYear(),
+    now.getMonth() - 1,
+    now.getDate(),
+  );
 
-  // Single pass calculation for performance
-  const stats = {
-    totalEnrollees: enrollees.length,
+  const stats: DashboardStats = {
+    totalEnrollees: enrollmentCounts.total,
     totalRevenue: 0,
-    completedPayments: 0,
-    inProgress: 0,
+    completedPayments: enrollmentCounts.completed,
+    inProgress: enrollmentCounts.inProgress,
     revenueLastMonth: 0,
     enrollmentsLastMonth: 0,
     conversionRate: 0,
     averagePaymentAmount: 0,
   };
 
-  // Calculate payment metrics
-  if (payments.length > 0) {
-    let monthlyRevenue = 0;
+  for (const payment of payments) {
+    stats.totalRevenue += payment.amount || 0;
 
-    payments.forEach((payment) => {
-      // Total revenue
-      stats.totalRevenue += payment.amount || 0;
-      stats.completedPayments += 1;
-
-      // Monthly revenue
-      const paymentDate = new Date(payment.paymentDate);
-      if (paymentDate >= oneMonthAgo) {
-        monthlyRevenue += payment.amount || 0;
-      }
-    });
-
-    stats.revenueLastMonth = monthlyRevenue;
-    stats.averagePaymentAmount =
-      stats.totalRevenue / payments.length;
+    const paymentDate = new Date(payment.paymentDate);
+    if (paymentDate >= oneMonthAgo) {
+      stats.revenueLastMonth += payment.amount || 0;
+    }
   }
 
-  // Calculate enrollment metrics
-  if (enrollees.length > 0) {
-    enrollees.forEach((enrollee) => {
-      if (!enrollee.isPaymentDone) {
-        stats.inProgress += 1;
-      }
+  stats.averagePaymentAmount =
+    payments.length > 0 ? stats.totalRevenue / payments.length : 0;
 
-      // Enrollments last month
-      const enrollmentDate = new Date(enrollee.createdAt);
-      if (enrollmentDate >= oneMonthAgo) {
-        stats.enrollmentsLastMonth += 1;
-      }
-    });
+  for (const enrollee of enrollees) {
+    const enrollmentDate = new Date(enrollee.createdAt);
 
-    // Conversion rate: completed / total enrollees
-    stats.conversionRate =
-      enrollees.length > 0
-        ? (stats.completedPayments / enrollees.length) * 100
-        : 0;
+    if (enrollmentDate >= oneMonthAgo) {
+      stats.enrollmentsLastMonth += 1;
+    }
   }
+
+  stats.conversionRate =
+    stats.totalEnrollees > 0
+      ? (stats.completedPayments / stats.totalEnrollees) * 100
+      : 0;
 
   return stats;
 }
@@ -119,9 +112,12 @@ export function calculateDashboardStats(
  */
 export function calculateMonthlyChanges(
   currentStats: DashboardStats,
-  previousStats: DashboardStats | null
+  previousStats: DashboardStats | null,
 ): DashboardTopMetrics {
-  const calculateChange = (current: number, previous: number | null): number => {
+  const calculateChange = (
+    current: number,
+    previous: number | null,
+  ): number => {
     if (!previous || previous === 0) return 0;
     return ((current - previous) / previous) * 100;
   };
@@ -134,22 +130,22 @@ export function calculateMonthlyChanges(
 
   const enrollmentsChange = calculateChange(
     currentStats.enrollmentsLastMonth,
-    previousStats?.enrollmentsLastMonth || null
+    previousStats?.enrollmentsLastMonth || null,
   );
 
   const revenueChange = calculateChange(
     currentStats.revenueLastMonth,
-    previousStats?.revenueLastMonth || null
+    previousStats?.revenueLastMonth || null,
   );
 
   const completedChange = calculateChange(
     currentStats.completedPayments,
-    previousStats?.completedPayments || null
+    previousStats?.completedPayments || null,
   );
 
   const inProgressChange = calculateChange(
     currentStats.inProgress,
-    previousStats?.inProgress || null
+    previousStats?.inProgress || null,
   );
 
   return {
@@ -172,9 +168,10 @@ export function calculateMonthlyChanges(
     },
     inProgress: {
       value: currentStats.inProgress,
-      percentage: currentStats.totalEnrollees > 0 
-        ? (currentStats.inProgress / currentStats.totalEnrollees) * 100 
-        : 0,
+      percentage:
+        currentStats.totalEnrollees > 0
+          ? (currentStats.inProgress / currentStats.totalEnrollees) * 100
+          : 0,
       change: inProgressChange,
       trend: calculateTrend(inProgressChange),
     },
@@ -184,26 +181,31 @@ export function calculateMonthlyChanges(
 /**
  * Main function to fetch and calculate all dashboard metrics
  * Designed for server-side rendering or server actions
- * 
+ *
  * Returns unified response format:
  * - Success: { success: true, data: DashboardTopMetrics }
  * - Error: { success: false, error: string }
  */
 export async function fetchDashboardMetrics(
-  token: string
+  token: string,
 ): Promise<
   | { success: true; data: DashboardTopMetrics }
   | { success: false; error: string }
 > {
   try {
     // Fetch data in parallel for performance
-    const [payments, enrollees] = await Promise.all([
+    const [payments, enrollees, enrollmentCounts] = await Promise.all([
       fetchAllPayments(token),
       fetchAllEnrollments(token),
+      fetchEnrollmentDashboardCounts(token),
     ]);
 
     // Calculate current stats
-    const currentStats = calculateDashboardStats(payments, enrollees);
+    const currentStats = calculateDashboardStats(
+      payments,
+      enrollees,
+      enrollmentCounts,
+    );
 
     // For now, use current stats as previous (future: implement actual historical tracking)
     const metrics = calculateMonthlyChanges(currentStats, null);
@@ -224,7 +226,10 @@ export async function fetchDashboardMetrics(
 /**
  * Format currency for display with thousands separator
  */
-export function formatCurrency(amount: number, currency: string = "NGN"): string {
+export function formatCurrency(
+  amount: number,
+  currency: string = "NGN",
+): string {
   const symbols: Record<string, string> = {
     NGN: "₦",
     USD: "$",
@@ -240,7 +245,7 @@ export function formatCurrency(amount: number, currency: string = "NGN"): string
  */
 export function formatChangePercentage(
   change: number,
-  includeSign: boolean = true
+  includeSign: boolean = true,
 ): string {
   const sign = change > 0 ? "+" : "";
   return `${includeSign ? sign : ""}${change.toFixed(1)}%`;
