@@ -18,7 +18,7 @@
   "dependencies": {
     "@strapi/plugin-cloud": "5.33.1",
     "@strapi/plugin-users-permissions": "5.33.1",
-    "@strapi/provider-email-nodemailer": "^5.36.0",
+    "@strapi/provider-email-nodemailer": "^5.46.0",
     "@strapi/provider-email-sendgrid": "^5.33.3",
     "@strapi/strapi": "5.33.1",
     "framer-motion": "^12.24.11",
