@@ -6,7 +6,6 @@ export interface PaymentPlanConfig {
   amount: number; // Total amount in kobo
   currency: string;
   price: string;
-  // bg: string;
   headerBg: string;
   cardBg: string;
   discount: number;
@@ -30,7 +29,6 @@ export const ONLINE_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
     amount: 50000000, // ₦500,000 in kobo (one-time payment)
     currency: 'NGN',
     price: '₦500,000.00',
-    // bg: 'bg-[#efbf00]',
     headerBg: "bg-[#7a5c1e]",
     cardBg: "bg-[#f5e9c8]",
     discount: 50,
@@ -57,7 +55,7 @@ export const ONLINE_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
     amount: 55000000, // ₦550,000 in kobo (bi-annual: 2 payments)
     currency: 'NGN',
     price: '₦550,000.00',
-    // bg: 'bg-gray-300',
+   
   headerBg: "bg-[#4a4a4a]",
     cardBg: "bg-[#d9d9d9]",
     discount: 45,
@@ -83,7 +81,6 @@ export const ONLINE_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
     amount: 60000000, // ₦600,000 in kobo (quarterly: 4 payments)
     currency: 'NGN',
     price: '₦600,000.00',
-    // bg: 'bg-[#cc8845]',
     headerBg: "bg-[#6b3a1f]",
     cardBg: "bg-[#e8cfa8]",
     discount: 40,
