@@ -35,6 +35,12 @@ const slides = [
 			"This 12 Months skills-ses training attract more than 50 Networking & Cybersecurity JOB_ROLES.",
 		image: "/static/images/skills.jpg",
 	},
+	{
+		id: 5, 
+		title: "Turn your IT/SIWES into real TECH EXPERIENCE",
+		description: "Networking and Cybersecurity careers aren't build on theory. Learn the skills with globally recongnized certification and Certifications",
+		image: "/static/images/Siwes.jpg",
+	}
 ];
 
 const SLIDE_DURATION = 5000; // 5 seconds per slide

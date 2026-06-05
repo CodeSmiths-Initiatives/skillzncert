@@ -136,14 +136,12 @@ export default function PaymentPage({ userEmail }: Props) {
 								transition={{ type: "spring", stiffness: 200 }}
 								onClick={() => setSelectedPlan(plan)}
 								className={`relative rounded-3xl p-6 cursor-pointer transition
-                  ${
-										isActive
-											? "bg-white ring-4 ring-[#51A8B1]/40 shadow-2xl"
-											: plan.bg
-												? `${plan.bg} hover:opacity-90 shadow-lg`
-												: "bg-[#f4fbfd]/90 hover:bg-white shadow-lg"
-									}
-                `}
+  ${
+    isActive
+      ? "bg-white ring-4 ring-[#51A8B1]/40 shadow-2xl"
+      : `${plan.cardBg} hover:opacity-90 shadow-lg`
+  }
+`}
 							>
 								<h2 className="text-lg font-semibold text-gray-900">
 									{plan.name}
