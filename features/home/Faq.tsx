@@ -44,7 +44,7 @@ const faqs = [
 	{
 		question: "Is the training online or in-person?",
 		answer:
-			"The training is conducted as an online, instructor-led practical class.",
+			"The training is conducted as an online and in-person, instructor-led practical class.",
 	},
 	{
 		question: "Who do I contact for more information?",

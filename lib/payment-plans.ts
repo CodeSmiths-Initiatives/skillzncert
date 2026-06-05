@@ -6,7 +6,9 @@ export interface PaymentPlanConfig {
   amount: number; // Total amount in kobo
   currency: string;
   price: string;
-  bg: string;
+  // bg: string;
+  headerBg: string;
+  cardBg: string;
   discount: number;
   duration: string;
   durationMonths: number; // Duration in months for calculations
@@ -20,14 +22,17 @@ export interface PaymentPlanConfig {
   };
 }
 
-export const PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
+export const ONLINE_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
+
   gold: {
     id: 'gold',
     name: 'Gold Plan',
     amount: 50000000, // ₦500,000 in kobo (one-time payment)
     currency: 'NGN',
     price: '₦500,000.00',
-    bg: 'bg-[#efbf00]',
+    // bg: 'bg-[#efbf00]',
+    headerBg: "bg-[#7a5c1e]",
+    cardBg: "bg-[#f5e9c8]",
     discount: 50,
     duration: '1 year',
     durationMonths: 12,
@@ -52,7 +57,9 @@ export const PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
     amount: 55000000, // ₦550,000 in kobo (bi-annual: 2 payments)
     currency: 'NGN',
     price: '₦550,000.00',
-    bg: 'bg-gray-300',
+    // bg: 'bg-gray-300',
+  headerBg: "bg-[#4a4a4a]",
+    cardBg: "bg-[#d9d9d9]",
     discount: 45,
     duration: '6 months',
     durationMonths: 6,
@@ -76,7 +83,9 @@ export const PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
     amount: 60000000, // ₦600,000 in kobo (quarterly: 4 payments)
     currency: 'NGN',
     price: '₦600,000.00',
-    bg: 'bg-[#cc8845]',
+    // bg: 'bg-[#cc8845]',
+    headerBg: "bg-[#6b3a1f]",
+    cardBg: "bg-[#e8cfa8]",
     discount: 40,
     duration: '3 months',
     durationMonths: 3,
@@ -96,20 +105,111 @@ export const PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
   }
 };
 
+export const SIWES_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
+  gold: {
+    id: "gold",
+    name: "Gold Plan",
+    amount: 80000000,
+    currency: "NGN",
+    price: "₦800,000.00",
+    headerBg: "bg-[#7a5c1e]",
+    cardBg: "bg-[#f5e9c8]",
+    discount: 50,
+    duration: "1 year",
+    durationMonths: 12,
+    description: "Premium training package with maximum discounts",
+    features: [
+      "50% on Discount Training Fee.",
+      "Starter Package",
+      "15 validity on the 58% discount exam voucher.",
+      "1 year after training support.",
+      "Exit package",
+    ],
+    installments: {
+      count: 1,
+      firstPayment: 80000000,
+      subsequentPayment: 0,
+      intervalMonths: 0,
+    },
+  },
+  silver: {
+    id: "silver",
+    name: "Silver Plan",
+    amount: 85000000,
+    currency: "NGN",
+    price: "₦850,000.00",
+    headerBg: "bg-[#4a4a4a]",
+    cardBg: "bg-[#d9d9d9]",
+    discount: 45,
+    duration: "6 months",
+    durationMonths: 6,
+    description: "Enhanced training package with substantial discounts",
+    features: [
+      "45% on Discount Training Fee.",
+      "Core Package",
+      "15 validity on the 58% discount exam voucher.",
+      "1 year after training support.",
+      "Exit package",
+    ],
+    installments: {
+      count: 2,
+      firstPayment: 42500000,
+      subsequentPayment: 42500000,
+      intervalMonths: 6,
+    },
+  },
+  bronze: {
+    id: "bronze",
+    name: "Bronze Plan",
+    amount: 90000000,
+    currency: "NGN",
+    price: "₦900,000.00",
+    headerBg: "bg-[#6b3a1f]",
+    cardBg: "bg-[#e8cfa8]",
+    discount: 40,
+    duration: "3 months",
+    durationMonths: 3,
+    description: "Comprehensive training package with competitive discounts",
+    features: [
+      "40% on Discount Training Fee.",
+      "Basic Package",
+      "15 validity on the 58% discount exam voucher.",
+      "1 year after training support.",
+      "Exit package",
+    ],
+    installments: {
+      count: 4,
+      firstPayment: 22500000,
+      subsequentPayment: 22500000,
+      intervalMonths: 3,
+    },
+  },
+};
+
+// Keep PAYMENT_PLANS as alias for backward compatibility
+export const PAYMENT_PLANS = ONLINE_PAYMENT_PLANS;
+
 // Utility function to get plan by ID
-export function getStaticPlanById(planId: string): PaymentPlanConfig | null {
-  return PAYMENT_PLANS[planId] || null;
+export function getStaticPlanById(planId: string, siwes = false): PaymentPlanConfig | null {
+  const plans = siwes ? SIWES_PAYMENT_PLANS : ONLINE_PAYMENT_PLANS;
+  return plans[planId] || null;
 }
 
 // Utility function to get all plans
-export function getStaticAllPlans(): PaymentPlanConfig[] {
-  return Object.values(PAYMENT_PLANS);
+export function getStaticAllPlans(siwes = false): PaymentPlanConfig[] {
+  const plans = siwes ? SIWES_PAYMENT_PLANS : ONLINE_PAYMENT_PLANS;
+  return Object.values(plans);
 }
 
 // Utility function to calculate plan expiry date
-export function calculatePlanExpiryDate(planId: string, startDate: Date = new Date()): Date {
+export function calculatePlanExpiryDate(
+  planId: string,
+  startDate: Date = new Date(),
+  siwes = false
+): Date {
   const expiryDate = new Date(startDate);
-  const plan = PAYMENT_PLANS[planId.toLowerCase()];
+  const plan = getStaticPlanById(planId.toLowerCase(), siwes);
+
   
   if (!plan) {
     // Default to 1 year if unknown plan
@@ -118,8 +218,7 @@ export function calculatePlanExpiryDate(planId: string, startDate: Date = new Da
   }
   
   // Use durationMonths for accurate calculation
-  expiryDate.setMonth(expiryDate.getMonth() + plan.durationMonths);
-  
+expiryDate.setMonth(expiryDate.getMonth() + plan.durationMonths);
   return expiryDate;
 }
 
@@ -127,10 +226,13 @@ export function calculatePlanExpiryDate(planId: string, startDate: Date = new Da
 export function calculateNextPaymentDate(
   planId: string, 
   startDate: Date = new Date(), 
-  installmentNumber: number = 2
+  installmentNumber: number = 2,
+  siwes = false
 ): Date {
   const nextDate = new Date(startDate);
-  const plan = PAYMENT_PLANS[planId.toLowerCase()]; 
+  // const plan = PAYMENT_PLANS[planId.toLowerCase()]; 
+    const plan = getStaticPlanById(planId.toLowerCase(), siwes);
+
   
   if (!plan || plan.installments.count === 1) {
     // No next payment for single-payment plans
