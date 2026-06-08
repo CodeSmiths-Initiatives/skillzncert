@@ -102,8 +102,8 @@ export const ONLINE_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
 
 export const SIWES_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
   gold: {
-    id: "gold",
-    name: "Gold Plan",
+    id: "gold-siwes",
+    name: "Gold Plan (IT & SIWES)",
     amount: 80000000,
     currency: "NGN",
     price: "₦800,000.00",
@@ -128,8 +128,8 @@ export const SIWES_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
     },
   },
   silver: {
-    id: "silver",
-    name: "Silver Plan",
+    id: "silver-siwes",
+    name: "Silver Plan (IT & SIWES)",
     amount: 85000000,
     currency: "NGN",
     price: "₦850,000.00",
@@ -154,8 +154,8 @@ export const SIWES_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
     },
   },
   bronze: {
-    id: "bronze",
-    name: "Bronze Plan",
+    id: "bronze-siwes",
+    name: "Bronze Plan (IT & SIWES)",
     amount: 90000000,
     currency: "NGN",
     price: "₦900,000.00",
