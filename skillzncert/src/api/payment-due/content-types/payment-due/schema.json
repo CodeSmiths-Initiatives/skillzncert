@@ -30,7 +30,10 @@
       "enum": [
         "gold",
         "silver",
-        "bronze"
+        "bronze",
+        "gold-siwes",
+        "silver-siwes",
+        "bronze-siwes"
       ],
       "required": true
     },
@@ -63,12 +66,7 @@
     },
     "status": {
       "type": "enumeration",
-      "enum": [
-        "pending",
-        "paid",
-        "overdue",
-        "cancelled"
-      ],
+      "enum": ["pending", "paid", "overdue", "cancelled"],
       "default": "pending",
       "required": true
     },

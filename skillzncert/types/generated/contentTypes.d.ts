@@ -834,7 +834,9 @@ export interface ApiPaymentDuePaymentDue extends Struct.CollectionTypeSchema {
     parentPaymentDocumentId: Schema.Attribute.String;
     paymentDocumentId: Schema.Attribute.String;
     paymentReference: Schema.Attribute.String;
-    planId: Schema.Attribute.Enumeration<['gold', 'silver', 'bronze']> &
+    planId: Schema.Attribute.Enumeration<
+      ['gold', 'silver', 'bronze', 'gold-siwes', 'silver-siwes', 'bronze-siwes']
+    > &
       Schema.Attribute.Required;
     planName: Schema.Attribute.String & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
@@ -892,7 +894,9 @@ export interface ApiPaymentPayment extends Struct.CollectionTypeSchema {
     paymentMode: Schema.Attribute.String & Schema.Attribute.Required;
     planAmount: Schema.Attribute.Decimal;
     planDiscount: Schema.Attribute.Integer;
-    planId: Schema.Attribute.Enumeration<['gold', 'silver', 'bronze']>;
+    planId: Schema.Attribute.Enumeration<
+      ['gold', 'silver', 'bronze', 'gold-siwes', 'silver-siwes', 'bronze-siwes']
+    >;
     planName: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     reference: Schema.Attribute.Text;
