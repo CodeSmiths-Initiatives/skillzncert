@@ -9,13 +9,13 @@ import { useState, useTransition } from "react";
 import { BiSolidImageAdd } from "react-icons/bi";
 import { submitEnrollmentAction } from "@/actions/enrollment/create-enrollment.actions";
 import { motion } from "framer-motion";
-import { 
-	FaShieldAlt, 
-	FaUserCheck, 
-	FaRocket, 
+import {
+	FaShieldAlt,
+	FaUserCheck,
+	FaRocket,
 	FaCertificate,
 	FaGraduationCap,
-	FaCheckCircle 
+	FaCheckCircle,
 } from "react-icons/fa";
 
 export default function Onboarding() {
@@ -44,6 +44,7 @@ export default function Onboarding() {
 		preferredNetwork: "",
 		numberForData: "",
 		referralCode: "",
+		academicQualification: "",
 	});
 
 	const [errors, setErrors] = useState({
@@ -111,7 +112,7 @@ export default function Onboarding() {
 	};
 
 	const handleChange = (
-		e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+		e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
 	) => {
 		const { name, value } = e.target;
 		setForm((p) => ({ ...p, [name]: value }));
@@ -171,7 +172,7 @@ export default function Onboarding() {
 
 			// Append form data fields
 			Object.entries(form).forEach(([k, v]) =>
-				data.append(`data[${k}]`, String(v))
+				data.append(`data[${k}]`, String(v)),
 			);
 
 			// Append file uploads (must match Strapi media field names exactly)
@@ -227,7 +228,8 @@ export default function Onboarding() {
 			!form.state ||
 			!form.country ||
 			!form.preferredNetwork ||
-			!form.numberForData
+			!form.numberForData ||
+			!form.academicQualification
 		) {
 			showToast({
 				type: "error",
@@ -355,11 +357,14 @@ export default function Onboarding() {
 								<h1 className="text-4xl font-bold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
 									Enrollment Portal
 								</h1>
-								<p className="text-sm text-white/70 font-medium">SkillznCert Academy</p>
+								<p className="text-sm text-white/70 font-medium">
+									SkillznCert Academy
+								</p>
 							</div>
 						</div>
 						<p className="text-lg text-white/90 max-w-md leading-relaxed">
-							Begin your journey to become a certified network & cybersecurity professional
+							Begin your journey to become a certified network & cybersecurity
+							professional
 						</p>
 					</motion.div>
 
@@ -424,9 +429,12 @@ export default function Onboarding() {
 								<FaCheckCircle className="text-green-400 text-xl" />
 							</div>
 							<div>
-								<h4 className="font-semibold text-white mb-1">Trusted by Students Worldwide</h4>
+								<h4 className="font-semibold text-white mb-1">
+									Trusted by Students Worldwide
+								</h4>
 								<p className="text-sm text-white/70">
-									Join thousands of students who have successfully enrolled and achieved their certification goals.
+									Join thousands of students who have successfully enrolled and
+									achieved their certification goals.
 								</p>
 							</div>
 						</div>
@@ -446,7 +454,7 @@ export default function Onboarding() {
 			<div className="flex items-center justify-center px-6 py-8">
 				<div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8">
 					<h2 className="text-2xl font-bold text-gray-900 mb-1">
- 						Personal & Academic Details
+						Personal & Academic Details
 					</h2>
 					<p className="text-sm text-gray-500 mb-6">
 						Fields marked * are required
@@ -515,106 +523,128 @@ export default function Onboarding() {
 						</TwoCol>
 
 						<TwoCol>
-						<select
-							name="state"
-							className={`input-field ${
-								errors.state ? "border-red-500 focus:ring-red-500" : ""
-							}`}
-							value={form.state}
-							onChange={handleChange}
-						>
-							<option value="">Select State *</option>
-							<option value="Abia">Abia</option>
-							<option value="Adamawa">Adamawa</option>
-							<option value="Akwa Ibom">Akwa Ibom</option>
-							<option value="Anambra">Anambra</option>
-							<option value="Bauchi">Bauchi</option>
-							<option value="Bayelsa">Bayelsa</option>
-							<option value="Benue">Benue</option>
-							<option value="Borno">Borno</option>
-							<option value="Cross River">Cross River</option>
-							<option value="Delta">Delta</option>
-							<option value="Ebonyi">Ebonyi</option>
-							<option value="Edo">Edo</option>
-							<option value="Ekiti">Ekiti</option>
-							<option value="Enugu">Enugu</option>
-							<option value="FCT">Federal Capital Territory</option>
-							<option value="Gombe">Gombe</option>
-							<option value="Imo">Imo</option>
-							<option value="Jigawa">Jigawa</option>
-							<option value="Kaduna">Kaduna</option>
-							<option value="Kano">Kano</option>
-							<option value="Katsina">Katsina</option>
-							<option value="Kebbi">Kebbi</option>
-							<option value="Kogi">Kogi</option>
-							<option value="Kwara">Kwara</option>
-							<option value="Lagos">Lagos</option>
-							<option value="Nasarawa">Nasarawa</option>
-							<option value="Niger">Niger</option>
-							<option value="Ogun">Ogun</option>
-							<option value="Ondo">Ondo</option>
-							<option value="Osun">Osun</option>
-							<option value="Oyo">Oyo</option>
-							<option value="Plateau">Plateau</option>
-							<option value="Rivers">Rivers</option>
-							<option value="Sokoto">Sokoto</option>
-							<option value="Taraba">Taraba</option>
-							<option value="Yobe">Yobe</option>
-							<option value="Zamfara">Zamfara</option>
-						</select>
-						<select
-							name="country"
-							className={`input-field ${
-								errors.country ? "border-red-500 focus:ring-red-500" : ""
-							}`}
-							value={form.country}
-							onChange={handleChange}
-						>
-							<option value="">Select Country *</option>							
-							<option value="Nigeria">Nigeria</option>
-						</select>
-					</TwoCol>
+							<select
+								name="state"
+								className={`input-field ${
+									errors.state ? "border-red-500 focus:ring-red-500" : ""
+								}`}
+								value={form.state}
+								onChange={handleChange}
+							>
+								<option value="">Select State *</option>
+								<option value="Abia">Abia</option>
+								<option value="Adamawa">Adamawa</option>
+								<option value="Akwa Ibom">Akwa Ibom</option>
+								<option value="Anambra">Anambra</option>
+								<option value="Bauchi">Bauchi</option>
+								<option value="Bayelsa">Bayelsa</option>
+								<option value="Benue">Benue</option>
+								<option value="Borno">Borno</option>
+								<option value="Cross River">Cross River</option>
+								<option value="Delta">Delta</option>
+								<option value="Ebonyi">Ebonyi</option>
+								<option value="Edo">Edo</option>
+								<option value="Ekiti">Ekiti</option>
+								<option value="Enugu">Enugu</option>
+								<option value="FCT">Federal Capital Territory</option>
+								<option value="Gombe">Gombe</option>
+								<option value="Imo">Imo</option>
+								<option value="Jigawa">Jigawa</option>
+								<option value="Kaduna">Kaduna</option>
+								<option value="Kano">Kano</option>
+								<option value="Katsina">Katsina</option>
+								<option value="Kebbi">Kebbi</option>
+								<option value="Kogi">Kogi</option>
+								<option value="Kwara">Kwara</option>
+								<option value="Lagos">Lagos</option>
+								<option value="Nasarawa">Nasarawa</option>
+								<option value="Niger">Niger</option>
+								<option value="Ogun">Ogun</option>
+								<option value="Ondo">Ondo</option>
+								<option value="Osun">Osun</option>
+								<option value="Oyo">Oyo</option>
+								<option value="Plateau">Plateau</option>
+								<option value="Rivers">Rivers</option>
+								<option value="Sokoto">Sokoto</option>
+								<option value="Taraba">Taraba</option>
+								<option value="Yobe">Yobe</option>
+								<option value="Zamfara">Zamfara</option>
+							</select>
+							<select
+								name="country"
+								className={`input-field ${
+									errors.country ? "border-red-500 focus:ring-red-500" : ""
+								}`}
+								value={form.country}
+								onChange={handleChange}
+							>
+								<option value="">Select Country *</option>
+								<option value="Nigeria">Nigeria</option>
+							</select>
+						</TwoCol>
 
-					<TwoCol>
-						<Input
+						<TwoCol>
+							<Input
 								name="preferredLanguage"
 								placeholder="Preferred Language"
 								value={form.preferredLanguage}
 								onChange={handleChange}
 							/>
-						<div>
-							<Input
-								type="number"
-								name="yearOfStudy"
-								placeholder="Year of Study (e.g., 2024)"
-								value={form.yearOfStudy}
-								onChange={handleChange}
-								min="1900"
-								max="2100"
-								className={
-									errors.yearOfStudy ? "border-red-500 focus:ring-red-500" : ""
-								}
-							/>
-							{errors.yearOfStudy && (
-								<p className="text-red-500 text-xs mt-1">{errors.yearOfStudy}</p>
-							)}
-						</div>
-					</TwoCol>
+							<div>
+								<Input
+									type="number"
+									name="yearOfStudy"
+									placeholder="Year of Study (e.g., 2024)"
+									value={form.yearOfStudy}
+									onChange={handleChange}
+									min="1900"
+									max="2100"
+									className={
+										errors.yearOfStudy
+											? "border-red-500 focus:ring-red-500"
+											: ""
+									}
+								/>
+								{errors.yearOfStudy && (
+									<p className="text-red-500 text-xs mt-1">
+										{errors.yearOfStudy}
+									</p>
+								)}
+							</div>
+						</TwoCol>
 
-					<TwoCol>
-						<Input
-							name="previousCertification"
-							placeholder="Previous Certification"
-							value={form.previousCertification}
-							onChange={handleChange}
-						/>
-						<Input
-							name="universityAttending"
+						<TwoCol>
+							<Input
+								name="previousCertification"
+								placeholder="Previous Certification"
+								value={form.previousCertification}
+								onChange={handleChange}
+							/>
+							<Input
+								name="universityAttending"
 								placeholder="University"
 								value={form.universityAttending}
 								onChange={handleChange}
 							/>
 						</TwoCol>
+
+						{/* Academic Qualification */}
+						<div className="space-y-1">
+							<label className="text-sm font-medium text-gray-700">
+								Academic Qualification <span className="text-red-500">*</span>
+							</label>
+							<select
+								name="academicQualification"
+								className="input-field w-full"
+								value={form.academicQualification}
+								onChange={handleChange}
+							>
+								<option value="">Select Academic Qualification *</option>
+								<option value="Undergraduate">Undergraduate</option>
+								<option value="IT & SIWES">IT & SIWES</option>
+								<option value="Post Secondary">Post Secondary</option>
+							</select>
+						</div>
 
 						<Input
 							name="referralCode"
@@ -636,26 +666,26 @@ export default function Onboarding() {
 								<option value="Airtel">Airtel</option>
 								<option value="mobile9">9mobile</option>
 							</select>
-						<div>
-							<Input
-								name="numberForData"
-								placeholder="Number for FREE DATA *"
-								value={form.numberForData}
-								onChange={handleChange}
-								maxLength={10}
-								className={
-									errors.numberForData
-										? "border-red-500 focus:ring-red-500"
-										: ""
-								}
-							/>
-							{errors.numberForData && (
-								<p className="text-red-500 text-xs mt-1">
-									{errors.numberForData}
-								</p>
-							)}
-						</div>
-					</TwoCol>
+							<div>
+								<Input
+									name="numberForData"
+									placeholder="Number for FREE DATA *"
+									value={form.numberForData}
+									onChange={handleChange}
+									maxLength={10}
+									className={
+										errors.numberForData
+											? "border-red-500 focus:ring-red-500"
+											: ""
+									}
+								/>
+								{errors.numberForData && (
+									<p className="text-red-500 text-xs mt-1">
+										{errors.numberForData}
+									</p>
+								)}
+							</div>
+						</TwoCol>
 						<div className="space-y-3">
 							<div className="flex flex-col space-y-2">
 								<label className="font-medium text-sm">
@@ -669,7 +699,11 @@ export default function Onboarding() {
 											checked={form.hasNetacadAccount === true}
 											onChange={() => {
 												setHasNetAcad(true);
-												setForm((f) => ({ ...f, hasNetacadAccount: true, netacadId: "" }));
+												setForm((f) => ({
+													...f,
+													hasNetacadAccount: true,
+													netacadId: "",
+												}));
 											}}
 										/>
 										<span>Yes</span>
@@ -681,7 +715,11 @@ export default function Onboarding() {
 											checked={form.hasNetacadAccount === false}
 											onChange={() => {
 												setHasNetAcad(false);
-												setForm((f) => ({ ...f, hasNetacadAccount: false, netacadId: "" }));
+												setForm((f) => ({
+													...f,
+													hasNetacadAccount: false,
+													netacadId: "",
+												}));
 											}}
 										/>
 										<span>No</span>

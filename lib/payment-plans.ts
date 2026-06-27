@@ -181,21 +181,112 @@ export const SIWES_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
   },
 };
 
+
+export const POST_SECONDARY_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
+  gold: {
+    id: "gold",
+    name: "Gold Plan",
+    amount: 50000000,
+    currency: "NGN",
+    price: "₦500,000.00",
+    headerBg: "bg-[#7a5c1e]",
+    cardBg: "bg-[#f5e9c8]",
+    discount: 50,
+    duration: "1 year",
+    durationMonths: 12,
+    description: "Premium post-secondary training package with maximum discounts",
+    features: [
+      "50% on Discount Training Fee.",
+      "Starter Package",
+      "15 validity on the 58% discount exam voucher.",
+      "1 year after training support.",
+      "Exit package",
+    ],
+    installments: {
+      count: 1,
+      firstPayment: 50000000,
+      subsequentPayment: 0,
+      intervalMonths: 0,
+    },
+  },
+  silver: {
+    id: "silver",
+    name: "Silver Plan",
+    amount: 60000000,
+    currency: "NGN",
+    price: "₦600,000.00",
+    headerBg: "bg-[#4a4a4a]",
+    cardBg: "bg-[#d9d9d9]",
+    discount: 45,
+    duration: "6 months",
+    durationMonths: 6,
+    description: "Enhanced post-secondary training package with substantial discounts",
+    features: [
+      "45% on Discount Training Fee.",
+      "Core Package",
+      "15 validity on the 58% discount exam voucher.",
+      "1 year after training support.",
+      "Exit package",
+    ],
+    installments: {
+      count: 2,
+      firstPayment: 30000000,
+      subsequentPayment: 30000000,
+      intervalMonths: 6,
+    },
+  },
+  bronze: {
+    id: "bronze",
+    name: "Bronze Plan",
+    amount: 70000000,
+    currency: "NGN",
+    price: "₦700,000.00",
+    headerBg: "bg-[#6b3a1f]",
+    cardBg: "bg-[#e8cfa8]",
+    discount: 40,
+    duration: "3 months",
+    durationMonths: 3,
+    description: "Comprehensive post-secondary training package with competitive discounts",
+    features: [
+      "40% on Discount Training Fee.",
+      "Basic Package",
+      "15 validity on the 58% discount exam voucher.",
+      "1 year after training support.",
+      "Exit package",
+    ],
+    installments: {
+      count: 4,
+      firstPayment: 17500000,
+      subsequentPayment: 17500000,
+      intervalMonths: 3,
+    },
+  },
+};
+
 // Keep PAYMENT_PLANS as alias for backward compatibility
 export const PAYMENT_PLANS = ONLINE_PAYMENT_PLANS;
 
 // Utility function to get plan by ID
 export function getStaticPlanById(
   planId: string,
-  siwes = false,
+ planType: "online" | "siwes" | "postSecondary" = "online"
 ): PaymentPlanConfig | null {
-  const plans = siwes ? SIWES_PAYMENT_PLANS : ONLINE_PAYMENT_PLANS;
+  const plans = planType === "siwes"
+      ? SIWES_PAYMENT_PLANS
+      : planType === "postSecondary"
+      ? POST_SECONDARY_PAYMENT_PLANS
+      : ONLINE_PAYMENT_PLANS;
   return plans[planId] || null;
 }
 
 // Utility function to get all plans
-export function getStaticAllPlans(siwes = false): PaymentPlanConfig[] {
-  const plans = siwes ? SIWES_PAYMENT_PLANS : ONLINE_PAYMENT_PLANS;
+export function getStaticAllPlans( planType: "online" | "siwes" | "postSecondary" = "online"
+): PaymentPlanConfig[] {
+  const plans =  planType === "siwes"
+      ? SIWES_PAYMENT_PLANS
+      : planType === "postSecondary"
+      ? POST_SECONDARY_PAYMENT_PLANS
+      : ONLINE_PAYMENT_PLANS;
   return Object.values(plans);
 }
 
@@ -203,10 +294,10 @@ export function getStaticAllPlans(siwes = false): PaymentPlanConfig[] {
 export function calculatePlanExpiryDate(
   planId: string,
   startDate: Date = new Date(),
-  siwes = false,
+   planType: "online" | "siwes" | "postSecondary" = "online"
 ): Date {
   const expiryDate = new Date(startDate);
-  const plan = getStaticPlanById(planId.toLowerCase(), siwes);
+  const plan = getStaticPlanById(planId.toLowerCase(), planType);
 
   if (!plan) {
     // Default to 1 year if unknown plan
@@ -224,11 +315,11 @@ export function calculateNextPaymentDate(
   planId: string,
   startDate: Date = new Date(),
   installmentNumber: number = 2,
-  siwes = false,
+ planType: "online" | "siwes" | "postSecondary" = "online"
 ): Date {
   const nextDate = new Date(startDate);
   // const plan = PAYMENT_PLANS[planId.toLowerCase()];
-  const plan = getStaticPlanById(planId.toLowerCase(), siwes);
+  const plan = getStaticPlanById(planId.toLowerCase(), planType);
 
   if (!plan || plan.installments.count === 1) {
     // No next payment for single-payment plans
