@@ -1,7 +1,7 @@
 /**
  * Paystack Payment Service
  * Centralized payment gateway integration with Paystack
- * 
+ *
  * Features:
  * - Type-safe payment initialization
  * - Reusable across different payment types (plans, dues, custom)
@@ -22,7 +22,7 @@ export interface PaystackConfig {
 }
 
 export interface PaymentMetadata {
-  type: 'plan' | 'due' | 'custom';
+  type: "plan" | "due" | "custom";
   planId?: string;
   planName?: string;
   dueId?: string;
@@ -66,17 +66,18 @@ export function createPlanPaymentConfig(
   planId: string,
   planName: string,
   enrollmentId?: string,
-  userId?: string
+  userId?: string,
 ): PaystackConfig {
   return {
     reference: generatePaymentReference(),
     email,
     amount,
     currency: "NGN",
-    subaccount: process.env.NEXT_PUBLIC_PAYSTACK_SUBACCOUNT || "ACCT_xtlrfkipcz3pp2p",
+    subaccount: "ACCT_a2xs63avvr9pswr", // Replace with your actual subaccount code
+    // process.env.NEXT_PUBLIC_PAYSTACK_SUBACCOUNT || "ACCT_a2xs63avvr9pswr",
     channels: ["card"],
     metadata: {
-      type: 'plan',
+      type: "plan",
       planId,
       planName,
       enrollmentId,
@@ -85,10 +86,10 @@ export function createPlanPaymentConfig(
         {
           display_name: "Plan Type",
           variable_name: "plan_type",
-          value: planName
-        }
-      ]
-    }
+          value: planName,
+        },
+      ],
+    },
   };
 }
 
@@ -104,17 +105,17 @@ export function createDuePaymentConfig(
   installmentNumber: number,
   totalInstallments: number,
   enrollmentId?: string,
-  userId?: string
+  userId?: string,
 ): PaystackConfig {
   return {
     reference: generatePaymentReference(),
     email,
     amount,
     currency: "NGN",
-    subaccount: process.env.NEXT_PUBLIC_PAYSTACK_SUBACCOUNT || "ACCT_xtlrfkipcz3pp2p",
+    subaccount: "ACCT_a2xs63avvr9pswr", // Replace with your actual subaccount code
     channels: ["card"],
     metadata: {
-      type: 'due',
+      type: "due",
       dueId,
       planId,
       planName,
@@ -126,15 +127,15 @@ export function createDuePaymentConfig(
         {
           display_name: "Payment Type",
           variable_name: "payment_type",
-          value: `Installment ${installmentNumber} of ${totalInstallments}`
+          value: `Installment ${installmentNumber} of ${totalInstallments}`,
         },
         {
           display_name: "Plan",
           variable_name: "plan",
-          value: planName
-        }
-      ]
-    }
+          value: planName,
+        },
+      ],
+    },
   };
 }
 
@@ -143,7 +144,7 @@ export function createDuePaymentConfig(
  */
 export function validatePaystackConfig(): boolean {
   const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
-  
+
   if (!publicKey) {
     console.error("❌ Paystack public key not configured");
     return false;
@@ -179,8 +180,8 @@ export function getTransactionStatusColor(status: string): string {
     success: "green",
     failed: "red",
     abandoned: "orange",
-    pending: "yellow"
+    pending: "yellow",
   };
-  
+
   return statusMap[status.toLowerCase()] || "gray";
 }
