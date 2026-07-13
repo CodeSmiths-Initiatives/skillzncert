@@ -1,7 +1,6 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { fetchAllEnrollments } from "@/lib/services/enrollment.service";
 
 import {
   fetchPaginatedEnrollments,

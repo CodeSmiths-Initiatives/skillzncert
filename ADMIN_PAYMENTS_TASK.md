@@ -199,3 +199,13 @@ The admin payments page order must be:
 - Verification passed: focused ESLint on changed files and `npm run build` with `STRAPI_URL=http://localhost:1337`.
 - Full `npm run lint` still fails on pre-existing repository issues outside this task, including generated Strapi `dist` files, older explicit `any` usage, and unrelated React lint findings.
 - The build logs an existing `/payment/verify` dynamic server usage warning during static generation, but the build exits successfully.
+
+## Phase 2 Local Staging QA
+
+Status: complete
+
+- Verified local Strapi directly at `http://localhost:1337`: admin user ID `1`, 1 payment, and 3 payment dues are available in local staging data.
+- Ran the built Next.js app locally with both `STRAPI_URL` and `STRAPI_URL_PROD` forced to `http://localhost:1337` so `.env.production` could not point the test at a non-local backend.
+- Verified admin login, Payments sidebar navigation, analytics, filters, table rows, reset filters, row details modal, pending-row disabled receipt action, completed-row enabled receipt action, and mobile drawer navigation.
+- Fixed admin payment rows to enrich student names from enrollment data, so records show `Alex Test` instead of falling back to email when enrollment data is available.
+- Verification passed: focused ESLint on changed files and `npm run build` with local Strapi environment variables.

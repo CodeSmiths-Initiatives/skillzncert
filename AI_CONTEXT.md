@@ -92,6 +92,7 @@ Current admin menu:
 
 - Overview
 - Enrollees
+- Payments
 - Schedule
 - Settings
 
@@ -101,7 +102,7 @@ Current user menu:
 - Profile
 - Payments
 
-Admin Payments is currently not active in the sidebar. A Payments item exists as a commented line in `AdminDashboard.tsx`.
+Admin Payments is active in the sidebar.
 
 ## Architecture Instructions
 
@@ -339,3 +340,4 @@ No explicit test script is currently defined in the root `package.json` or backe
 - Update this file if project commands, role logic, or architecture decisions change.
 - DONT USE LIVE STRPI URL USE ONLY LOCALHOST URL FOR BACKEND/STRAPI TESTING
 - Phase one was completed with a dedicated `AdminPaymentsSection`, admin-only all-payment actions, authenticated-user-scoped user payment actions, focused lint on changed files, and a successful build using `STRAPI_URL=http://localhost:1337`.
+- Phase two local staging QA is complete. The built app was tested with `STRAPI_URL=http://localhost:1337` and `STRAPI_URL_PROD=http://localhost:1337`; admin payment rows now enrich student names from enrollment data.

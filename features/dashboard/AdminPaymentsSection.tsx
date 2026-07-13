@@ -5,6 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { getAllPayments } from "@/actions/payment/get-payments.actions";
 import { getAdminPaymentDues } from "@/actions/payment/payment-dues.actions";
+import { getAllEnrollments } from "@/actions/enrollment/get-all-enrollments.actions";
+import type { EnrolleeData } from "@/lib/services/enrollment.service";
 import type { PaymentData } from "@/lib/services/payment.service";
 import type { PaymentDueData } from "@/lib/services/payment-due.service";
 import {
@@ -96,6 +98,30 @@ function getStudentName(record: {
     .trim();
 
   return fullName || record.emailAddress || "Student";
+}
+
+function getEnrolleeName(enrollee?: EnrolleeData) {
+  if (!enrollee) return "";
+
+  return [enrollee.firstName, enrollee.lastName].filter(Boolean).join(" ").trim();
+}
+
+function createEnrollmentLookup(enrollees: EnrolleeData[]) {
+  const byDocumentId = new Map<string, EnrolleeData>();
+  const byEmail = new Map<string, EnrolleeData>();
+
+  enrollees.forEach((enrollee) => {
+    if (enrollee.documentId) {
+      byDocumentId.set(enrollee.documentId, enrollee);
+    }
+
+    const email = (enrollee.email || enrollee.user?.email || "").toLowerCase();
+    if (email) {
+      byEmail.set(email, enrollee);
+    }
+  });
+
+  return { byDocumentId, byEmail };
 }
 
 function escapeHtml(value: string) {
@@ -322,36 +348,56 @@ export function AdminPaymentsSection() {
   const menuRef = useRef<HTMLDivElement>(null);
 
   const mapRecords = useCallback(
-    (payments: PaymentData[], dues: PaymentDueData[]): AdminPaymentRecord[] => {
-      const completedRecords: AdminPaymentRecord[] = payments.map((payment) => ({
-        key: `payment-${payment.documentId || payment.id}`,
-        source: "payment",
-        status: "completed",
-        payment,
-        amount: Number(payment.amount || 0),
-        studentName: getStudentName(payment),
-        studentEmail: payment.emailAddress || "N/A",
-        planName: payment.planName || "",
-        reference: payment.reference || payment.documentId || "",
-        paymentDate: payment.paymentDate,
-        dueDate: payment.nextPaymentDate || "",
-      }));
+    (
+      payments: PaymentData[],
+      dues: PaymentDueData[],
+      enrollees: EnrolleeData[],
+    ): AdminPaymentRecord[] => {
+      const enrollmentLookup = createEnrollmentLookup(enrollees);
+
+      const completedRecords: AdminPaymentRecord[] = payments.map((payment) => {
+        const enrollee =
+          enrollmentLookup.byDocumentId.get(payment.enrollmentDocumentId) ||
+          enrollmentLookup.byEmail.get((payment.emailAddress || "").toLowerCase());
+        const enrolleeName = getEnrolleeName(enrollee);
+
+        return {
+          key: `payment-${payment.documentId || payment.id}`,
+          source: "payment",
+          status: "completed",
+          payment,
+          amount: Number(payment.amount || 0),
+          studentName: enrolleeName || getStudentName(payment),
+          studentEmail: payment.emailAddress || enrollee?.email || enrollee?.user?.email || "N/A",
+          planName: payment.planName || enrollee?.planName || "",
+          reference: payment.reference || payment.documentId || "",
+          paymentDate: payment.paymentDate,
+          dueDate: payment.nextPaymentDate || "",
+        };
+      });
 
       const dueRecords: AdminPaymentRecord[] = dues
         .filter((due) => due.status !== "paid")
-        .map((due) => ({
-          key: `due-${due.documentId || due.id}`,
-          source: "due",
-          status: due.status === "overdue" || due.status === "cancelled" ? due.status : "pending",
-          due,
-          amount: Number(due.dueAmount || 0) / 100,
-          studentName: getStudentName(due),
-          studentEmail: due.emailAddress || "N/A",
-          planName: due.planName || "",
-          reference: due.paymentReference || due.paymentDocumentId || due.documentId || "",
-          paymentDate: due.paidDate || "",
-          dueDate: due.dueDate,
-        }));
+        .map((due) => {
+          const enrollee =
+            enrollmentLookup.byDocumentId.get(due.enrollmentDocumentId) ||
+            enrollmentLookup.byEmail.get((due.emailAddress || "").toLowerCase());
+          const enrolleeName = getEnrolleeName(enrollee);
+
+          return {
+            key: `due-${due.documentId || due.id}`,
+            source: "due",
+            status: due.status === "overdue" || due.status === "cancelled" ? due.status : "pending",
+            due,
+            amount: Number(due.dueAmount || 0) / 100,
+            studentName: enrolleeName || getStudentName(due),
+            studentEmail: due.emailAddress || enrollee?.email || enrollee?.user?.email || "N/A",
+            planName: due.planName || enrollee?.planName || "",
+            reference: due.paymentReference || due.paymentDocumentId || due.documentId || "",
+            paymentDate: due.paidDate || "",
+            dueDate: due.dueDate,
+          };
+        });
 
       return [...completedRecords, ...dueRecords].sort((a, b) => {
         const aTime = new Date(getRecordDate(a)).getTime() || 0;
@@ -369,9 +415,10 @@ export function AdminPaymentsSection() {
         if (showRefreshLoader) setRefreshing(true);
         setError("");
 
-        const [paymentsResult, duesResult] = await Promise.all([
+        const [paymentsResult, duesResult, enrollmentsResult] = await Promise.all([
           getAllPayments(),
           getAdminPaymentDues(),
+          getAllEnrollments({ page: 1, pageSize: 100 }),
         ]);
 
         if (!paymentsResult.success) {
@@ -382,7 +429,11 @@ export function AdminPaymentsSection() {
           throw new Error(duesResult.message || "Failed to fetch payment dues");
         }
 
-        setRecords(mapRecords(paymentsResult.data, duesResult.data));
+        if (!enrollmentsResult.success) {
+          throw new Error(enrollmentsResult.message || "Failed to fetch enrollments");
+        }
+
+        setRecords(mapRecords(paymentsResult.data, duesResult.data, enrollmentsResult.data));
       } catch (fetchError) {
         console.error("Error fetching admin payments:", fetchError);
         setRecords([]);
