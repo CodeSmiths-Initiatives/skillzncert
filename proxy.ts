@@ -15,8 +15,8 @@ const PUBLIC_ROUTES = [
 //   return path;
 // }
 
-export function middleware(req: NextRequest) {
-  const { pathname, searchParams } = req.nextUrl;
+export function proxy(req: NextRequest) {
+  const { pathname } = req.nextUrl;
 
   const authToken = req.cookies.get("auth_token")?.value;
   const isPublic = PUBLIC_ROUTES.some((route) =>

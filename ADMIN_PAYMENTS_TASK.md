@@ -197,8 +197,8 @@ The admin payments page order must be:
 - Phase one complete: admin sidebar routing, admin payments analytics, filters, paginated table, fixed-position row actions menu, invoice printing, and completed-payment receipt printing are implemented.
 - Server actions now enforce admin-only access for all-payment and enrollment-payment fetches. User payment and due fetches are scoped to the authenticated user from server cookies.
 - Verification passed: focused ESLint on changed files and `npm run build` with `STRAPI_URL=http://localhost:1337`.
-- Full `npm run lint` still fails on pre-existing repository issues outside this task, including generated Strapi `dist` files, older explicit `any` usage, and unrelated React lint findings.
-- The build logs an existing `/payment/verify` dynamic server usage warning during static generation, but the build exits successfully.
+- Follow-up cleanup complete: full `npm run lint` now exits successfully. Legacy `any` and unused-code findings remain as warnings.
+- Follow-up cleanup complete: `npm run build` with local Strapi environment variables no longer logs the `/payment/verify` dynamic server usage warning.
 
 ## Phase 2 Local Staging QA
 

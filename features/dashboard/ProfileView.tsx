@@ -79,6 +79,12 @@ const NETWORKS = [
   { value: "mobile9", label: "9mobile" },
 ];
 
+const EDUCATION_LEVELS = [
+  { value: "Undergraduate", label: "Undergraduate" },
+  { value: "IT & SIWES", label: "IT & SIWES" },
+  { value: "Post Secondary", label: "Post Secondary" },
+];
+
 export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -95,6 +101,7 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
     state: enrollment.state,
     country: enrollment.country,
     preferredLanguage: enrollment.preferredLanguage,
+    currentEducationLevel: enrollment.currentEducationLevel || "",
     yearOfStudy: enrollment.yearOfStudy,
     previousCertification: enrollment.previousCertification,
     universityAttending: enrollment.universityAttending,
@@ -140,6 +147,7 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
       state: enrollment.state,
       country: enrollment.country,
       preferredLanguage: enrollment.preferredLanguage,
+      currentEducationLevel: enrollment.currentEducationLevel || "",
       yearOfStudy: enrollment.yearOfStudy,
       previousCertification: enrollment.previousCertification,
       universityAttending: enrollment.universityAttending,
@@ -383,6 +391,14 @@ export function ProfileView({ enrollment, onUpdate }: ProfileViewProps) {
         icon={<FiBook size={24} />}
       >
         <TwoColumnGrid>
+          <ProfileField
+            label="Academic Qualification"
+            value={formData.currentEducationLevel}
+            isEditing={isEditing}
+            name="currentEducationLevel"
+            onChange={handleChange}
+            options={EDUCATION_LEVELS}
+          />
           <ProfileField
             label="Year of Study"
             value={formData.yearOfStudy}

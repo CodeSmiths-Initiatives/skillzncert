@@ -4,7 +4,9 @@ import PaymentVerify from "@/features/auth/PaymentVerify";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 
-export default async function page() {
+export const dynamic = "force-dynamic";
+
+export default async function PaymentVerifyPage() {
   const enrollment = await getEnrollmentStatusAction();
   const { user } = await getAuthUser();
 

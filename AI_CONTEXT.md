@@ -341,3 +341,4 @@ No explicit test script is currently defined in the root `package.json` or backe
 - DONT USE LIVE STRPI URL USE ONLY LOCALHOST URL FOR BACKEND/STRAPI TESTING
 - Phase one was completed with a dedicated `AdminPaymentsSection`, admin-only all-payment actions, authenticated-user-scoped user payment actions, focused lint on changed files, and a successful build using `STRAPI_URL=http://localhost:1337`.
 - Phase two local staging QA is complete. The built app was tested with `STRAPI_URL=http://localhost:1337` and `STRAPI_URL_PROD=http://localhost:1337`; admin payment rows now enrich student names from enrollment data.
+- Follow-up cleanup complete: full `npm run lint` exits successfully with warnings only, backend/generated artifacts are ignored by the frontend ESLint config, `/payment/verify` is explicitly dynamic, and `middleware.ts` was migrated to Next 16 `proxy.ts`.

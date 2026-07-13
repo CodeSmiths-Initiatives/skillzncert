@@ -35,7 +35,7 @@ export function Header({ user, onMenuClick }: HeaderProps) {
             <h1 className="text-lg sm:text-2xl font-bold text-gray-900">
               Welcome back, <span className="text-blue-600">{user.username}</span>!
             </h1>
-            <p className="text-sm text-gray-600 hidden sm:block">Here's what's happening today.</p>
+            <p className="text-sm text-gray-600 hidden sm:block">Here&apos;s what&apos;s happening today.</p>
           </div>
         </div>
         <Button onClick={handleLogout} className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600 text-sm px-3 py-2 sm:px-4 sm:py-2">

@@ -171,7 +171,7 @@ export default function PaymentSuccessPage({ enrollmentDocumentId, userId, userE
       
       // Calculate plan expiry date based on plan type
       const currentPlanId = planId || "gold";
-      let expiryDate = new Date(currentDate);
+      const expiryDate = new Date(currentDate);
       
       switch (currentPlanId.toLowerCase()) {
         case 'gold':

@@ -14,6 +14,7 @@ export interface EnrollmentData {
   state: string;
   country: string;
   preferredLanguage: string;
+  currentEducationLevel?: string;
   yearOfStudy: string;
   previousCertification: string;
   universityAttending: string;
@@ -57,6 +58,7 @@ export interface EnrolleeData {
   updatedAt: string;
   state: string;
   country: string;
+  currentEducationLevel?: string;
   yearOfStudy: string;
   universityAttending?: string;
   previousCertification?: string;
@@ -88,6 +90,7 @@ interface EnrollmentCreateData {
   state: string;
   country: string;
   preferredLanguage: string;
+  currentEducationLevel: string;
   yearOfStudy: string;
   previousCertification: string;
   universityAttending: string;
@@ -164,6 +167,7 @@ function mapEnrollment(enrollment: any): EnrolleeData {
     updatedAt: enrollment.updatedAt,
     state: enrollment.state || "",
     country: enrollment.country || "",
+    currentEducationLevel: enrollment.currentEducationLevel || "",
     yearOfStudy: String(enrollment.yearOfStudy || ""),
     universityAttending: enrollment.universityAttending || "",
     previousCertification: enrollment.previousCertification || "",
@@ -335,6 +339,7 @@ export async function submitEnrollment(formData: FormData, token: string) {
       state: formData.get("data[state]") as string,
       country: formData.get("data[country]") as string,
       preferredLanguage: formData.get("data[preferredLanguage]") as string,
+      currentEducationLevel: formData.get("data[currentEducationLevel]") as string,
       yearOfStudy: formData.get("data[yearOfStudy]") as string,
       previousCertification: formData.get(
         "data[previousCertification]",
@@ -513,6 +518,7 @@ export async function getEnrollmentData(
       state: enrollment.state || "",
       country: enrollment.country || "",
       preferredLanguage: enrollment.preferredLanguage || "",
+      currentEducationLevel: enrollment.currentEducationLevel || "",
       yearOfStudy: enrollment.yearOfStudy || "",
       previousCertification: enrollment.previousCertification || "",
       universityAttending: enrollment.universityAttending || "",
@@ -565,6 +571,7 @@ export async function updateEnrollmentData(
       "state",
       "country",
       "preferredLanguage",
+      "currentEducationLevel",
       "yearOfStudy",
       "previousCertification",
       "universityAttending",
@@ -826,6 +833,7 @@ export async function fetchAllEnrollments(
       updatedAt: enrollment.updatedAt,
       state: enrollment.state || "",
       country: enrollment.country || "",
+      currentEducationLevel: enrollment.currentEducationLevel || "",
       yearOfStudy: enrollment.yearOfStudy || "",
       universityAttending: enrollment.universityAttending || "",
       previousCertification: enrollment.previousCertification || "",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, TrendingUp, Users, DollarSign } from "lucide-react";
 import { PAYMENT_PLANS } from "@/lib/payment-plans";
@@ -14,7 +14,7 @@ interface PlanAnalyticsProps {
 }
 
 export function PlanAnalytics({ payments, enrollees, isLoading = false }: PlanAnalyticsProps) {
-  const [planStats, setPlanStats] = useState<{
+  const planStats = useMemo<{
     [key: string]: {
       name: string;
       enrolledCount: number;
@@ -22,15 +22,16 @@ export function PlanAnalytics({ payments, enrollees, isLoading = false }: PlanAn
       totalRevenue: number;
       avgAmount: number;
     };
-  }>({});
-
-  const hasCalculated = useRef(false);
-
-  useEffect(() => {
-    if (hasCalculated.current) return;
-    hasCalculated.current = true;
-
-    const stats: typeof planStats = {};
+  }>(() => {
+    const stats: {
+      [key: string]: {
+        name: string;
+        enrolledCount: number;
+        paidCount: number;
+        totalRevenue: number;
+        avgAmount: number;
+      };
+    } = {};
 
     // Initialize all plans
     Object.values(PAYMENT_PLANS).forEach((plan) => {
@@ -72,7 +73,7 @@ export function PlanAnalytics({ payments, enrollees, isLoading = false }: PlanAn
       }
     });
 
-    setPlanStats(stats);
+    return stats;
   }, [payments, enrollees]);
 
   const formatAmount = (amount: number) => {

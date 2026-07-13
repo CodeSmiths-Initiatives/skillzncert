@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getEnrollmentAction } from "@/actions/enrollment/get-enrollment.actions";
 import { ProfileView } from "./ProfileView";
 import { EnrollmentData } from "@/lib/services/enrollment.service";
@@ -11,11 +11,7 @@ export function ProfileSection() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadEnrollment();
-  }, []);
-
-  const loadEnrollment = async () => {
+  const loadEnrollment = useCallback(async () => {
     setLoading(true);
     const result = await getEnrollmentAction();
     
@@ -26,7 +22,33 @@ export function ProfileSection() {
       setError(result.message || "Failed to load profile");
     }
     setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadInitialEnrollment() {
+      const result = await getEnrollmentAction();
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (result.success && result.data) {
+        setEnrollment(result.data);
+        setError(null);
+      } else {
+        setError(result.message || "Failed to load profile");
+      }
+      setLoading(false);
+    }
+
+    loadInitialEnrollment();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   if (loading) {
     return (

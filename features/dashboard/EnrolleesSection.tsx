@@ -66,6 +66,10 @@ export function EnrolleesSection() {
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({
+    top: 0,
+    left: 0,
+  });
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -223,9 +227,25 @@ export function EnrolleesSection() {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpenDropdown(null);
+      }
+    };
 
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    const closeDropdown = () => setOpenDropdown(null);
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("resize", closeDropdown);
+    window.addEventListener("scroll", closeDropdown, true);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("resize", closeDropdown);
+      window.removeEventListener("scroll", closeDropdown, true);
+    };
   }, []);
 
   const handleViewEnrollee = (enrollee: EnrolleeData) => {
@@ -234,7 +254,24 @@ export function EnrolleesSection() {
     setOpenDropdown(null);
   };
 
-  const toggleDropdown = (enrolleeId: number) => {
+  const toggleDropdown = (enrolleeId: number, button: HTMLButtonElement) => {
+    const rect = button.getBoundingClientRect();
+    const menuWidth = 192;
+    const menuHeight = 48;
+    const margin = 16;
+
+    const left = Math.min(
+      Math.max(margin, rect.right - menuWidth),
+      window.innerWidth - menuWidth - margin,
+    );
+
+    const preferredTop = rect.bottom + 8;
+    const top =
+      preferredTop + menuHeight > window.innerHeight - margin
+        ? Math.max(margin, rect.top - menuHeight - 8)
+        : preferredTop;
+
+    setDropdownPosition({ top, left });
     setOpenDropdown((current) => (current === enrolleeId ? null : enrolleeId));
   };
 
@@ -323,6 +360,8 @@ export function EnrolleesSection() {
 
   const hasActiveFilters =
     searchTerm || batchFilter !== "all" || paymentFilter !== "all";
+  const activeDropdownEnrollee =
+    enrollees.find((enrollee) => enrollee.id === openDropdown) || null;
 
   if (loading) {
     return (
@@ -581,30 +620,21 @@ export function EnrolleesSection() {
                   </td>
 
                   <td className="py-4 px-4">
-                    <div
-                      className="relative"
-                      ref={openDropdown === enrollee.id ? dropdownRef : null}
-                    >
+                    <div>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => toggleDropdown(enrollee.id)}
+                        aria-haspopup="menu"
+                        aria-expanded={openDropdown === enrollee.id}
+                        aria-label={`Open actions for ${enrollee.firstName} ${enrollee.lastName}`}
+                        onMouseDown={(event) => event.stopPropagation()}
+                        onClick={(event) =>
+                          toggleDropdown(enrollee.id, event.currentTarget)
+                        }
                         className="hover:bg-gray-100"
                       >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
-
-                      {openDropdown === enrollee.id && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10 animate-fadeIn">
-                          <button
-                            onClick={() => handleViewEnrollee(enrollee)}
-                            className="w-full text-left px-4 py-2 hover:bg-blue-50 flex items-center gap-2 text-gray-700 transition-colors"
-                          >
-                            <Eye className="h-4 w-4 text-blue-600" />
-                            View Details
-                          </button>
-                        </div>
-                      )}
                     </div>
                   </td>
                 </tr>
@@ -677,6 +707,28 @@ export function EnrolleesSection() {
           </div>
         )}
       </Card>
+
+      {activeDropdownEnrollee && (
+        <div
+          ref={dropdownRef}
+          role="menu"
+          className="fixed z-50 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-xl animate-fadeIn"
+          style={{
+            top: dropdownPosition.top,
+            left: dropdownPosition.left,
+          }}
+        >
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => handleViewEnrollee(activeDropdownEnrollee)}
+            className="w-full text-left px-4 py-2 hover:bg-blue-50 flex items-center gap-2 text-gray-700 transition-colors"
+          >
+            <Eye className="h-4 w-4 text-blue-600" />
+            View Details
+          </button>
+        </div>
+      )}
 
       <EnrolleeDetailsModal
         isOpen={isModalOpen}

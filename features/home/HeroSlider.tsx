@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import clsx from "clsx";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 
 const slides = [
@@ -69,12 +68,8 @@ export default function HeroSlider() {
 	useEffect(() => {
 		// Don't auto-advance if video is playing
 		if (isVideoPlaying) {
-			setProgress(0);
 			return;
 		}
-
-		// Reset progress when slide changes
-		setProgress(0);
 
 		// Animate progress bar
 		const progressInterval = setInterval(() => {
@@ -86,6 +81,7 @@ export default function HeroSlider() {
 
 		// Auto-advance to next slide
 		const slideTimer = setTimeout(() => {
+			setProgress(0);
 			setCurrent((prev) => (prev + 1) % slides.length);
 		}, SLIDE_DURATION);
 
@@ -96,6 +92,7 @@ export default function HeroSlider() {
 	}, [current, isVideoPlaying]);
 
 	const handleVideoPlay = () => {
+		setProgress(0);
 		setIsVideoPlaying(true);
 	};
 
@@ -106,6 +103,7 @@ export default function HeroSlider() {
 	const handleVideoEnded = () => {
 		setIsVideoPlaying(false);
 		// Optionally auto-advance to next slide when video ends
+		setProgress(0);
 		setCurrent((prev) => (prev + 1) % slides.length);
 	};
 

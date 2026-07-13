@@ -20,7 +20,7 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import type { PaystackConfig, PaymentCallbacks } from '@/lib/services/paystack.service';
+import type { PaystackConfig } from '@/lib/services/paystack.service';
 import { validatePaystackConfig } from '@/lib/services/paystack.service';
 
 interface InitiatePaymentParams {
@@ -48,7 +48,7 @@ export function usePaystackPayment() {
         throw new Error("Paystack can only be initialized in the browser");
       }
 
-      const module = await import('react-paystack');
+      const paystackModule = await import('react-paystack');
       const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
 
       if (!publicKey) {
@@ -64,7 +64,7 @@ export function usePaystackPayment() {
         } : undefined
       };
 
-      paymentHookRef.current = module.usePaystackPayment(paystackConfig);
+      paymentHookRef.current = paystackModule.usePaystackPayment(paystackConfig);
       return paymentHookRef.current;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load Paystack";
