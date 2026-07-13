@@ -58,6 +58,70 @@ export interface CreatePaymentDueInput {
   notes?: string;
 }
 
+type StrapiEnrollmentRecord = {
+  id?: number;
+  documentId?: string;
+  firstName?: string;
+  lastName?: string;
+};
+
+type StrapiPaymentDueRecord = {
+  id?: number;
+  documentId?: string;
+  userDocumentId?: string;
+  enrollmentDocumentId?: string;
+  parentPaymentDocumentId?: string;
+  planId?: string;
+  planName?: string;
+  installmentNumber?: number;
+  totalInstallments?: number;
+  dueAmount?: number | string;
+  dueDate?: string;
+  status?: "pending" | "paid" | "overdue" | "cancelled";
+  paidAmount?: number | string;
+  paidDate?: string;
+  paymentReference?: string;
+  paymentDocumentId?: string;
+  emailAddress?: string;
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  enrollment?: StrapiEnrollmentRecord | null;
+};
+
+function mapPaymentDue(due: StrapiPaymentDueRecord): PaymentDueData {
+  return {
+    id: due.id || 0,
+    documentId: due.documentId || "",
+    userDocumentId: due.userDocumentId || "",
+    enrollmentDocumentId: due.enrollmentDocumentId || "",
+    parentPaymentDocumentId: due.parentPaymentDocumentId || "",
+    planId: due.planId || "",
+    planName: due.planName || "",
+    installmentNumber: due.installmentNumber || 0,
+    totalInstallments: due.totalInstallments || 0,
+    dueAmount: Number(due.dueAmount || 0),
+    dueDate: due.dueDate || "",
+    status: due.status || "pending",
+    paidAmount: Number(due.paidAmount || 0),
+    paidDate: due.paidDate || "",
+    paymentReference: due.paymentReference || "",
+    paymentDocumentId: due.paymentDocumentId || "",
+    emailAddress: due.emailAddress || "",
+    notes: due.notes || "",
+    createdAt: due.createdAt || "",
+    updatedAt: due.updatedAt || "",
+    enrollment: due.enrollment
+      ? {
+          id: due.enrollment.id || 0,
+          documentId: due.enrollment.documentId || "",
+          firstName: due.enrollment.firstName || "",
+          lastName: due.enrollment.lastName || "",
+        }
+      : undefined,
+  };
+}
+
 /**
  * Creates a single payment due record
  * @param paymentDueData - Payment due information
@@ -158,36 +222,46 @@ export async function fetchPaymentDuesByUser(
   const json = await res.json();
   const paymentDues = json?.data || [];
 
-  return paymentDues.map((due: any) => ({
-    id: due.id,
-    documentId: due.documentId,
-    userDocumentId: due.userDocumentId || "",
-    enrollmentDocumentId: due.enrollmentDocumentId || "",
-    parentPaymentDocumentId: due.parentPaymentDocumentId || "",
-    planId: due.planId || "",
-    planName: due.planName || "",
-    installmentNumber: due.installmentNumber || 0,
-    totalInstallments: due.totalInstallments || 0,
-    dueAmount: due.dueAmount || 0,
-    dueDate: due.dueDate || "",
-    status: due.status || "pending",
-    paidAmount: due.paidAmount || 0,
-    paidDate: due.paidDate || "",
-    paymentReference: due.paymentReference || "",
-    paymentDocumentId: due.paymentDocumentId || "",
-    emailAddress: due.emailAddress || "",
-    notes: due.notes || "",
-    createdAt: due.createdAt,
-    updatedAt: due.updatedAt,
-    enrollment: due.enrollment
-      ? {
-          id: due.enrollment.id,
-          documentId: due.enrollment.documentId,
-          firstName: due.enrollment.firstName,
-          lastName: due.enrollment.lastName,
-        }
-      : undefined,
-  }));
+  return paymentDues.map(mapPaymentDue);
+}
+
+export async function fetchAllPaymentDues(
+  token: string
+): Promise<PaymentDueData[]> {
+  const pageSize = 100;
+  let page = 1;
+  let pageCount = 1;
+  const allPaymentDues: PaymentDueData[] = [];
+
+  do {
+    const res = await fetch(
+      `${process.env.STRAPI_URL}/api/payment-dues?populate=*&sort[0]=dueDate:asc&sort[1]=installmentNumber:asc&pagination[page]=${page}&pagination[pageSize]=${pageSize}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
+      }
+    );
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.warn("Strapi API Error (fetchAllPaymentDues):", res.status, errorText);
+      return allPaymentDues;
+    }
+
+    const json = await res.json();
+    const paymentDues = json?.data || [];
+    pageCount = json?.meta?.pagination?.pageCount ?? 1;
+
+    allPaymentDues.push(
+      ...paymentDues.map(mapPaymentDue)
+    );
+
+    page += 1;
+  } while (page <= pageCount);
+
+  return allPaymentDues;
 }
 
 /**
@@ -223,36 +297,7 @@ export async function fetchPaymentDuesByEnrollment(
   const json = await res.json();
   const paymentDues = json?.data || [];
 
-  return paymentDues.map((due: any) => ({
-    id: due.id,
-    documentId: due.documentId,
-    userDocumentId: due.userDocumentId || "",
-    enrollmentDocumentId: due.enrollmentDocumentId || "",
-    parentPaymentDocumentId: due.parentPaymentDocumentId || "",
-    planId: due.planId || "",
-    planName: due.planName || "",
-    installmentNumber: due.installmentNumber || 0,
-    totalInstallments: due.totalInstallments || 0,
-    dueAmount: due.dueAmount || 0,
-    dueDate: due.dueDate || "",
-    status: due.status || "pending",
-    paidAmount: due.paidAmount || 0,
-    paidDate: due.paidDate || "",
-    paymentReference: due.paymentReference || "",
-    paymentDocumentId: due.paymentDocumentId || "",
-    emailAddress: due.emailAddress || "",
-    notes: due.notes || "",
-    createdAt: due.createdAt,
-    updatedAt: due.updatedAt,
-    enrollment: due.enrollment
-      ? {
-          id: due.enrollment.id,
-          documentId: due.enrollment.documentId,
-          firstName: due.enrollment.firstName,
-          lastName: due.enrollment.lastName,
-        }
-      : undefined,
-  }));
+  return paymentDues.map(mapPaymentDue);
 }
 
 /**
@@ -378,34 +423,5 @@ export async function fetchPendingPaymentDues(
   const json = await res.json();
   const paymentDues = json?.data || [];
 
-  return paymentDues.map((due: any) => ({
-    id: due.id,
-    documentId: due.documentId,
-    userDocumentId: due.userDocumentId || "",
-    enrollmentDocumentId: due.enrollmentDocumentId || "",
-    parentPaymentDocumentId: due.parentPaymentDocumentId || "",
-    planId: due.planId || "",
-    planName: due.planName || "",
-    installmentNumber: due.installmentNumber || 0,
-    totalInstallments: due.totalInstallments || 0,
-    dueAmount: due.dueAmount || 0,
-    dueDate: due.dueDate || "",
-    status: due.status || "pending",
-    paidAmount: due.paidAmount || 0,
-    paidDate: due.paidDate || "",
-    paymentReference: due.paymentReference || "",
-    paymentDocumentId: due.paymentDocumentId || "",
-    emailAddress: due.emailAddress || "",
-    notes: due.notes || "",
-    createdAt: due.createdAt,
-    updatedAt: due.updatedAt,
-    enrollment: due.enrollment
-      ? {
-          id: due.enrollment.id,
-          documentId: due.enrollment.documentId,
-          firstName: due.enrollment.firstName,
-          lastName: due.enrollment.lastName,
-        }
-      : undefined,
-  }));
+  return paymentDues.map(mapPaymentDue);
 }

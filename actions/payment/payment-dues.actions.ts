@@ -12,6 +12,7 @@ import { cookies } from "next/headers";
 import {
   createPaymentDue,
   createPaymentDuesBatch,
+  fetchAllPaymentDues,
   fetchPaymentDuesByUser,
   fetchPaymentDuesByEnrollment,
   updatePaymentDue,
@@ -19,9 +20,10 @@ import {
   deletePaymentDue,
   fetchPendingPaymentDues,
 } from "@/lib/services/payment-due.service";
+import { getAuthUser } from "@/lib/auth/get-auth-user";
+import { isAdmin } from "@/lib/auth/roles";
 import type { 
-  CreatePaymentDueInput, 
-  PaymentDueData 
+  CreatePaymentDueInput,
 } from "@/lib/services/payment-due.service";
 
 /**
@@ -137,14 +139,20 @@ export async function createPaymentDuesBatchAction(
  */
 export async function getUserPaymentDues(userId: number | string) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("auth_token")?.value;
+    const { user, token } = await getAuthUser();
 
-    if (!token) {
+    if (!token || !user) {
       return { success: false, message: "Unauthorized", data: [] };
     }
 
-    const paymentDues = await fetchPaymentDuesByUser(userId, token);
+    if (String(userId) !== String(user.id)) {
+      console.warn("Blocked cross-user payment due fetch attempt", {
+        requestedUserId: userId,
+        authenticatedUserId: user.id,
+      });
+    }
+
+    const paymentDues = await fetchPaymentDuesByUser(user.id, token);
 
     return {
       success: true,
@@ -164,19 +172,57 @@ export async function getUserPaymentDues(userId: number | string) {
   }
 }
 
+export async function getAdminPaymentDues() {
+  try {
+    const { user, token } = await getAuthUser();
+
+    if (!token || !user) {
+      return { success: false, message: "Unauthorized", data: [] };
+    }
+
+    if (!isAdmin(user)) {
+      return { success: false, message: "Forbidden", data: [] };
+    }
+
+    const paymentDues = await fetchAllPaymentDues(token);
+
+    return {
+      success: true,
+      message: "Payment dues fetched successfully",
+      data: paymentDues,
+    };
+  } catch (error) {
+    console.error("Get admin payment dues error:", error);
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch payment dues",
+      data: [],
+    };
+  }
+}
+
 /**
  * Fetches pending payment dues for a user
  */
 export async function getPendingPaymentDues(userId: number | string) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("auth_token")?.value;
+    const { user, token } = await getAuthUser();
 
-    if (!token) {
+    if (!token || !user) {
       return { success: false, message: "Unauthorized", data: [] };
     }
 
-    const paymentDues = await fetchPendingPaymentDues(userId, token);
+    if (String(userId) !== String(user.id)) {
+      console.warn("Blocked cross-user pending due fetch attempt", {
+        requestedUserId: userId,
+        authenticatedUserId: user.id,
+      });
+    }
+
+    const paymentDues = await fetchPendingPaymentDues(user.id, token);
 
     return {
       success: true,

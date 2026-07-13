@@ -2,6 +2,7 @@
 "use client";
 
 import { EnrolleesSection } from "./EnrolleesSection";
+import { AdminPaymentsSection } from "./AdminPaymentsSection";
 import { OverviewSection } from "./OverviewSection";
 import { PaymentsSection } from "./PaymentsSection";
 import { ProfileSection } from "./ProfileSection";
@@ -28,7 +29,11 @@ export function DashboardContent({ activeRoute, isAdmin, userId, username, email
         return <ProfileSection />;
       
       case "payments":
-        return <PaymentsSection userId={userId} userEmail={email || ""} />;
+        return isAdmin ? (
+          <AdminPaymentsSection />
+        ) : (
+          <PaymentsSection userId={userId} userEmail={email || ""} />
+        );
       
       case "enrollees":
         return <EnrolleesSection />;

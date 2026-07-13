@@ -1,15 +1,19 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { fetchPaymentsByEnrollment, fetchAllPayments } from "@/lib/services/payment.service";
+import { getAuthUser } from "@/lib/auth/get-auth-user";
+import { isAdmin } from "@/lib/auth/roles";
 
 export async function getPaymentsByEnrollment(enrollmentDocumentId: string) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("auth_token")?.value;
+    const { user, token } = await getAuthUser();
 
     if (!token) {
       return { success: false, message: "Unauthorized", data: [] };
+    }
+
+    if (!isAdmin(user)) {
+      return { success: false, message: "Forbidden", data: [] };
     }
 
     if (!enrollmentDocumentId) {
@@ -31,11 +35,14 @@ export async function getPaymentsByEnrollment(enrollmentDocumentId: string) {
 
 export async function getAllPayments() {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("auth_token")?.value;
+    const { user, token } = await getAuthUser();
 
     if (!token) {
       return { success: false, message: "Unauthorized", data: [] };
+    }
+
+    if (!isAdmin(user)) {
+      return { success: false, message: "Forbidden", data: [] };
     }
 
     const data = await fetchAllPayments(token);

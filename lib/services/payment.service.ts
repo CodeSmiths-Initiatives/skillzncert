@@ -44,6 +44,66 @@ export interface CreatePaymentInput {
   nextPaymentDate?: string;
 }
 
+type StrapiEnrollmentRecord = {
+  id?: number;
+  documentId?: string;
+  firstName?: string;
+  lastName?: string;
+};
+
+type StrapiPaymentRecord = {
+  id?: number;
+  documentId?: string;
+  userDocumentId?: string;
+  enrollmentDocumentId?: string;
+  paymentMode?: string;
+  month?: string;
+  year?: number;
+  amount?: number | string;
+  emailAddress?: string;
+  paymentDate?: string;
+  reference?: string;
+  planId?: string;
+  planName?: string;
+  planAmount?: number | string;
+  planDiscount?: number;
+  expiryDate?: string;
+  nextPaymentDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  enrollment?: StrapiEnrollmentRecord | null;
+};
+
+function mapPayment(payment: StrapiPaymentRecord): PaymentData {
+  return {
+    id: payment.id || 0,
+    documentId: payment.documentId || "",
+    userDocumentId: payment.userDocumentId || "",
+    enrollmentDocumentId: payment.enrollmentDocumentId || "",
+    paymentMode: payment.paymentMode || "",
+    month: payment.month || "",
+    year: payment.year || 0,
+    amount: Number(payment.amount || 0),
+    emailAddress: payment.emailAddress || "",
+    paymentDate: payment.paymentDate || "",
+    reference: payment.reference || "",
+    planId: payment.planId || "",
+    planName: payment.planName || "",
+    planAmount: Number(payment.planAmount || 0),
+    planDiscount: payment.planDiscount || 0,
+    expiryDate: payment.expiryDate || "",
+    nextPaymentDate: payment.nextPaymentDate || "",
+    createdAt: payment.createdAt || "",
+    updatedAt: payment.updatedAt || "",
+    enrollment: payment.enrollment ? {
+      id: payment.enrollment.id || 0,
+      documentId: payment.enrollment.documentId || "",
+      firstName: payment.enrollment.firstName || "",
+      lastName: payment.enrollment.lastName || "",
+    } : undefined,
+  };
+}
+
 export async function createPayment(
   paymentData: CreatePaymentInput,
   token: string
@@ -100,87 +160,48 @@ export async function fetchPaymentsByEnrollment(
   const json = await res.json();
   const payments = json?.data || [];
 
-  return payments.map((payment: any) => ({
-    id: payment.id,
-    documentId: payment.documentId,
-    userDocumentId: payment.userDocumentId || "",
-    enrollmentDocumentId: payment.enrollmentDocumentId || "",
-    paymentMode: payment.paymentMode || "",
-    month: payment.month || "",
-    year: payment.year || 0,
-    amount: payment.amount || 0,
-    emailAddress: payment.emailAddress || "",
-    paymentDate: payment.paymentDate || "",
-    reference: payment.reference || "",
-    planId: payment.planId || "",
-    planName: payment.planName || "",
-    planAmount: payment.planAmount || 0,
-    planDiscount: payment.planDiscount || 0,
-    expiryDate: payment.expiryDate || "",
-    nextPaymentDate: payment.nextPaymentDate || "",
-    createdAt: payment.createdAt,
-    updatedAt: payment.updatedAt,
-    enrollment: payment.enrollment ? {
-      id: payment.enrollment.id,
-      documentId: payment.enrollment.documentId,
-      firstName: payment.enrollment.firstName,
-      lastName: payment.enrollment.lastName,
-    } : undefined,
-  }));
+  return payments.map(mapPayment);
 }
 
 export async function fetchAllPayments(token: string): Promise<PaymentData[]> {
-  const res = await fetch(
-    `${process.env.STRAPI_URL}/api/payments?populate=*&sort=createdAt:desc`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      cache: "no-store",
+  const pageSize = 100;
+  let page = 1;
+  let pageCount = 1;
+  const allPayments: PaymentData[] = [];
+
+  do {
+    const res = await fetch(
+      `${process.env.STRAPI_URL}/api/payments?populate=*&sort=createdAt:desc&pagination[page]=${page}&pagination[pageSize]=${pageSize}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
+      }
+    );
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.warn("Strapi API Error:", res.status, errorText);
+      if (res.status === 403) {
+        console.warn("Access denied fetching all payments - returning empty list");
+        return [];
+      }
+      return allPayments;
     }
-  );
 
+    const json = await res.json();
+    const payments = json?.data || [];
+    pageCount = json?.meta?.pagination?.pageCount ?? 1;
 
-   if (!res.ok) {
-     const errorText = await res.text();
-     console.warn("Strapi API Error:", res.status, errorText);
-     // Return empty array instead of throwing error for 403 and other fetch failures
-     if (res.status === 403) {
-       console.warn("Access denied fetching all payments - returning empty list");
-       return [];
-     }
-     return [];
-   }
-  const json = await res.json();
-  const payments = json?.data || [];
+    allPayments.push(
+      ...payments.map(mapPayment)
+    );
 
-  return payments.map((payment: any) => ({
-    id: payment.id,
-    documentId: payment.documentId,
-    userDocumentId: payment.userDocumentId || "",
-    enrollmentDocumentId: payment.enrollmentDocumentId || "",
-    paymentMode: payment.paymentMode || "",
-    month: payment.month || "",
-    year: payment.year || 0,
-    amount: payment.amount || 0,
-    emailAddress: payment.emailAddress || "",
-    paymentDate: payment.paymentDate || "",
-    reference: payment.reference || "",
-    planId: payment.planId || "",
-    planName: payment.planName || "",
-    planAmount: payment.planAmount || 0,
-    planDiscount: payment.planDiscount || 0,
-    expiryDate: payment.expiryDate || "",
-    nextPaymentDate: payment.nextPaymentDate || "",
-    createdAt: payment.createdAt,
-    updatedAt: payment.updatedAt,
-    enrollment: payment.enrollment ? {
-      id: payment.enrollment.id,
-      documentId: payment.enrollment.documentId,
-      firstName: payment.enrollment.firstName,
-      lastName: payment.enrollment.lastName,
-    } : undefined,
-  }));
+    page += 1;
+  } while (page <= pageCount);
+
+  return allPayments;
 }
 
 export async function fetchPaymentsByUser(
@@ -211,33 +232,7 @@ export async function fetchPaymentsByUser(
   const json = await res.json();
   const payments = json?.data || [];
 
-  return payments.map((payment: any) => ({
-    id: payment.id,
-    documentId: payment.documentId,
-    userDocumentId: payment.userDocumentId || "",
-    enrollmentDocumentId: payment.enrollmentDocumentId || "",
-    paymentMode: payment.paymentMode || "",
-    month: payment.month || "",
-    year: payment.year || 0,
-    amount: payment.amount || 0,
-    emailAddress: payment.emailAddress || "",
-    paymentDate: payment.paymentDate || "",
-    reference: payment.reference || "",
-    planId: payment.planId || "",
-    planName: payment.planName || "",
-    planAmount: payment.planAmount || 0,
-    planDiscount: payment.planDiscount || 0,
-    expiryDate: payment.expiryDate || "",
-    nextPaymentDate: payment.nextPaymentDate || "",
-    createdAt: payment.createdAt,
-    updatedAt: payment.updatedAt,
-    enrollment: payment.enrollment ? {
-      id: payment.enrollment.id,
-      documentId: payment.enrollment.documentId,
-      firstName: payment.enrollment.firstName,
-      lastName: payment.enrollment.lastName,
-    } : undefined,
-  }));
+  return payments.map(mapPayment);
 }
 
 export async function updatePayment(

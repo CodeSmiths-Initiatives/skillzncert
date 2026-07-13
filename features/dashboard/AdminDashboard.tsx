@@ -4,16 +4,17 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { DashboardContent } from "./DashboardContent";
+import type { AuthUser } from "@/lib/auth/get-auth-user";
 
 const adminSidebarItems = [
   { label: "Overview", route: "overview", iconName: "LayoutDashboard" },
   { label: "Enrollees", route: "enrollees", iconName: "Users" },
-  // { label: "Payments", route: "payments", iconName: "CreditCard" },
+  { label: "Payments", route: "payments", iconName: "CreditCard" },
   { label: "Schedule", route: "schedule", iconName: "Calendar" },
   { label: "Settings", route: "settings", iconName: "Settings" },
 ];
 
-export default function AdminDashboard({ user }: { user: any }) {
+export default function AdminDashboard({ user }: { user: AuthUser }) {
   const [activeRoute, setActiveRoute] = useState("overview");
 
   return (

@@ -1,22 +1,30 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { fetchPaymentsByUser } from "@/lib/services/payment.service";
+import { getAuthUser } from "@/lib/auth/get-auth-user";
 
-export async function getUserPayments(userId: number) {
+export async function getUserPayments(userId?: number) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("auth_token")?.value;
+    const { user, token } = await getAuthUser();
 
-    if (!token) {
+    if (!token || !user) {
       return { success: false, message: "Unauthorized", data: [] };
     }
 
-    if (!userId) {
+    const scopedUserId = user.id;
+
+    if (!scopedUserId) {
       return { success: false, message: "User ID is required", data: [] };
     }
 
-    const data = await fetchPaymentsByUser(userId, token);
+    if (userId && userId !== scopedUserId) {
+      console.warn("Blocked cross-user payment fetch attempt", {
+        requestedUserId: userId,
+        authenticatedUserId: scopedUserId,
+      });
+    }
+
+    const data = await fetchPaymentsByUser(scopedUserId, token);
 
     return { success: true, data };
   } catch (error) {
