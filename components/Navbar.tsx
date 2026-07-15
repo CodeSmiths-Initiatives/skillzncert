@@ -34,6 +34,9 @@ export default function Navbar() {
 							<Link href="/">PROGRAMMES</Link>
 						</li> */}
 						<li>
+							<Link href="#Event">EVENT</Link>
+						</li>
+						<li>
 							<Link href="#Courses">COURSES</Link>
 						</li>
 						<li>
