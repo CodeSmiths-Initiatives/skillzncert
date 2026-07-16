@@ -1,4 +1,5 @@
 import AboutUs from "@/features/home/AboutUs";
+import Event from "@/features/home/Event";
 import Faq from "@/features/home/Faq";
 import HeroSlider from "@/features/home/HeroSlider";
 import PaymentPlan from "@/features/home/PaymentPlan";
@@ -20,6 +21,9 @@ export default function Home() {
 				</section>
 				<section id="Courses">
 					<Solution />
+				</section>
+				<section id="Event">
+					<Event />
 				</section>
 				<section>
 					<PaymentPlan />
