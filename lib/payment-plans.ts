@@ -36,7 +36,7 @@ export const ONLINE_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
     features: [
       "50% on Discount Training Fee.",
       "Starter Package",
-      "15 validity on the 58% discount exam voucher.",
+      "15 months validity on the 58% discount exam voucher.",
       "1 year after training support.",
       "Exit package",
     ],
@@ -62,7 +62,7 @@ export const ONLINE_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
     description: "Enhanced training package with substantial discounts",
     features: [
       "45% on Discount Training Fee.",
-      "15 validity on the 58% discount exam voucher.",
+      "15 months validity on the 58% discount exam voucher.",
       "1 year after training support.",
       "Exit package",
     ],
@@ -87,7 +87,7 @@ export const ONLINE_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
     description: "Comprehensive training package with competitive discounts",
     features: [
       "40% on Discount Training Fee.",
-      "15 validity on the 58% discount exam voucher.",
+      "15 months validity on the 58% discount exam voucher.",
       "1 year after training support.",
       "Exit package",
     ],
@@ -116,7 +116,7 @@ export const SIWES_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
     features: [
       "50% on Discount Training Fee.",
       "Starter Package",
-      "15 validity on the 58% discount exam voucher.",
+      "15 months validity on the 58% discount exam voucher.",
       "1 year after training support.",
       "Exit package",
     ],
@@ -141,8 +141,8 @@ export const SIWES_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
     description: "Enhanced training package with substantial discounts",
     features: [
       "45% on Discount Training Fee.",
-      "Core Package",
-      "15 validity on the 58% discount exam voucher.",
+      // "Core Package",
+      "15 months validity on the 58% discount exam voucher.",
       "1 year after training support.",
       "Exit package",
     ],
@@ -167,8 +167,8 @@ export const SIWES_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
     description: "Comprehensive training package with competitive discounts",
     features: [
       "40% on Discount Training Fee.",
-      "Basic Package",
-      "15 validity on the 58% discount exam voucher.",
+      // "Basic Package",
+      "15 months validity on the 58% discount exam voucher.",
       "1 year after training support.",
       "Exit package",
     ],
@@ -198,7 +198,7 @@ export const POST_SECONDARY_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
     features: [
       "50% on Discount Training Fee.",
       "Starter Package",
-      "15 validity on the 58% discount exam voucher.",
+      // "15 months validity on the 58% discount exam voucher.",
       "1 year after training support.",
       "Exit package",
     ],
@@ -223,8 +223,8 @@ export const POST_SECONDARY_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
     description: "Enhanced post-secondary training package with substantial discounts",
     features: [
       "45% on Discount Training Fee.",
-      "Core Package",
-      "15 validity on the 58% discount exam voucher.",
+      // "Core Package",
+      // "15 months validity on the 58% discount exam voucher.",
       "1 year after training support.",
       "Exit package",
     ],
@@ -249,8 +249,8 @@ export const POST_SECONDARY_PAYMENT_PLANS: Record<string, PaymentPlanConfig> = {
     description: "Comprehensive post-secondary training package with competitive discounts",
     features: [
       "40% on Discount Training Fee.",
-      "Basic Package",
-      "15 validity on the 58% discount exam voucher.",
+      // "Basic Package",
+      // "15 months validity on the 58% discount exam voucher.",
       "1 year after training support.",
       "Exit package",
     ],
