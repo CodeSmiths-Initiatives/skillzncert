@@ -35,15 +35,15 @@ const slides = [
 		image: "/static/images/skills.jpg",
 	},
 	{
-		id: 5, 
+		id: 5,
 		title: "Turn your IT/SIWES into real TECH EXPERIENCE",
-		description: "Networking and Cybersecurity careers aren't build on theory. Learn the skills with globally recongnized certification and Certifications",
+		description:
+			"Networking and Cybersecurity careers aren't build on theory. Learn the skills with globally recongnized certification and Certifications",
 		image: "/static/images/Siwes.jpg",
-	}
+	},
 ];
 
-const SLIDE_DURATION = 5000; // 5 seconds per slide
-
+const SLIDE_DURATION = 10000; // 10 seconds per slide
 const containerVariants: Variants = {
 	hidden: { opacity: 0, y: 40 },
 	visible: {
